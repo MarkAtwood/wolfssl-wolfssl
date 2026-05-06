@@ -635,6 +635,31 @@ impl SHA256 {
         }
         Ok(())
     }
+
+    /// Copy the current SHA-256 context into a new instance.
+    ///
+    /// This preserves all accumulated hash state, allowing the same input
+    /// to be finalized multiple times (e.g. for `fork()` in rustls hash contexts)
+    /// without replaying the input data. Internally calls `wc_Sha256Copy`.
+    ///
+    /// # Returns
+    ///
+    /// Returns either Ok(SHA256) containing the copied instance or Err(e)
+    /// containing the wolfSSL library error code value.
+    pub fn copy(&self) -> Result<Self, i32> {
+        let mut dst = Self::new()?;
+        let rc = unsafe {
+            // wc_Sha256Copy takes (src, dst); both must be initialized.
+            sys::wc_Sha256Copy(
+                &self.wc_sha256 as *const _ as *mut _,
+                &mut dst.wc_sha256,
+            )
+        };
+        if rc != 0 {
+            return Err(rc);
+        }
+        Ok(dst)
+    }
 }
 
 #[cfg(sha256)]
@@ -845,6 +870,30 @@ impl SHA384 {
             return Err(rc);
         }
         Ok(())
+    }
+
+    /// Copy the current SHA-384 context into a new instance.
+    ///
+    /// This preserves all accumulated hash state, allowing the same input
+    /// to be finalized multiple times (e.g. for `fork()` in rustls hash contexts)
+    /// without replaying the input data. Internally calls `wc_Sha384Copy`.
+    ///
+    /// # Returns
+    ///
+    /// Returns either Ok(SHA384) containing the copied instance or Err(e)
+    /// containing the wolfSSL library error code value.
+    pub fn copy(&self) -> Result<Self, i32> {
+        let mut dst = Self::new()?;
+        let rc = unsafe {
+            sys::wc_Sha384Copy(
+                &self.wc_sha384 as *const _ as *mut _,
+                &mut dst.wc_sha384,
+            )
+        };
+        if rc != 0 {
+            return Err(rc);
+        }
+        Ok(dst)
     }
 }
 
