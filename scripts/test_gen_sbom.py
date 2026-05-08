@@ -268,6 +268,148 @@ class TestLoadLicenseText(unittest.TestCase):
             gs.load_license_text('/no/such/path/please.txt')
 
 
+class TestDetectLicense(unittest.TestCase):
+    """detect_license decides the SPDX licenseConcluded / licenseDeclared
+    that wolfSSL's SBOM advertises.  A regression here silently flips
+    the licence obligations a downstream integrator parses out of the
+    SBOM (e.g. GPLv2-or-later misreported as GPLv2-only narrows the
+    permitted upgrade path; GPLv3 misreported as GPLv2 entirely
+    misstates compatibility with GPLv2-only third-party code).
+
+    Independent oracle: the SPDX licence-list short identifiers
+    (https://spdx.org/licenses/), determined for each fixture by
+    reading the GPL version stated in the prose and whether 'or later'
+    / 'or any later version' wording appears within 100 characters of
+    the version mention.  No fixture is round-tripped through
+    detect_license to derive its own oracle."""
+
+    def _detect(self, body):
+        with tempfile.NamedTemporaryFile('w', suffix='.txt',
+                                         delete=False) as f:
+            f.write(body)
+            path = f.name
+        try:
+            return gs.detect_license(path)
+        finally:
+            os.unlink(path)
+
+    def test_gplv2_only(self):
+        # Prose mentions GPLv2 with no 'or later' clause.  Oracle:
+        # SPDX 'GPL-2.0-only'.
+        self.assertEqual(
+            self._detect(
+                'This program is licensed under the GNU General Public '
+                'License version 2.\n'
+                'See COPYING for the full text.\n'),
+            'GPL-2.0-only')
+
+    def test_gplv2_or_later_any_form(self):
+        # 'or any later' immediately after the version mention.
+        # Oracle: SPDX 'GPL-2.0-or-later'.
+        # NOTE: the canonical FSF preamble phrase 'or (at your option)
+        # any later version' is NOT matched by the current regex
+        # (the parenthetical interjection breaks the pattern).  That
+        # is a separate limitation tracked in its own beads issue;
+        # this test deliberately uses a pattern the existing regex
+        # handles, so it serves as a regex regression guard rather
+        # than a redesign request.
+        self.assertEqual(
+            self._detect(
+                'Licensed under the GNU General Public License version 2, '
+                'or any later version.\n'),
+            'GPL-2.0-or-later')
+
+    def test_gplv2_or_later_short_form(self):
+        # 'or later' (without 'any') also matches the regex; this
+        # variant appears in some upstream COPYING files.  Oracle:
+        # 'GPL-2.0-or-later'.
+        self.assertEqual(
+            self._detect(
+                'Licensed under the GNU General Public License version 2 '
+                'or later.\n'),
+            'GPL-2.0-or-later')
+
+    def test_gplv3_only(self):
+        self.assertEqual(
+            self._detect(
+                'Released under the terms of the GNU General Public '
+                'License version 3.\n'),
+            'GPL-3.0-only')
+
+    def test_gplv3_or_later(self):
+        self.assertEqual(
+            self._detect(
+                'Released under the terms of the GNU General Public '
+                'License version 3, or any later version.\n'),
+            'GPL-3.0-or-later')
+
+    def test_case_insensitive(self):
+        # The regex is case-insensitive for both the GPL header line
+        # and the 'or later' clause.  Real-world COPYING files use
+        # mixed cases ('GNU GENERAL PUBLIC LICENSE Version 2'); a
+        # case-sensitive regression here would silently emit None.
+        self.assertEqual(
+            self._detect(
+                'GNU GENERAL PUBLIC LICENSE Version 2\n'
+                'Licensee may redistribute under GPLv2 OR LATER.\n'),
+            'GPL-2.0-or-later')
+
+    def test_or_later_outside_100_byte_excerpt_does_not_match(self):
+        # The 'or later' search is bounded to the 100 chars
+        # immediately following the version mention.  An 'or later'
+        # phrase appearing in unrelated boilerplate further down the
+        # file MUST NOT promote a GPLv2-only declaration to
+        # GPLv2-or-later.  This is the regression Mark called out in
+        # the review: "someone reworks the regex ... and breaks the
+        # GPLv2-or-later detection."
+        body = (
+            'Licensed under the GNU General Public License version 2.\n'
+            + ('Filler not relevant to the license clause. ' * 5)
+            + '\nMay be useful or later modified by users.\n'
+        )
+        self.assertEqual(self._detect(body), 'GPL-2.0-only')
+
+    def test_no_gpl_mention_returns_none_with_warning(self):
+        import io, contextlib
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            result = self._detect(
+                'Copyright (c) 2026 Example Corp.\n'
+                'Licensed under the MIT License.\n'
+                'Permission is hereby granted, free of charge, ...\n')
+        self.assertIsNone(result)
+        # Warning must mention the file path so an operator running
+        # `make sbom` can see which file was unparseable.
+        self.assertIn('no GPL version found', stderr.getvalue())
+
+    def test_missing_file_returns_none_with_warning(self):
+        import io, contextlib
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            result = gs.detect_license('/no/such/license/please.txt')
+        self.assertIsNone(result)
+        self.assertIn('cannot read license file', stderr.getvalue())
+
+    def test_real_wolfssl_licensing_is_gpl3_only(self):
+        # Regression guard, not an oracle: lock down the SPDX ID that
+        # the shipped LICENSING file produces today.  If wolfSSL ever
+        # changes the headline licence in LICENSING, this test must
+        # be updated in the same commit so the SBOM emission change
+        # does not slip in unreviewed.  The "version 3" mention is
+        # first in the file; the 100-char excerpt that follows is
+        # `(\u201cGPLv3\u201d) with\nthe following exception: ...`,
+        # which contains no 'or later' clause - hence GPL-3.0-only.
+        here = pathlib.Path(__file__).resolve().parent.parent
+        licensing = here / 'LICENSING'
+        if not licensing.is_file():
+            self.skipTest(f'LICENSING fixture not found at {licensing}')
+        self.assertEqual(
+            gs.detect_license(str(licensing)), 'GPL-3.0-only',
+            'real wolfSSL LICENSING no longer maps to GPL-3.0-only; '
+            'update this regression guard and audit the SBOM '
+            'licenseConcluded / licenseDeclared change')
+
+
 class TestSha256File(unittest.TestCase):
     def test_real_file_hashes_to_known_value(self):
         # Empty file's SHA-256 is well-known; sanity-checks the chunked
