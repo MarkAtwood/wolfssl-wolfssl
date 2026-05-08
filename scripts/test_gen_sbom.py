@@ -794,14 +794,23 @@ class TestParseUserSettings(unittest.TestCase):
         not build configuration);
       * --user-settings-define KEY=VALUE predefines reach the parser.
 
-    Skipped when pcpp is not installed; CI installs it explicitly in
-    the standalone job."""
+    pcpp is a hard prerequisite for these tests, not optional.  An
+    earlier revision called self.skipTest on missing pcpp; CI ran the
+    suite without pcpp installed and silently skipped all of these
+    cases, leaving the embedded entry point unverified at the very
+    gate intended to verify it (see review finding wolfssl-1zj.14).
+    Now the setUp fails loud with an actionable message."""
 
     def setUp(self):
         try:
             import pcpp  # noqa: F401
         except ImportError:
-            self.skipTest('pcpp not installed; embedded path not exercised')
+            self.fail(
+                'pcpp is not installed but is required to test the '
+                'standalone embedded entry point '
+                '(parse_user_settings).  Install with: '
+                "'python3 -m pip install --user pcpp'.  CI installs "
+                'this in the unit job; see .github/workflows/sbom.yml.')
 
     def _run(self, settings_body, user_body, predefines=()):
         import shutil, tempfile
