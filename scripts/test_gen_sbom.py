@@ -1399,17 +1399,22 @@ class TestCliMutualExclusion(unittest.TestCase):
         with tempfile.NamedTemporaryFile('wb', suffix='.c',
                                          delete=False) as f:
             empty_src = f.name
+        # Rename so the basenames are distinct (srcs_merkle_hash
+        # rejects duplicate basenames; see TestSrcsMerkleHash).
+        # Rename and rebind BEFORE the try-block so the finally
+        # clause always references the live filenames even when an
+        # assertion fails.
+        real_renamed = real_src + '.real.c'
+        empty_renamed = empty_src + '.empty.c'
+        os.rename(real_src, real_renamed)
+        os.rename(empty_src, empty_renamed)
+        real_src = real_renamed
+        empty_src = empty_renamed
         try:
-            # Rename so the basenames are distinct (srcs_merkle_hash
-            # rejects duplicate basenames; see TestSrcsMerkleHash).
-            real_renamed = real_src + '.real.c'
-            empty_renamed = empty_src + '.empty.c'
-            os.rename(real_src, real_renamed)
-            os.rename(empty_src, empty_renamed)
             result = self._run(
                 *self.BASE,
                 '--user-settings', '/dev/null',
-                '--srcs', real_renamed, empty_renamed)
+                '--srcs', real_src, empty_src)
             # The standalone path with /dev/null user-settings should
             # complete; the only thing we care about here is that an
             # empty source did not abort the run.
@@ -1417,8 +1422,6 @@ class TestCliMutualExclusion(unittest.TestCase):
                 result.returncode, 0,
                 f'gen-sbom failed with zero-byte source: stderr={result.stderr!r}')
             self.assertIn('zero-byte source', result.stderr)
-            real_src = real_renamed
-            empty_src = empty_renamed
         finally:
             for p in (real_src, empty_src):
                 try:
