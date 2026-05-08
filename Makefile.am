@@ -500,9 +500,9 @@ bomsh:
 	fi; \
 	bomsh_artifact=""; \
 	for lib in \
-	    $(addprefix $(abs_builddir)/src/.libs/,$(WOLFSSL_LIB_DSO_BASENAMES)) \
-	    $(abs_builddir)/src/.libs/libwolfssl.a \
-	    $(abs_builddir)/src/libwolfssl.a; do \
+	    $(addprefix "$(abs_builddir)/src/.libs"/,$(WOLFSSL_LIB_DSO_BASENAMES)) \
+	    "$(abs_builddir)/src/.libs/libwolfssl.a" \
+	    "$(abs_builddir)/src/libwolfssl.a"; do \
 	    if test -f "$$lib"; then bomsh_artifact="$$lib"; break; fi; \
 	done; \
 	if test -z "$$bomsh_artifact"; then \
