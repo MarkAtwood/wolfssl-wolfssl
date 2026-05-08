@@ -1219,6 +1219,56 @@ class TestCliMutualExclusion(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('--lib or --srcs', result.stderr)
 
+    def test_licenseref_without_license_text_is_rejected(self):
+        # Hard contract enforced at gen-sbom main() (see gen-sbom:880):
+        # any LicenseRef-* in --license-override must be accompanied by
+        # --license-text.  Without this gate, build_extracted_licensing_infos
+        # silently emits a placeholder ('NOASSERTION. The text for this
+        # LicenseRef has not been embedded...') which technically
+        # validates as SPDX but is worthless to a CRA reviewer.
+        # TestBuildExtractedLicensingInfos exercises the placeholder
+        # path in isolation; this test pins the gate that should make
+        # that path unreachable from main().  A refactor that moves
+        # the check (e.g. into a helper called by only one entry-point
+        # shape) would be caught here.
+        result = self._run(
+            *self.BASE,
+            '--options-h', '/dev/null',
+            '--lib', '/dev/null',
+            '--license-override', 'LicenseRef-wolfSSL-Commercial')
+        self.assertNotEqual(result.returncode, 0,
+                            'gen-sbom must reject LicenseRef-* override '
+                            'without --license-text; CRA reviewers cannot '
+                            'use the placeholder fallback')
+        # The error must tell the operator how to fix it; the literal
+        # '--license-text' substring is the actionable hint.
+        self.assertIn('--license-text', result.stderr)
+
+    def test_licenseref_with_license_text_is_accepted(self):
+        # Positive companion to test_licenseref_without_license_text_is_rejected:
+        # confirms the gate does NOT fire when --license-text is supplied,
+        # so a refactor that flips the predicate sense (e.g. tests
+        # `is not None` where it should test `is None`) is also caught.
+        # We don't validate the SBOM content here — TestBuildExtractedLicensingInfos
+        # already covers the shape — only that the gate permits the run.
+        with tempfile.NamedTemporaryFile('w', suffix='.txt',
+                                         delete=False) as f:
+            f.write('Plain-text wolfSSL commercial licence text.\n')
+            license_text_path = f.name
+        try:
+            result = self._run(
+                *self.BASE,
+                '--options-h', '/dev/null',
+                '--lib', '/dev/null',
+                '--license-override', 'LicenseRef-wolfSSL-Commercial',
+                '--license-text', license_text_path)
+            self.assertEqual(
+                result.returncode, 0,
+                f'gen-sbom rejected a valid LicenseRef + license-text '
+                f'pair: stderr={result.stderr!r}')
+        finally:
+            os.unlink(license_text_path)
+
     def test_user_settings_path_in_help(self):
         # Discoverability regression guard - if the standalone entry
         # point is invisible to `--help`, embedded customers will not
