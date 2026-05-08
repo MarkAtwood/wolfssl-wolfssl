@@ -470,8 +470,9 @@ bomshdir          = $(datadir)/doc/$(PACKAGE)
 # Self-contained: the traced rebuild also regenerates the SBOM, so users
 # can run `make bomsh` directly without first running `make sbom`.  This is
 # also what makes the combined workflow correct: `make sbom` writes the SPDX,
-# but `make bomsh` issues `make clean` (which removes it via CLEANFILES), so
-# the only reliable way to enrich is to regenerate after the traced build.
+# but `make bomsh` issues `make clean` (which removes the SPDX via
+# CLEANFILES below and the OmniBOR tree via clean-local), so the only
+# reliable way to enrich is to regenerate after the traced build.
 bomsh:
 	@if test -z "$(BOMTRACE3)"; then \
 	    echo ""; \
@@ -532,6 +533,14 @@ uninstall-bomsh:
 	-rm -f '$(DESTDIR)$(bomshdir)/$(BOMSH_SPDX_OUT)'
 
 CLEANFILES += $(BOMSH_RAWLOG) $(BOMSH_RAWLOG_BASE).sha256 $(BOMSH_CONF) $(BOMSH_SPDX_OUT)
+
+# CLEANFILES handles individual files but automake will not rm -rf a
+# directory tree.  Hook the OmniBOR output directory into `make clean`
+# via clean-local so a previous run's artefact graph does not pollute
+# the next `make bomsh` invocation (which begins with `make clean` -
+# see the bomsh recipe above).
+clean-local:
+	-rm -rf '$(BOMSH_OMNIBORDIR)'
 
 # Hook SBOM/Bomsh cleanup into `make uninstall` so packagers don't leave
 # stale artefacts behind after install-sbom/install-bomsh.  rm -f is
