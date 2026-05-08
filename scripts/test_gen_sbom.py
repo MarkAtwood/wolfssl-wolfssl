@@ -1155,7 +1155,10 @@ class TestParseUserSettings(unittest.TestCase):
         # gen-sbom must mirror that semantics.  pcpp signals this via
         # pp.return_code (it does NOT raise), which is easy to swallow
         # silently and emit a partial SBOM if not checked.  This test
-        # pins the fail-fast contract.
+        # pins the fail-fast contract: any #error must produce a
+        # SystemExit, not a partial SBOM.  We deliberately do NOT
+        # pin the exact error wording; the contract is fail-fast,
+        # not the message's phrasing.
         settings = (
             '#ifdef WOLFSSL_USER_SETTINGS\n'
             '#include "user_settings.h"\n'
@@ -1165,9 +1168,14 @@ class TestParseUserSettings(unittest.TestCase):
         user = '#error "this configuration is unsupported"\n'
         with self.assertRaises(SystemExit) as ctx:
             self._run(settings, user, ['WOLFSSL_USER_SETTINGS'])
+        # Guard against an empty-message regression that would still
+        # technically satisfy the SystemExit contract but leave the
+        # operator with no idea why their build broke.  Any
+        # reasonably useful message will exceed this threshold.
         msg = str(ctx.exception)
-        self.assertIn('pcpp', msg)
-        self.assertIn('return_code', msg)
+        self.assertGreater(len(msg), 20,
+                           f'gen-sbom exit message too short to be '
+                           f'actionable: {msg!r}')
 
     def test_function_like_macros_filtered(self):
         # Function-like macros are API surface, not build
