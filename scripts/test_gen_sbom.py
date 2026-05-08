@@ -1316,11 +1316,18 @@ class TestCliMutualExclusion(unittest.TestCase):
                                          delete=False) as f:
             f.write('Plain-text wolfSSL commercial licence text.\n')
             license_text_path = f.name
+        # --lib must be non-empty (gen-sbom refuses /dev/null as a
+        # component checksum); use a tiny stand-in file so we exercise
+        # the LicenseRef gate without tripping the empty-lib gate.
+        with tempfile.NamedTemporaryFile('wb', suffix='.so',
+                                         delete=False) as f:
+            f.write(b'\x7fELF stub')
+            lib_path = f.name
         try:
             result = self._run(
                 *self.BASE,
                 '--options-h', '/dev/null',
-                '--lib', '/dev/null',
+                '--lib', lib_path,
                 '--license-override', 'LicenseRef-wolfSSL-Commercial',
                 '--license-text', license_text_path)
             self.assertEqual(
@@ -1329,6 +1336,66 @@ class TestCliMutualExclusion(unittest.TestCase):
                 f'pair: stderr={result.stderr!r}')
         finally:
             os.unlink(license_text_path)
+            os.unlink(lib_path)
+
+    def test_empty_lib_is_rejected(self):
+        # The --lib argument is the wolfSSL component checksum source.
+        # An empty file produces the well-known empty-file SHA-256
+        # (e3b0c44...b855), which is a valid-looking hash that
+        # matches no real wolfSSL build artefact ever shipped.  Both
+        # SPDX and CDX validators accept it; nothing else catches
+        # the lie.  gen-sbom must refuse zero-byte --lib.
+        result = self._run(
+            *self.BASE,
+            '--options-h', '/dev/null',
+            '--lib', '/dev/null')
+        self.assertNotEqual(result.returncode, 0,
+                            'gen-sbom accepted an empty --lib file; would '
+                            'have shipped an SBOM with the empty-file '
+                            'SHA-256 as the wolfSSL component checksum')
+        self.assertIn('empty', result.stderr.lower())
+        self.assertIn('--lib', result.stderr)
+
+    def test_zero_byte_srcs_warn_but_do_not_fail(self):
+        # Companion: --srcs may legitimately include zero-byte
+        # placeholders in cross-compile setups (a target file the
+        # build system creates with touch but doesn't compile yet),
+        # so gen-sbom emits a WARNING rather than failing.  This
+        # gives the embedded customer a chance to see they have a
+        # stub file in the source set without breaking their build.
+        with tempfile.NamedTemporaryFile('wb', suffix='.c',
+                                         delete=False) as f:
+            f.write(b'/* real source */\n')
+            real_src = f.name
+        with tempfile.NamedTemporaryFile('wb', suffix='.c',
+                                         delete=False) as f:
+            empty_src = f.name
+        try:
+            # Rename so the basenames are distinct (srcs_merkle_hash
+            # rejects duplicate basenames; see TestSrcsMerkleHash).
+            real_renamed = real_src + '.real.c'
+            empty_renamed = empty_src + '.empty.c'
+            os.rename(real_src, real_renamed)
+            os.rename(empty_src, empty_renamed)
+            result = self._run(
+                *self.BASE,
+                '--user-settings', '/dev/null',
+                '--srcs', real_renamed, empty_renamed)
+            # The standalone path with /dev/null user-settings should
+            # complete; the only thing we care about here is that an
+            # empty source did not abort the run.
+            self.assertEqual(
+                result.returncode, 0,
+                f'gen-sbom failed with zero-byte source: stderr={result.stderr!r}')
+            self.assertIn('zero-byte source', result.stderr)
+            real_src = real_renamed
+            empty_src = empty_renamed
+        finally:
+            for p in (real_src, empty_src):
+                try:
+                    os.unlink(p)
+                except FileNotFoundError:
+                    pass
 
     def test_user_settings_path_in_help(self):
         # Discoverability regression guard - if the standalone entry
