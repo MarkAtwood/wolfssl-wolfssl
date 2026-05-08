@@ -430,6 +430,25 @@ class TestSha256File(unittest.TestCase):
         with self.assertRaises(SystemExit):
             gs.sha256_file('/no/such/library/please.so')
 
+    def test_chunked_read_path_matches_one_shot(self):
+        # The chunked iter(f.read(65536), b'') path in sha256_file is
+        # what runs for the real wolfSSL library (.so/.a, multi-MB).
+        # The empty-file vector above never executes the loop body at
+        # all (size=0).  An off-by-one or chunk-boundary regression
+        # would slip through unless we exercise a buffer that crosses
+        # the 65536-byte boundary.  Independent oracle: hashlib's
+        # one-shot hash on the same bytes.
+        import hashlib
+        body = (b'A' * 70000) + (b'B' * 1000) + b'tail'
+        with tempfile.NamedTemporaryFile('wb', delete=False) as f:
+            f.write(body)
+            path = f.name
+        try:
+            expected = hashlib.sha256(body).hexdigest()
+            self.assertEqual(gs.sha256_file(path), expected)
+        finally:
+            os.unlink(path)
+
 
 class TestParseOptionsH(unittest.TestCase):
     def _parse(self, body):
