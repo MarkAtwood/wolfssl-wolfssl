@@ -426,8 +426,11 @@ sbom:
 	echo "SBOM: hashing $$sbom_lib"; \
 	if test -z "$${SOURCE_DATE_EPOCH:-}" && test -n "$(GIT)" && \
 	   $(GIT) -C "$(srcdir)" rev-parse --git-dir >/dev/null 2>&1; then \
-	    SOURCE_DATE_EPOCH=`$(GIT) -C "$(srcdir)" log -1 --format=%ct 2>/dev/null || echo`; \
-	    export SOURCE_DATE_EPOCH; \
+	    sde=`$(GIT) -C "$(srcdir)" log -1 --format=%ct 2>/dev/null`; \
+	    if test -n "$$sde"; then \
+	        SOURCE_DATE_EPOCH="$$sde"; \
+	        export SOURCE_DATE_EPOCH; \
+	    fi; \
 	fi; \
 	$(PYTHON3) $(srcdir)/scripts/gen-sbom \
 	    --name $(PACKAGE) \
