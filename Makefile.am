@@ -536,13 +536,11 @@ uninstall-bomsh:
 
 CLEANFILES += $(BOMSH_RAWLOG) $(BOMSH_RAWLOG_BASE).sha256 $(BOMSH_CONF) $(BOMSH_SPDX_OUT)
 
-# CLEANFILES handles individual files but automake will not rm -rf a
-# directory tree.  Hook the OmniBOR output directory into `make clean`
-# via clean-local so a previous run's artefact graph does not pollute
-# the next `make bomsh` invocation (which begins with `make clean` -
-# see the bomsh recipe above).
-clean-local:
-	-rm -rf '$(BOMSH_OMNIBORDIR)'
+# (BOMSH_OMNIBORDIR is removed by `make clean` via the clean-local
+#  target in doc/include.am, which the original PR commit extended.
+#  An earlier fix for wolfssl-1zj.6 added a duplicate clean-local
+#  target here; that silently overrode the doc/ cleanups it relied
+#  on.  See wolfssl-e8o.1.)
 
 # Hook SBOM/Bomsh cleanup into `make uninstall` so packagers don't leave
 # stale artefacts behind after install-sbom/install-bomsh.  uninstall-sbom
