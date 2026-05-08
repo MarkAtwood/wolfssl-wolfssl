@@ -338,6 +338,45 @@ def _is_noise_macro(name):
     return False
 
 
+def _strip_define_comment(raw):
+    """Strip trailing C/C++ comment from a #define value while preserving
+    `/`-bearing characters that appear inside a double-quoted string.
+
+    Earlier versions used `re.split(r'/\\*|//', raw, maxsplit=1)[0]`, which
+    is unaware of string literals.  That regex corrupts autoconf-generated
+    defines such as
+
+        #define PACKAGE_URL "https://www.wolfssl.com"
+        #define PACKAGE_BUGREPORT "https://github.com/wolfssl/wolfssl/issues"
+
+    by truncating at the first `//` inside the URL — both end up as
+    `"https:` in the SBOM build properties, falsely showing PACKAGE_URL
+    drifting between releases when nothing actually changed.
+
+    Char literals are not handled: autoconf-generated options.h does not
+    emit them, and pcpp normalises customer user_settings.h before this
+    helper sees the value, so the only realistic source of `/` in a
+    #define value is a quoted string."""
+    in_str = False
+    i = 0
+    n = len(raw)
+    while i < n:
+        c = raw[i]
+        if in_str:
+            if c == '\\' and i + 1 < n:
+                i += 2
+                continue
+            if c == '"':
+                in_str = False
+        else:
+            if c == '"':
+                in_str = True
+            elif c == '/' and i + 1 < n and raw[i + 1] in '/*':
+                return raw[:i]
+        i += 1
+    return raw
+
+
 def parse_options_h(path):
     """Parse a flat `#define` header and return a sorted deduplicated
     list of (name, value) pairs for every wolfSSL-relevant macro.
@@ -354,7 +393,9 @@ def parse_options_h(path):
 
     Trailing C/C++ comments on a #define line (`#define HAVE_FOO 42 /* x */`
     or `// y`) are stripped; otherwise they would land verbatim in the
-    SBOM build properties."""
+    SBOM build properties.  String literals are preserved intact so that
+    URLs in PACKAGE_URL / PACKAGE_BUGREPORT are not truncated at the
+    first `//` (see _strip_define_comment)."""
     try:
         with open(path) as f:
             text = f.read()
@@ -368,7 +409,7 @@ def parse_options_h(path):
         if _is_noise_macro(name):
             continue
         raw = (m.group(2) or '')
-        raw = re.split(r'/\*|//', raw, maxsplit=1)[0]
+        raw = _strip_define_comment(raw)
         defines[name] = raw.strip()
     return sorted(defines.items())
 

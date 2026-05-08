@@ -469,6 +469,48 @@ class TestParseOptionsH(unittest.TestCase):
         pairs = dict(self._parse("#define HAVE_BAR  /* set elsewhere */\n"))
         self.assertEqual(pairs['HAVE_BAR'], '')
 
+    def test_preserves_url_in_string_literal(self):
+        # Regression guard: an earlier comment-stripper used
+        # `re.split(r'/\*|//', raw, maxsplit=1)[0]`, which truncated
+        # autoconf-generated PACKAGE_URL / PACKAGE_BUGREPORT defines
+        # at the first `//` inside the URL.  Both ended up as
+        # `"https:` in the SBOM build properties, falsely showing
+        # PACKAGE_URL drifting between releases when nothing changed.
+        pairs = dict(self._parse(
+            '#define PACKAGE_URL "https://www.wolfssl.com"\n'
+            '#define PACKAGE_BUGREPORT '
+            '"https://github.com/wolfssl/wolfssl/issues"\n'
+        ))
+        self.assertEqual(pairs['PACKAGE_URL'],
+                         '"https://www.wolfssl.com"')
+        self.assertEqual(pairs['PACKAGE_BUGREPORT'],
+                         '"https://github.com/wolfssl/wolfssl/issues"')
+
+    def test_strips_comment_after_string_literal(self):
+        # Companion to test_preserves_url_in_string_literal: confirm
+        # the stripper still works when a comment legitimately follows
+        # a string literal.  A regression that disabled stripping
+        # entirely (the simplest "fix" for the URL bug) would let
+        # comment text leak into the SBOM.
+        pairs = dict(self._parse(
+            '#define PACKAGE_URL "https://www.wolfssl.com" /* upstream */\n'
+        ))
+        self.assertEqual(pairs['PACKAGE_URL'],
+                         '"https://www.wolfssl.com"')
+
+    def test_preserves_block_comment_inside_string_literal(self):
+        # `/*` inside a string literal must not start a comment.
+        pairs = dict(self._parse('#define WEIRD "a/*b*/c"\n'))
+        self.assertEqual(pairs['WEIRD'], '"a/*b*/c"')
+
+    def test_handles_escaped_quote_in_string_literal(self):
+        # An escaped `\"` inside a string literal must not be mistaken
+        # for the closing quote; otherwise a comment-marker that
+        # follows would be incorrectly treated as outside the string.
+        pairs = dict(self._parse(
+            '#define EMBEDDED_QUOTE "a\\"b//c" /* tail */\n'))
+        self.assertEqual(pairs['EMBEDDED_QUOTE'], '"a\\"b//c"')
+
     def test_dedup_keeps_last_assignment(self):
         # Last assignment wins (matches C preprocessor semantics for
         # duplicate #defines after redefinition).
