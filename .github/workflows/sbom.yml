@@ -7,6 +7,16 @@ on:
   pull_request:
     branches: [ '*' ]
 
+# Defence-in-depth: the workflow does no API writes (no `gh pr`, no
+# `git push`, no release upload), so the practical risk of the default
+# read-write GITHUB_TOKEN on push events is zero today.  Setting
+# `contents: read` at workflow level is GitHub's documented hardening
+# recommendation for SBOM-producing supply-chain workflows: a future
+# step that accidentally introduces a write call will fail loudly
+# rather than silently mutate the repo.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
