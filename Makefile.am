@@ -436,8 +436,8 @@ sbom:
 	    --name $(PACKAGE) \
 	    --version $(PACKAGE_VERSION) \
 	    --license-file $(srcdir)/LICENSING \
-	    --license-override '$(SBOM_LICENSE_OVERRIDE)' \
-	    --license-text '$(SBOM_LICENSE_TEXT)' \
+	    $(if $(SBOM_LICENSE_OVERRIDE),--license-override '$(SBOM_LICENSE_OVERRIDE)') \
+	    $(if $(SBOM_LICENSE_TEXT),--license-text '$(SBOM_LICENSE_TEXT)') \
 	    --options-h $(abs_builddir)/wolfssl/options.h \
 	    --lib "$$sbom_lib" \
 	    --dep-libz $(ENABLED_LIBZ) \
