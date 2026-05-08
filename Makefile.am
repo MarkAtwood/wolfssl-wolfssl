@@ -545,11 +545,9 @@ clean-local:
 	-rm -rf '$(BOMSH_OMNIBORDIR)'
 
 # Hook SBOM/Bomsh cleanup into `make uninstall` so packagers don't leave
-# stale artefacts behind after install-sbom/install-bomsh.  rm -f is
-# idempotent, so this is safe whether or not those targets were ever run.
-uninstall-hook:
-	-rm -f $(DESTDIR)$(sbomdir)/$(SBOM_CDX)
-	-rm -f $(DESTDIR)$(sbomdir)/$(SBOM_SPDX)
-	-rm -f $(DESTDIR)$(sbomdir)/$(SBOM_SPDX_TV)
-	-rm -rf $(DESTDIR)$(bomshdir)/omnibor
-	-rm -f $(DESTDIR)$(bomshdir)/$(BOMSH_SPDX_OUT)
+# stale artefacts behind after install-sbom/install-bomsh.  uninstall-sbom
+# and uninstall-bomsh use `rm -f` / `rm -rf` so they are idempotent and
+# safe whether or not those targets were ever run.  Depending on them
+# rather than duplicating their bodies keeps the cleanup paths in lock
+# step with install-sbom/install-bomsh.
+uninstall-hook: uninstall-sbom uninstall-bomsh
