@@ -524,8 +524,7 @@ bomsh:
 install-bomsh: bomsh
 	$(MKDIR_P) '$(DESTDIR)$(bomshdir)/omnibor'
 	@if test -d '$(BOMSH_OMNIBORDIR)'; then \
-	    (cd '$(BOMSH_OMNIBORDIR)' && tar cf - .) | \
-	        (cd '$(DESTDIR)$(bomshdir)/omnibor' && tar xf -); \
+	    cp -R '$(BOMSH_OMNIBORDIR)/.' '$(DESTDIR)$(bomshdir)/omnibor/'; \
 	fi
 	@if test -f '$(abs_builddir)/$(BOMSH_SPDX_OUT)'; then \
 	    $(INSTALL_DATA) '$(abs_builddir)/$(BOMSH_SPDX_OUT)' '$(DESTDIR)$(bomshdir)/'; \
