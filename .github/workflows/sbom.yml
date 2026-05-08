@@ -894,7 +894,13 @@ jobs:
           # the patch's context lines in src/strace.c.
           STRACE_TAG: v6.7
         run: |
-          git clone https://github.com/omnibor/bomsh /tmp/bomsh
+          # --filter=blob:none is the cleanest "shallow-ish" clone when
+          # checking out a specific SHA: it skips file blobs but keeps
+          # the commit graph, so `git checkout $BOMSH_SHA` still works.
+          # `--depth=1` would only work with `--branch <ref>`, not a
+          # raw SHA.  The strace clone below uses `--depth=1 --branch`
+          # because it pins to a release tag.
+          git clone --filter=blob:none https://github.com/omnibor/bomsh /tmp/bomsh
           git -C /tmp/bomsh checkout "$BOMSH_SHA"
           # Even with a pinned SHA, keep the layout-drift guard so the
           # next maintainer who bumps BOMSH_SHA gets a clear error if
