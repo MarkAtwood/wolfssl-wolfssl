@@ -306,18 +306,39 @@ class TestDetectLicense(unittest.TestCase):
     def test_gplv2_or_later_any_form(self):
         # 'or any later' immediately after the version mention.
         # Oracle: SPDX 'GPL-2.0-or-later'.
-        # NOTE: the canonical FSF preamble phrase 'or (at your option)
-        # any later version' is NOT matched by the current regex
-        # (the parenthetical interjection breaks the pattern).  That
-        # is a separate limitation tracked in its own beads issue;
-        # this test deliberately uses a pattern the existing regex
-        # handles, so it serves as a regex regression guard rather
-        # than a redesign request.
         self.assertEqual(
             self._detect(
                 'Licensed under the GNU General Public License version 2, '
                 'or any later version.\n'),
             'GPL-2.0-or-later')
+
+    def test_gplv2_or_later_canonical_fsf_preamble(self):
+        # The canonical FSF GPL preamble phrase, used verbatim in
+        # millions of upstream COPYING files:
+        #
+        #   'either version N of the License, or (at your option)
+        #    any later version.'
+        #
+        # An earlier regex (`or\s+(any\s+)?later`) failed to match
+        # this because the parenthetical '(at your option)'
+        # interjects between 'or' and 'any later', so wolfssl-1zj.24
+        # silently mis-detected the preamble as GPLv2-only.  Oracle:
+        # SPDX 'GPL-2.0-or-later'.
+        self.assertEqual(
+            self._detect(
+                'This program is free software: you can redistribute it '
+                'and/or modify it under the terms of the GNU General '
+                'Public License version 2, or (at your option) any '
+                'later version.\n'),
+            'GPL-2.0-or-later')
+
+    def test_gplv3_or_later_canonical_fsf_preamble(self):
+        # Same regression guard for GPLv3.
+        self.assertEqual(
+            self._detect(
+                'Licensed under the GNU General Public License version 3, '
+                'or (at your option) any later version.\n'),
+            'GPL-3.0-or-later')
 
     def test_gplv2_or_later_short_form(self):
         # 'or later' (without 'any') also matches the regex; this

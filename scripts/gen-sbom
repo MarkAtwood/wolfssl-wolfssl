@@ -192,7 +192,16 @@ def detect_license(license_file):
 
     version = m.group(1)
     excerpt = text[m.end():m.end() + 100]
-    if re.search(r'or\s+(any\s+)?later', excerpt, re.IGNORECASE):
+    # Match upgrade-permission wording in the 100-byte excerpt that
+    # follows the version mention.  Three FSF-derived shapes:
+    #   * canonical preamble:   "or (at your option) any later version"
+    #   * preamble variant:     "or (at the licensee's option) any later"
+    #   * compact form:         "or later" / "or any later"
+    # The optional `[^,.;\n]*?\s+` group consumes parenthesised
+    # asides without crossing sentence boundaries so unrelated
+    # "or" / "later" mentions in surrounding prose do not match.
+    if re.search(r'or\s+(?:[^,.;\n]*?\s+)?(?:any\s+)?later',
+                 excerpt, re.IGNORECASE):
         return f'GPL-{version}.0-or-later'
     return f'GPL-{version}.0-only'
 
