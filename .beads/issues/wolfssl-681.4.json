@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-681.4",
+  "title": "Defend: ECC key COPY guard missing \u2014 future-proofing gap vs HMAC COPY guard",
+  "description": "The WC_ALGO_TYPE_COPY handler guards CIPHER (Aes devCtx), HMAC (Crypto2DevHmacCtx devCtx), and HASH (Crypto2DevHashCtx devCtx) against aliased devCtx on copy. There is no guard for WC_ALGO_TYPE_PK (ecc_key devCtx, which stores a hardware key fd).\n\nCurrent state: wolfSSL does NOT dispatch wc_CryptoCb_Copy for PK objects. Only SHA-256/384/512 and SHA-3 copy functions call wc_CryptoCb_Copy (confirmed by grep of cryptocb.c callers). So the missing guard does not cause a current bug.\n\nRisk: if wolfSSL upstream adds CryptoCb COPY dispatch for wc_ecc_copy_key (analogous to wc_Sha256Copy), an ecc_key with a hardware key fd in devCtx would have its fd pointer aliased. Whichever copy is freed first closes the fd; the second object then calls ioctl() on a closed (possibly reused) fd.\n\nThe HMAC COPY guard has this explicit comment: 'so that if upstream ever adds CryptoCb COPY dispatch for HMAC, the port immediately returns WC_HW_E'. The same reasoning applies to PK. Adding a guard for WC_ALGO_TYPE_PK before the fallthrough CRYPTOCB_UNAVAILABLE return is the consistent fix.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T02:08:01Z",
+  "updated_at": "2026-04-22T02:36:50Z",
+  "closed_at": "2026-04-22T02:36:50Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-681",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T19:08:01Z"
+    }
+  ]
+}

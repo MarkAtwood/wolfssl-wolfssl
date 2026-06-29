@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-yjw.2",
+  "title": "ECC SETKEY: no P-256 minimum \u2014 P-192 keys silently imported to device",
+  "description": "Trigger: wc_ecc_init_ex(&key, NULL, WOLF_CRYPTO2DEV_DEVID) then wc_ecc_import_private_key with a P-192 private scalar (field_sz=24). Path: SETKEY callback \u2192 WC_SETKEY_ECC_PRIV case \u2192 field_sz = info->setkey.keySz (24) \u2192 crypto2dev_key_import('ecdsa', CRYPTO2DEV_KEY_PRIVATE, raw, 24). The guard checks field_sz == 0 || field_sz > ECC_MAXSIZE but has no minimum. Bad outcome: if the kernel device accepts P-192, subsequent ECDSA operations use a below-minimum curve. FIPS 140-3 IG D.1 requires P-256 minimum for ECDSA. Fix: add field_sz < 32 \u2192 CRYPTOCB_UNAVAILABLE in WC_SETKEY_ECC_PRIV and WC_SETKEY_ECC_PUB cases.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T23:12:27Z",
+  "updated_at": "2026-04-21T23:27:25Z",
+  "closed_at": "2026-04-21T23:27:25Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-yjw",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T16:12:26Z"
+    }
+  ]
+}

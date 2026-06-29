@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.22",
+  "title": "pool_acquire: the 'recovery_slot' name is misleading \u2014 this is actually the new-fd-open path",
+  "description": "The pool_acquire() uses a variable named 'recovery_slot' and the path is described as 'recovery'. But the only way a slot becomes empty (fd==-1) is after pool_release fails to re-open the fd. This is the normal operation slot startup path (all slots start empty), not an error recovery path. The name 'recovery_slot' implies the slot was previously in an error state, which misleads contributors into thinking this path is exceptional. Rename to 'empty_slot' and the comment to 'first empty slot (fd not yet opened)' to accurately describe what happens.",
+  "status": "closed",
+  "priority": 4,
+  "issue_type": "chore",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:29:41Z",
+  "updated_at": "2026-04-21T19:46:45Z",
+  "closed_at": "2026-04-21T19:46:45Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:29:41Z"
+    }
+  ]
+}

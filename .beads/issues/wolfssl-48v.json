@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-48v",
+  "title": "Wire Caliptra keystore into standard key import paths via SetKey callbacks",
+  "description": "Caliptra has a handle-based keystore (CaliptraCmk, 128-byte opaque handles). The current port requires applications to manually call wc_caliptra_import_key() to get a CaliptraCmk handle. It does not hook the standard wolfSSL key import paths.\n\nWhen wolfSSL PR #9851 (SetKey/Export callbacks) lands, we should wire up the Caliptra port so that calling standard key APIs with a Caliptra devId automatically loads key material into the Caliptra keystore:\n- wc_AesSetKey() -> wc_caliptra_import_key() -> stores CaliptraCmk in Aes.devCtx\n- wc_HmacSetKey() -> same\n- wc_ecc_import_*() -> same\n\nThis would make the integration transparent to application code \u2014 no manual CMK lifecycle management required.\n\nBlocked on wolfSSL PR #9851 merging. That PR has an open infinite recursion bug (WOLF_CRYPTO_CB_FIND + INVALID_DEVID paths) that is blocking merge.",
+  "status": "in_progress",
+  "priority": 3,
+  "issue_type": "feature",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-03T23:17:35Z",
+  "updated_at": "2026-04-17T22:52:35Z",
+  "notes": "PR #9851 merged 2026-04-15 (commit 1a67eb722). Blocker is gone. Plan: (1) rebase feature/caliptra onto master dropping stale RSA-OAEP commit, (2) add WC_ALGO_TYPE_SETKEY handler to wc_caliptra_cb() for AES/HMAC/ECC_PRIV/ECC_PUB \u2014 returns CRYPTOCB_UNAVAILABLE for RSA, (3) update test to exercise new path."
+}

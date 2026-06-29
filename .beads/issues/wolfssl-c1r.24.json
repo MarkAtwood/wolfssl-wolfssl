@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.24",
+  "title": "HMAC WC_HW_E on INIT failure at Final is correct \u2014 CRYPTOCB_UNAVAILABLE would be an auth bypass",
+  "description": "In crypto2dev_hmac() Final path: if CRYPTO2DEV_IOC_INIT fails and ret==NOT_COMPILED_IN, the code promotes to WC_HW_E rather than CRYPTOCB_UNAVAILABLE. This is correct: the SETKEY callback returned 0 (claiming the key), so wolfSSL's own ipad/opad schedule was skipped. If CRYPTOCB_UNAVAILABLE were returned here, wolfSSL's wc_HmacFinal fallback would compute HMAC with all-zero key and return it as a valid MAC. The port header documents this with 'CRYPTOCB_UNAVAILABLE is NOT safe: HMAC SETKEY returns 0 (claiming the key), so wolfSSL skips its software ipad/opad schedule'. The wc_static_assert2(WC_HW_E \\!= CRYPTOCB_UNAVAILABLE) in the port ensures these can never collide. A future contributor might change WC_HW_E to CRYPTOCB_UNAVAILABLE to 'allow fallback' \u2014 this would be catastrophically wrong. The assert and the comment both protect this correctly.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:30:02Z",
+  "updated_at": "2026-04-21T19:45:51Z",
+  "closed_at": "2026-04-21T19:45:51Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:30:02Z"
+    }
+  ]
+}

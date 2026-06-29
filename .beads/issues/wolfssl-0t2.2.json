@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-0t2.2",
+  "title": "ECDSA verify: res NULL check after ioctl + lock release",
+  "description": "Trigger: caller passes info->pk.eccverify.res == NULL to wc_ecc_verify_hash. Bad behavior: the port issues the full DO_VERIFY ioctl, holds and releases g_ecdsa_fd_lock, then checks res NULL and returns BAD_FUNC_ARG. This means a NULL res causes work to be done before the error is caught. wolfSSL's own dispatch (wc_CryptoCb_EccVerify) fills res from the caller's stack so NULL is never passed in practice, but the check is 40 lines late (line 1397 vs where it should be at the top of the WC_PK_TYPE_ECDSA_VERIFY block). Maintenance consequence: someone adding a new PK type would copy this pattern and write a late NULL check after acquiring a global lock \u2014 the wrong template. Fix: move the res NULL check to the top of the verify block, before the ioctl.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:10:47Z",
+  "updated_at": "2026-04-21T19:19:22Z",
+  "closed_at": "2026-04-21T19:19:22Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0t2",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:10:46Z"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-br3.1",
+  "title": "stale header comment says wc_AesGcmSetKey is incompatible \u2014 now false",
+  "description": "crypto2dev_port.h lines 50-53 say 'wc_AesGcmSetKey() is not compatible with a crypto2dev devId' and advise using wc_AesSetKey instead. This was true before commit a34b459dc, but the fix (returning CRYPTOCB_UNAVAILABLE from crypto2dev_aes_setkey_ctx) lets the software key schedule also run, which computes aes->rounds, which makes wc_AesGcmSetKey work correctly. The warning is now a lie. Scenario A: a maintainer sees 'return CRYPTOCB_UNAVAILABLE' in setkey and 'fixes' it to 'return 0' to claim ownership, re-introducing the KEYUSAGE_E regression. Scenario B: a user reads the header and writes an unnecessary workaround, then asks why. The test_tls13_integration() comment at line 691 reinforces the stale claim and must also be updated. Maintenance consequence: the wrong API contract will cause either user confusion or a future regression.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:23:42Z",
+  "updated_at": "2026-04-21T14:30:41Z",
+  "closed_at": "2026-04-21T14:30:41Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-br3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:23:42Z"
+    }
+  ]
+}

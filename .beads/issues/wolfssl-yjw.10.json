@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-yjw.10",
+  "title": "Defend: COPY callback returns WC_HW_E for hash with active devCtx",
+  "description": "In wc_crypto2dev_cb WC_ALGO_TYPE_COPY handler: when copy.algo == WC_ALGO_TYPE_HASH and the source object has a non-NULL devCtx (meaning an op_fd is open and data has already been written to the kernel-side hash session), the callback returns WC_HW_E rather than CRYPTOCB_UNAVAILABLE. Why this is correct: returning CRYPTOCB_UNAVAILABLE would let wolfSSL do XMEMCPY of the hash struct, aliasing the devCtx pointer. Both src and dst would point to the same Crypto2DevHashCtx with the same op_fd. Whichever is finalized/freed first closes the fd and frees the ctx; the other then holds a dangling pointer \u2014 use-after-free and double-close. When devCtx == NULL (no hardware state yet), CRYPTOCB_UNAVAILABLE is returned (XMEMCPY is safe). A reviewer suggesting to always return CRYPTOCB_UNAVAILABLE for simplicity is wrong \u2014 it creates a silent use-after-free. The analogous cipher path (WC_ALGO_TYPE_CIPHER) does NOT have this guard and is filed as a separate bug (wolfssl-yjw.5).",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T23:13:33Z",
+  "updated_at": "2026-04-21T23:34:34Z",
+  "closed_at": "2026-04-21T23:34:34Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-yjw",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T16:13:32Z"
+    }
+  ]
+}

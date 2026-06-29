@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-0h3.7",
+  "title": "crypto2dev: wire wc_crypto2dev_test() into wolfcrypt/test/test.c",
+  "description": "wc_crypto2dev_test() is implemented in wolfcrypt/src/port/crypto2dev/crypto2dev_test.c but has no call site in wolfcrypt/test/test.c. Without this wiring, the crypto2dev test suite never runs via ./wolfcrypt/test/testwolfcrypt. Add call under WOLFSSL_CRYPTO2DEV guard in test.c, add the header include, and update the build system (wolfcrypt/src/include.am) to compile crypto2dev_test.c into the test binary.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:08:44Z",
+  "updated_at": "2026-04-20T23:18:51Z",
+  "closed_at": "2026-04-20T23:18:51Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:08:44Z"
+    }
+  ]
+}

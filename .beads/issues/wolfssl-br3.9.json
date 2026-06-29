@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-br3.9",
+  "title": "wire header isolation: both port and sim include crypto2dev_wire.h for ABI safety",
+  "description": "crypto2dev_wire.h is included by both crypto2dev_port.c and crypto2dev_sim.c. Both files compute CRYPTO2DEV_IOC_* request codes using _IOW/_IOR macros over the same struct definitions. This guarantees matching ioctl request codes because the sizes are baked in at compile time. A contributor might suggest moving the struct definitions into port.c and simulator.h separately. That would silently break the ABI if a field is added to one side but not the other. The shared header is the only safe approach for this pattern.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:29:51Z",
+  "updated_at": "2026-04-21T15:00:42Z",
+  "closed_at": "2026-04-21T15:00:42Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-br3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:29:50Z"
+    }
+  ]
+}

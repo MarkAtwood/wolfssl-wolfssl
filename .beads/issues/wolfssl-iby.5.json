@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-iby.5",
+  "title": "g_tls_safe_mode set-once process-wide; silently disables others' hardware hash",
+  "description": "Scenario: Library A calls wc_crypto2dev_assign_devid(ctx), setting g_tls_safe_mode=1 process-wide. Library B (linked in the same process) uses WOLF_CRYPTO2DEV_DEVID directly for hardware SHA-256. After Library A's call, Library B's hash ops return CRYPTOCB_UNAVAILABLE and silently fall back to software \u2014 no error, no diagnostic. Library B cannot detect this happened. The header comment documents this, but library authors rarely read header comments on functions they don't call. Maintenance consequence: support tickets from users who set up hardware hash and then link a TLS library that calls assign_devid, finding their hardware hash mysteriously stopped working. The pattern to fix (register a second devId for bulk-hash) is documented but non-obvious.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:41:01Z",
+  "updated_at": "2026-04-21T17:07:24Z",
+  "closed_at": "2026-04-21T17:07:24Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:41:01Z"
+    }
+  ]
+}

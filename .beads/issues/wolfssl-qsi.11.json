@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-qsi.11",
+  "title": "Verify qsi.2/qsi.3: does wolfSSL dispatch wc_HmacCopy/wc_ecc_copy through CryptoCb COPY?",
+  "description": "qsi.2 and qsi.3 depend on wolfSSL dispatching HMAC and ECC copy operations through WC_ALGO_TYPE_COPY. Read wolfcrypt/src/hmac.c (wc_HmacCopy) and wolfcrypt/src/ecc.c (wc_ecc_copy) to determine: (1) Do they call wc_CryptoCb_Copy or equivalent? (2) If yes, with info->copy.algo=WC_ALGO_TYPE_HMAC / WC_ALGO_TYPE_PK? (3) If the port returns CRYPTOCB_UNAVAILABLE, does wolfSSL fall back to XMEMCPY of the whole struct (which would alias devCtx)? Expected outcomes: (a) Confirmed reachable \u2192 qsi.2/qsi.3 priority stands. (b) Not dispatched through CryptoCb \u2192 downgrade qsi.2/qsi.3 to theoretical and note the wolfSSL version constraint in the issue.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T01:32:34Z",
+  "updated_at": "2026-04-22T01:35:53Z",
+  "closed_at": "2026-04-22T01:35:53Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-qsi",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T18:32:34Z"
+    }
+  ]
+}

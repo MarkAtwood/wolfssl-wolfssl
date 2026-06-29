@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-ta5.6",
+  "title": "WOLFSSL_CRYPTO2DEV_HASH_REPLAY_COPY referenced in comment but never implemented",
+  "description": "What is unclear: The WC_ALGO_TYPE_COPY handler (port.c lines 1547-1588) contains the comment 'Option A (transcript replay buffer) is available via WOLFSSL_CRYPTO2DEV_HASH_REPLAY_COPY at a cost of O(transcript) memory per hash object.' No such #ifdef exists anywhere in the codebase. A contributor reading this comment will define WOLFSSL_CRYPTO2DEV_HASH_REPLAY_COPY and see no behavior change, then file a bug or waste hours tracing the missing code. Fix: either remove the reference or replace it with a clearly marked TODO comment explaining what the implementation would require.",
+  "status": "closed",
+  "priority": 4,
+  "issue_type": "chore",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:14:50Z",
+  "updated_at": "2026-04-21T16:32:26Z",
+  "closed_at": "2026-04-21T16:32:26Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:14:50Z"
+    }
+  ]
+}

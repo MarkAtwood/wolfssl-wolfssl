@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-trp",
+  "title": "SEC7: SHA-3 supported in port but absent from simulator",
+  "description": "crypto2dev_hash() handles WC_HASH_TYPE_SHA3_256/384/512 with algo strings 'sha3-256', 'sha3-384', 'sha3-512'. The simulator sim_ioctl_init() only recognizes sha256/384/512 and cbc(aes)/gcm(aes). For SHA-3 algo strings, hash_type remains SIM_HASH_NONE. sim_finalize_hash() hits default: return -1, causing FINALIZE to fail with EIO -> WC_HW_E. Tests do not cover SHA-3. Impact: any test with WOLFSSL_CRYPTO2DEV_SIM + WOLFSSL_SHA3 that exercises SHA-3 will fail with WC_HW_E rather than being skipped gracefully. Fix: add SIM_HASH_SHA3_256/384/512 cases to the simulator and add SHA-3 KAT tests using NIST FIPS 202 vectors.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:38:58Z",
+  "updated_at": "2026-04-20T20:54:10Z",
+  "closed_at": "2026-04-20T20:54:10Z"
+}

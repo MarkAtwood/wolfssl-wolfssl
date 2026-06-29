@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-as4.9",
+  "title": "GCM oversized AAD returns BUFFER_E (not silent skip) \u2014 defend this",
+  "description": "Why correct: if AAD exceeds CRYPTO2DEV_AAD_MAXLEN (256 bytes) and the port silently skipped the SET_AAD ioctl, the device would authenticate with empty AAD instead of the provided one \u2014 an authentication bypass. Any subsequent decrypt with the correct AAD would fail, but the ciphertext+tag pair would still be accepted by an attacker feeding it with empty AAD. Returning BUFFER_E makes the encrypt fail hard. The oversized-AAD rejection test (test_aesgcm_oversized_aad) covers this. What a contributor might change: 'silently truncating AAD is better than failing.' It is not \u2014 authentication with wrong AAD is worse than a hard error.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T17:24:26Z",
+  "updated_at": "2026-04-21T19:03:56Z",
+  "closed_at": "2026-04-21T19:03:56Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-as4",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T10:24:26Z"
+    }
+  ]
+}

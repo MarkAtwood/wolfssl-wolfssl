@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-c1r.13",
+  "title": "HMAC accumulation buffer: grow-by-doubling does not cap at WOLFSSL_CRYPTO2DEV_HMAC_MAX_BUF",
+  "description": "In crypto2dev_hmac() Update path: new_cap doubles from dataCap, but is then bounded below by 'need' if need > new_cap. The cap bound (WOLFSSL_CRYPTO2DEV_HMAC_MAX_BUF) is checked against 'need' before allocation, rejecting inputs that would exceed it. But: if dataCap is 32 KB and the doubling produces 64 KB, and WOLFSSL_CRYPTO2DEV_HMAC_MAX_BUF is 64 KB, then new_cap (64 KB) equals the limit but need might be < 64 KB \u2014 so XMALLOC(64 KB) is called even though the actual data is smaller. This means XMALLOC can allocate up to new_cap = 2 * WOLFSSL_CRYPTO2DEV_HMAC_MAX_BUF - 1 bytes in the worst case (when dataCap is HMAC_MAX_BUF/2 and a single update fills exactly to HMAC_MAX_BUF). Not a correctness bug because the check 'need > WOLFSSL_CRYPTO2DEV_HMAC_MAX_BUF' fires before allocation. But a maintainer who changes HMAC_MAX_BUF without understanding the doubling strategy may inadvertently allow 2x the intended allocation.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:27:58Z",
+  "updated_at": "2026-04-21T19:44:15Z",
+  "closed_at": "2026-04-21T19:44:15Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:27:57Z"
+    }
+  ]
+}

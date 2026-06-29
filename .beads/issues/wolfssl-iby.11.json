@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-iby.11",
+  "title": "AES SETKEY returns CRYPTOCB_UNAVAILABLE to force software key schedule",
+  "description": "What is correct and why: crypto2dev_aes_setkey_ctx() (port.c:530-565) returns CRYPTOCB_UNAVAILABLE after storing the key bytes in devCtx. This forces wolfSSL to also run the software AES key schedule, which sets aes->rounds. wc_AesGcmSetKey needs aes->rounds to precompute the GCM H-subkey; without it, the first wc_AesGcmEncrypt fails with KEYUSAGE_E with no obvious diagnostic. The port's cipher path (crypto2dev_cipher) checks devCtx first and uses hardware regardless. A future contributor who sees 'SETKEY returning CRYPTOCB_UNAVAILABLE seems wrong' and changes it to return 0 would break AES-GCM for all callers using the standard wc_AesSetKey + wc_AesGcmEncrypt pattern.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:41:53Z",
+  "updated_at": "2026-04-21T17:12:01Z",
+  "closed_at": "2026-04-21T17:12:01Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:41:52Z"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.15",
+  "title": "AES cipher path: XMALLOC per setkey then XMALLOC context copy into init_op \u2014 redundant copy chain",
+  "description": "The AES path allocates Crypto2DevAesCtx (32+4 bytes) on wc_AesSetKey via XMALLOC. On each encrypt/decrypt in crypto2dev_cipher(), it then copies those 32 bytes into init_op.key via XMEMCPY, then calls ioctl which copies init_op (240 bytes) to the kernel. So per-AES-GCM-encrypt the hot path does: one XMALLOC (at setkey, amortized), one 32-byte memcpy (key into init_op), one ioctl copying 240 bytes. The XMALLOC is fine (amortized). However: the Crypto2DevAesCtx struct could be eliminated entirely if the key bytes were stored directly in aes->devCtx as an opaque handle (e.g., the key fd if using KEY fd path, or just re-reading from aes->key directly). The current design adds an unnecessary indirection and heap allocation for every AES object. For TLS record processing with short-lived Aes structs, this is a malloc/free per connection for the key context.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:28:23Z",
+  "updated_at": "2026-04-21T21:34:07Z",
+  "closed_at": "2026-04-21T21:34:07Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:28:23Z"
+    }
+  ]
+}

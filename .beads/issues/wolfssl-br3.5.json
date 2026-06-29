@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-br3.5",
+  "title": "wc_crypto2dev_assign_devid and _ssl are 50 lines of nearly identical code",
+  "description": "wc_crypto2dev_assign_devid(WOLFSSL_CTX*) and wc_crypto2dev_assign_devid_ssl(WOLFSSL*) share the same logic: save prev_safe_mode, set g_tls_safe_mode=1, register device, call SetDevId, roll back on failure. The only difference is wolfSSL_CTX_SetDevId vs wolfSSL_SetDevId. The 50-line body is duplicated with a superfluous brace block around it ({int prev_safe_mode = ...}) that does not limit scope in any meaningful way. Suggested rewrite: extract a shared static helper 'crypto2dev_assign_devid_common(int (*set_fn)(void*, int), void* obj)' and call it from both public functions.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:29:06Z",
+  "updated_at": "2026-04-21T14:59:42Z",
+  "closed_at": "2026-04-21T14:59:42Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-br3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:29:05Z"
+    }
+  ]
+}

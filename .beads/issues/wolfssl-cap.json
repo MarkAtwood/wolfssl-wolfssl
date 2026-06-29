@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-cap",
+  "title": "R2 fixes: key zeroing and memory safety",
+  "description": "Fix three key-zeroing defects found in review round 2:\\n1. ECC public key stack buffer (raw[]) not zeroed after wc_ecc_export_x963 in WC_SETKEY_ECC_PUB path\\n2. XMEMSET used instead of ForceZero on init_op structs containing key material in crypto2dev_cipher() and crypto2dev_hmac()\\n3. HMAC accumulation buffer ctx->data freed without zeroing first in Update path\\nAll in crypto2dev_port.c.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:45:19Z",
+  "updated_at": "2026-04-20T23:55:19Z",
+  "closed_at": "2026-04-20T23:55:19Z"
+}

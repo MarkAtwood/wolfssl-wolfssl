@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.7",
+  "title": "crypto2dev_assign_devid_impl: g_devid_count decrement on rollback leaves stale table entry",
+  "description": "In crypto2dev_assign_devid_impl(), when set_fn fails and was_registered==false, the rollback code does: wc_CryptoCb_UnRegisterDevice(devId); g_devid_count--; XFREE(cfg,...); g_devid_table[g_devid_count].devId = 0; g_devid_table[g_devid_count].cfg = NULL. At the point of clearing the table entry, g_devid_count has already been decremented, so the cleared index is g_devid_count (the slot that was just written). This is correct IF the slot was the last one appended. The code appended to index 'idx = g_devid_count' then incremented g_devid_count. On rollback it decrements and then nulls [g_devid_count]. This is correct. However: the cfg pointer that was freed is then zeroed in the table at g_devid_table[g_devid_count].cfg = NULL \u2014 after XFREE(cfg,...). The table still held cfg during the XFREE, and cfg in the local variable still points to freed memory. The subsequent NULL store is safe only because it stores into the table, not through cfg. This is technically correct but fragile \u2014 the order matters. If the table clear is reordered before XFREE by an optimizing compiler (the store to freed memory is not a use-after-free because we're storing to the struct field not the allocation), this is still fine. No actual bug \u2014 but the code is unnecessarily fragile. Downgrading to P1 concern: the actual rollback sequencing is correct.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:26:11Z",
+  "updated_at": "2026-04-21T19:26:20Z",
+  "closed_at": "2026-04-21T19:26:20Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:26:11Z"
+    }
+  ]
+}

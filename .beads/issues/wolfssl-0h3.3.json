@@ -1,0 +1,34 @@
+{
+  "id": "wolfssl-0h3.3",
+  "title": "crypto2dev: AES-CTR and AES-XTS callbacks",
+  "description": "Extend the cipher callbacks to cover AES-CTR and AES-XTS, both of which crypto2dev supports. AES-CTR: map WC_CIPHER_AES_CTR \u2192 algo string 'ctr(aes)', no padding (stream cipher), IV is 16-byte counter block from aes->reg. AES-XTS: map WC_CIPHER_AES_XTS \u2192 algo string 'xts(aes)', requires 32-byte (AES-128-XTS) or 64-byte (AES-256-XTS) key (two AES keys concatenated), tweak value plays the role of IV. Follow same fd pool acquire/SET_IV/write/FINALIZE/read/release pattern as AES-CBC. AES-CTR one-shot and streaming both valid. AES-XTS is block-device sector-granular \u2014 no streaming, always one-shot per sector.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:36:21Z",
+  "updated_at": "2026-04-20T20:20:33Z",
+  "closed_at": "2026-04-20T20:20:33Z",
+  "notes": "AES-CTR is used in TLS 1.2 AES-CTR cipher suites and some disk encryption schemes. AES-XTS is the standard for disk encryption (dm-crypt, FileVault, BitLocker). Both are in crypto2dev because wolfcrypt.ko registers them. wolfSSL CryptoCb wrappers: wc_CryptoCb_AesCtr() and wc_CryptoCb_AesXts().",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:36:21Z"
+    },
+    {
+      "depends_on_id": "wolfssl-0h3.1",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:12Z"
+    },
+    {
+      "depends_on_id": "wolfssl-7cg",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:12Z"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-6qs",
+  "title": "SEC1: crypto2dev_cipher exceeds 150-line limit",
+  "description": "crypto2dev_cipher() spans lines 633-832 (approximately 200 lines), well over the project's 150-line guideline.\n\nThe function contains two separate switch statements over info->cipher.type:\n1. Lines 649-682: extract aes pointer, algo string, iv pointer\n2. Lines 755-783: extract in_buf, out_buf, data_sz\n\nThis duplication means adding a new cipher mode (e.g., AES-XTS or DES3) requires updating two separate switch blocks, with no compiler enforcement that both stay in sync.\n\nFix: extract a helper struct or inline helper that maps cipher type to (aes, algo, iv, ivSz, in, out, sz) in one place, then use it for both initialization and I/O. This eliminates the duplicated switch and reduces the function below 150 lines.\n\nAffected lines: crypto2dev_port.c:633-832.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:36:12Z",
+  "updated_at": "2026-04-20T20:54:16Z",
+  "closed_at": "2026-04-20T20:54:16Z"
+}

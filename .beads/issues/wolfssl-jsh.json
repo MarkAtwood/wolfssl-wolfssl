@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-jsh",
+  "title": "SEC3: no build guard requiring WOLF_CRYPTO_CB_FREE",
+  "description": "The port stores KEY fds (RSA, ECC) and streaming hash contexts in devCtx fields. Without WOLF_CRYPTO_CB_FREE compiled in, there is no mechanism to close those fds or free those heap allocations when wolfSSL destroys the key or hash object. The result is silent fd and memory leaks. The port should emit a #error or #warning at compile time if WOLFSSL_CRYPTO2DEV is defined but WOLF_CRYPTO_CB_FREE is not, since the combination is unsound.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:34:55Z",
+  "updated_at": "2026-04-20T20:54:09Z",
+  "closed_at": "2026-04-20T20:54:09Z"
+}

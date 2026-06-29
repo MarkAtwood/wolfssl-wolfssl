@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-xun.4",
+  "title": "open() macro in sim.h silently drops mode arg \u2014 footgun for future contributors",
+  "description": "crypto2dev_sim.h:#define open(path, flags, ...) discards the third argument (mode). Any future contributor who adds open(path, O_CREAT|O_WRONLY, 0600) to a file that includes sim.h will get undefined file permissions with no compiler warning. The comment warns about this but the warning is inside the file \u2014 a contributor adding a new include from another file will not see it. The macro is correct for the current callsites (all O_RDWR|O_CLOEXEC with no mode), but the file-scoped hazard grows as the codebase evolves.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:42:48Z",
+  "updated_at": "2026-04-21T22:18:43Z",
+  "closed_at": "2026-04-21T22:18:43Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-xun",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T14:42:47Z"
+    }
+  ]
+}

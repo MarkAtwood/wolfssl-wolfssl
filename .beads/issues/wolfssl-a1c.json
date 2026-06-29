@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-a1c",
+  "title": "SEC7: HMAC key buffer too small for SHA-384/512 keys > 64 bytes",
+  "description": "Crypto2DevHmacCtx has key[64] with the comment 'up to SHA-512 block size'. SHA-256 block size is 64 bytes; SHA-384 and SHA-512 block sizes are 128 bytes. The guard in crypto2dev_hmac_setkey_ctx() rejects keySz > 64 with BAD_FUNC_ARG. wc_HmacSetKey() passes the raw key bytes to the SETKEY callback before any key-hashing occurs. Applications using HMAC-SHA-384 or HMAC-SHA-512 with 65-127 byte keys receive BAD_FUNC_ARG. RFC 4868 recommends 48 and 64 byte keys (which fit), but valid longer keys are silently rejected. Fix: increase key buffer to 128 bytes, increase the guard to keySz > 128, and correct the comment to 'up to SHA-384/512 block size (128 bytes)'.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:38:49Z",
+  "updated_at": "2026-04-20T20:54:04Z",
+  "closed_at": "2026-04-20T20:54:04Z"
+}

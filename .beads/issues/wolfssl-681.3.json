@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-681.3",
+  "title": "Dead code: late GCM encrypt authTagSz>CRYPTO2DEV_TAG_MAXLEN check unreachable",
+  "description": "crypto2dev_cipher() has two checks for authTagSz > CRYPTO2DEV_TAG_MAXLEN on the GCM encrypt path:\n\n1. Early check (before pool acquire, ~line 707): if (chk_tagSz > CRYPTO2DEV_TAG_MAXLEN) return BUFFER_E;\n2. Late check (after write/FINALIZE/read, ~line 889): if (authTagSz > CRYPTO2DEV_TAG_MAXLEN) { ret = BUFFER_E; goto done; }\n\nFor the encrypt path chk_tagSz == info->cipher.aesgcm_enc.authTagSz == authTagSz. Any value > 16 is caught by the early check and never reaches line 889. The late check is dead code.\n\nThe late check was the original fix for wolfssl-yjw.3 (oversized tag causing unauthenticated ciphertext to appear in out_buf before BUFFER_E). The early check was then added to catch the same condition before pool acquisition. The late check's comment ('Silently skipping GET_TAG would return 0 with a stale authTag buffer') describes a danger that no longer exists. The late check and its comment should be removed per the no-dead-code rule. No security impact \u2014 the early check fully covers this condition.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T02:07:56Z",
+  "updated_at": "2026-04-22T02:36:49Z",
+  "closed_at": "2026-04-22T02:36:49Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-681",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T19:07:55Z"
+    }
+  ]
+}

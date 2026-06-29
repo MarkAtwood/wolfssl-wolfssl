@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-yjw.1",
+  "title": "GCM decrypt: authTagSz < 12 accepted, FIPS minimum not enforced",
+  "description": "Trigger: wc_AesGcmDecrypt with authTagSz=4 (or any 1-11). Path: crypto2dev_cipher \u2192 authTagSz > 0 && authTagSz <= CRYPTO2DEV_TAG_MAXLEN (16) \u2192 passes SET_TAG ioctl to kernel with a 4-byte tag. Bad outcome: if the kernel backend (kcapi or non-FIPS wolfssl) accepts a 4-byte auth tag, authentication strength is 2^32; FIPS 140-3 mandates minimum 96-bit (12-byte) GCM tags. The shim's decrypt-path guard (line 737) rejects NULL/zero/oversized tags but has no floor at 12 bytes. The encrypt GET_TAG path has the same gap. Fix: add authTagSz < GCM_NONCE_MID_SZ (12) \u2192 CRYPTOCB_UNAVAILABLE for both encrypt GET_TAG and decrypt SET_TAG.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T23:12:09Z",
+  "updated_at": "2026-04-21T23:27:23Z",
+  "closed_at": "2026-04-21T23:27:23Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-yjw",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T16:12:09Z"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-as4.3",
+  "title": "wc_crypto2dev_cleanup while streaming hash in flight leaks HashCtx",
+  "description": "Scenario that triggers: caller initializes a wc_Sha256 with WOLF_CRYPTO2DEV_DEVID, calls wc_Sha256Update (allocates Crypto2DevHashCtx, stores in sha->devCtx), then calls wc_crypto2dev_cleanup() before calling wc_Sha256Final(). Cleanup unregisters the callback and closes pool slots (closing the in-flight op_fd). Later, wc_Sha256Free(&sha) is called but the callback is no longer registered, so crypto2dev_free_hash() is never invoked, and the Crypto2DevHashCtx heap allocation at sha->devCtx is leaked. The maintenance consequence: every user who structures their code as 'cleanup in a destructor or signal handler' while streaming will hit a leak. The header says cleanup must be called after all ops complete, but this constraint is not enforced. Filed as burden rather than a test/doc gap because the failure mode is silent and the ordering requirement is easy to violate.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T17:23:33Z",
+  "updated_at": "2026-04-21T19:00:47Z",
+  "closed_at": "2026-04-21T19:00:47Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-as4",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T10:23:32Z"
+    }
+  ]
+}

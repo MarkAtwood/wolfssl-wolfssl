@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bvs.18",
+  "title": "SEC0: stale wrong value in TC2 block comment",
+  "description": "crypto2dev_test.c lines 228-229: the block comment for test_hmac_sha256_multichunk (RFC 4231 TC2) shows the old incorrect second-half value '5a003cbcbcd4af44e4e54caa0b7cc3d2'. The correct value (verified against Python hmac.new(b'Jefe', b'what do ya want for nothing?', sha256)) is '5a003f089d2739839dec58b964ec3843', which is what the actual hex literal in the test uses. The comment was not updated when the test vector was corrected. A reader auditing the test against the comment will conclude the comment is the source of truth and flag the test data as wrong, or conversely trust the comment and not catch a regression that reverts the literal. Fix: update line 229 to match the actual test literal.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:23:11Z",
+  "updated_at": "2026-04-20T23:36:19Z",
+  "closed_at": "2026-04-20T23:36:19Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bvs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:23:10Z"
+    }
+  ]
+}

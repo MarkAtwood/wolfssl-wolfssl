@@ -1,0 +1,34 @@
+{
+  "id": "wolfssl-ams",
+  "title": "crypto2dev: RSA sign/verify/keygen callbacks",
+  "description": "Implement CryptoCb handlers for RSA operations using KEY fds. Sign: retrieve KEY fd from key->devCtx, call DO_SIGN ioctl with pre-hashed digest (wolfSSL passes digest, not raw message), read DER signature. Verify: retrieve KEY fd from key->devCtx, call DO_VERIFY ioctl, check for -EBADMSG (invalid sig). Keygen: open fd, KEY_GENERATE('rsa-2048' or 'rsa-4096'), read public key, populate RsaKey. Key import: on WOLF_CRYPTO_CB_SETKEY for RSA, open fd, write PKCS#8 key, KEY_IMPORT. Key free: close fd, zero devCtx.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:18:18Z",
+  "updated_at": "2026-04-20T20:20:33Z",
+  "closed_at": "2026-04-20T20:20:33Z",
+  "notes": "RSA private key is PKCS#8 DER format for KEY_IMPORT. DO_SIGN takes pre-hashed digest \u2014 wolfSSL already hashes before calling CryptoCb (confirmed). With WOLF_CRYPTO_CB_RSA_PAD enabled, RsaPadding struct provides hash algo, pad type (PKCS1v15 vs PSS), MGF, salt length \u2014 pass hash_algo string to DO_SIGN. RSA-2048 and RSA-4096 only (what crypto2dev supports).",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:19:07Z"
+    },
+    {
+      "depends_on_id": "wolfssl-0h3.1",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:10Z"
+    },
+    {
+      "depends_on_id": "wolfssl-2mk",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:19:17Z"
+    }
+  ]
+}

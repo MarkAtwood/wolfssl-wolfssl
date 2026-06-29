@@ -1,0 +1,28 @@
+{
+  "id": "wolfssl-0h3.1",
+  "title": "crypto2dev: errno-to-wolfSSL error mapping",
+  "description": "Implement a shared crypto2dev_map_errno() function that translates Linux errno values returned by /dev/crypto2dev ioctls and read/write calls into wolfSSL error codes. Every algo handler calls this rather than translating inline. Mappings: -EACCES \u2192 CRYPTOCB_UNAVAILABLE (FIPS gate not operational; soft failure, allow software fallback); -EBADMSG \u2192 AES_GCM_AUTH_E (GCM auth failure) or SIG_VERIFY_E (signature failure, per context); -EIO \u2192 WC_HW_E (session error state; hard failure, no fallback); -EINVAL \u2192 BAD_FUNC_ARG; -ENOMEM \u2192 MEMORY_E; -ENOENT \u2192 CRYPTOCB_UNAVAILABLE (algo not registered; allow fallback); -EOPNOTSUPP \u2192 CRYPTOCB_UNAVAILABLE (provider doesn't support op; allow fallback); -EMSGSIZE \u2192 BUFFER_E; -EBADF \u2192 WC_HW_E (logic error; hard failure). Implement in crypto2dev_port.c, declare in crypto2dev_port.h. Add static assert that WC_HW_E \\!= CRYPTOCB_UNAVAILABLE.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:36:11Z",
+  "updated_at": "2026-04-20T20:03:59Z",
+  "closed_at": "2026-04-20T20:03:59Z",
+  "notes": "Critical distinction: EACCES and ENOENT mean 'not available here, try software' (CRYPTOCB_UNAVAILABLE). EIO means 'we started this operation on hardware and it is now broken' (WC_HW_E, hard fail). EBADMSG is auth failure \u2014 caller determines whether that maps to AES_GCM_AUTH_E or SIG_VERIFY_E based on context.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:36:11Z"
+    },
+    {
+      "depends_on_id": "wolfssl-d2j",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:09Z"
+    }
+  ]
+}

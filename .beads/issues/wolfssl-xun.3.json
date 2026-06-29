@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-xun.3",
+  "title": "HMAC max-buf overrun: WC_HW_E with no diagnostic",
+  "description": "crypto2dev_hmac():L1052-1053 returns WC_HW_E with no WOLFSSL_MSG when accumulated HMAC input exceeds WOLFSSL_CRYPTO2DEV_HMAC_MAX_BUF. The caller sees WC_HW_E from wc_HmacUpdate with no indication of cause. This will generate recurring support questions ('HMAC returns hardware error for large inputs'). The explanation of why CRYPTOCB_UNAVAILABLE is unsafe is in the header and .c but not in the error path. A WOLFSSL_MSG('crypto2dev: HMAC input exceeds WOLFSSL_CRYPTO2DEV_HMAC_MAX_BUF \u2014 hard failure, cannot fall back') would make the failure self-diagnosing.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:42:47Z",
+  "updated_at": "2026-04-21T22:19:14Z",
+  "closed_at": "2026-04-21T22:19:14Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-xun",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T14:42:47Z"
+    }
+  ]
+}

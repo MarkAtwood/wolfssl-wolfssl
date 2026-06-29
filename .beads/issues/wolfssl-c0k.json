@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-c0k",
+  "title": "SEC1: pool_release API contract is fragile",
+  "description": "crypto2dev_pool_release(pool, slot_fd) requires the caller to pass the fd integer AFTER it has already been closed (close(op_fd) is called immediately before crypto2dev_pool_release in every call site). The function then searches for that closed fd integer in the pool to find the slot to replenish.\n\nThis protocol is fragile and undocumented:\n1. The comment on pool_release says 'after the caller has closed its fd' but does not explain WHY close must precede release or what happens if the order is reversed.\n2. The slot lookup key (fd integer) is stale at the point of the search -- the OS can reuse that integer between close() and the pool's open() in pool_release. On a heavily-loaded system another thread could acquire the same fd number, causing pool_release to find the wrong slot.\n\nThe safer design is for pool_release to accept a slot index rather than an fd value, or to do the close() inside pool_release itself. Either eliminates the race and makes the contract explicit.\n\nAffected: crypto2dev_port.c:414-430, and call sites at 828, 903, 911, 942, 952, 1064.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:36:59Z",
+  "updated_at": "2026-04-20T20:54:17Z",
+  "closed_at": "2026-04-20T20:54:17Z"
+}

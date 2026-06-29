@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-ta5.3",
+  "title": "WOLFSSL_CRYPTO2DEV_REQUIRE_FIPS provides startup probe, not per-operation enforcement",
+  "description": "Scenario: Operator enables WOLFSSL_CRYPTO2DEV_REQUIRE_FIPS expecting that every crypto operation is routed to a FIPS-validated provider. Bad behavior: the REQUIRE_FIPS ioctl is issued on a single probe fd that is immediately closed. Pool fds and g_crypto2dev_fd (ECDSA) are opened without REQUIRE_FIPS. The kernel's per-fd flag provides no enforcement on those fds. Maintenance consequence: operators building FIPS-compliant deployments will believe the flag provides per-operation enforcement; audit findings or CVEs will result when it doesn't. The in-code comment documents this correctly but the option name (REQUIRE_FIPS) implies stronger semantics than the implementation delivers.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:14:31Z",
+  "updated_at": "2026-04-21T16:33:13Z",
+  "closed_at": "2026-04-21T16:33:13Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:14:30Z"
+    }
+  ]
+}

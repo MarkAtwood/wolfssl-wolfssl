@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-681.5",
+  "title": "Add fault injection tests for pool exhaustion and INIT failure error paths",
+  "description": "ASAN confirmed zero errors on normal paths. The remaining unexercised paths are:\n1. Pool exhaustion during HMAC Final (pool acquired at Final time, not SetKey/Update time).\n2. Pool exhaustion during ECDSA sign/verify.\n3. INIT ioctl failure during HMAC Final (after Update calls have already claimed data).\n\nAdd crypto2dev_sim_set_ioctl_fail(n) to the simulator, and three tests that exercise these paths under ASAN to confirm: WC_HW_E is returned, devCtx is freed and NULLed, key material is zeroed, and no leaks.\n\nAlso fix wolfssl-681.1 through wolfssl-681.4 as part of this work (the tests depend on the log message fixes and ECC COPY guard).",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T02:24:01Z",
+  "updated_at": "2026-04-22T02:36:51Z",
+  "closed_at": "2026-04-22T02:36:51Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-681",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T19:24:01Z"
+    }
+  ]
+}

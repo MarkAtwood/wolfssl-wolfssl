@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-ta5.12",
+  "title": "Shared wire header ensures ioctl codes match between port and simulator",
+  "description": "Both crypto2dev_port.c and crypto2dev_sim.c include crypto2dev_wire.h which defines wire structs and derives ioctl codes via _IOW/_IOR macros that encode sizeof(struct) into the request code. This means any field added/removed/resized in a wire struct will automatically change the ioctl code on both sides, making ABI breaks an immediate build failure rather than a runtime mismatch. A contributor might suggest moving the ioctl definitions inline into each file. Resist: the shared header is the only mechanism that guarantees the sim and the real driver use identical codes. Splitting them would allow one side to drift silently.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:15:28Z",
+  "updated_at": "2026-04-21T16:33:33Z",
+  "closed_at": "2026-04-21T16:33:33Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:15:27Z"
+    }
+  ]
+}

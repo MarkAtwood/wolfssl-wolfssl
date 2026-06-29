@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.19",
+  "title": "crypto2dev_cipher: IV guard 'iv \\!= NULL && ivSz > 0 && ivSz <= CRYPTO2DEV_IV_MAXLEN' silently skips oversized IV",
+  "description": "In crypto2dev_cipher() at port.c:685, the SET_IV call is guarded by 'iv \\!= NULL && ivSz > 0 && ivSz <= CRYPTO2DEV_IV_MAXLEN'. If ivSz > CRYPTO2DEV_IV_MAXLEN (32 bytes), SET_IV is silently skipped and INIT proceeds without an IV. For CBC (AES_BLOCK_SIZE=16) and CTR (16) this is impossible in practice since their IVs are always AES_BLOCK_SIZE=16. For GCM with non-standard IV sizes (> 32 bytes) this would silently proceed with no IV, and the device's behavior is undefined. Better: check 'ivSz > CRYPTO2DEV_IV_MAXLEN' explicitly and return BUFFER_E, mirroring the AAD check. Suggested rewrite: separate the null/zero guard from the size guard, returning BAD_FUNC_ARG on null/zero and BUFFER_E on oversized.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:29:03Z",
+  "updated_at": "2026-04-21T19:45:44Z",
+  "closed_at": "2026-04-21T19:45:44Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:29:03Z"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-ta5",
+  "title": "Review: crypto2dev CryptoCb port for TLS integration",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:07:54Z",
+  "updated_at": "2026-04-21T16:33:37Z",
+  "closed_at": "2026-04-21T16:33:37Z",
+  "notes": "Maintainer risk: MEDIUM \u2014 One genuine correctness bug (HMAC Final fallback after claimed Updates). The public API surface is small and well-documented for its major footguns (g_tls_safe_mode, single-threaded init). The ECDSA serialization and FIPS enforcement gap are operational risks that will generate bug reports from production deployments.\nConfidence: 85% chance no missed P0 bugs. Uncertainty driven by: (1) real hardware behavior when CRYPTO2DEV_IOC_INIT returns EOPNOTSUPP mid-use \u2014 only the sim was analyzed; (2) wolfSSL CryptoCb dispatch for HMAC was verified by reading hmac.c lines 923-930, 1051-1055 \u2014 the bug is confirmed. Would raise confidence if: integration test suite runs on real /dev/crypto2dev hardware; a test case is added that calls wc_HmacFinal on a device that rejects hmac(sha256) INIT and verifies the returned error code is not CRYPTOCB_UNAVAILABLE."
+}

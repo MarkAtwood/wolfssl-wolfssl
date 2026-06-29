@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-iby.4",
+  "title": "ECDSA sign/verify serialized through single global mutex",
+  "description": "Scenario: TLS server with N concurrent handshakes all requiring ECDSA operations. All DO_SIGN and DO_VERIFY ioctls serialize through g_ecdsa_fd_lock on g_crypto2dev_fd. N=8 concurrent ECDSA ops queue sequentially behind this lock. The comment at port.c:205-211 documents this and describes the fix (pool ECDSA fds once DO_SIGN on non-global fds is validated). Maintenance consequence: users running production TLS servers will file throughput bugs blaming wolfSSL or the kernel driver; the bottleneck is actually the single-fd serialization in this port. Needs to become a tracked issue rather than just a comment.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:40:53Z",
+  "updated_at": "2026-04-21T17:04:51Z",
+  "closed_at": "2026-04-21T17:04:51Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:40:52Z"
+    }
+  ]
+}

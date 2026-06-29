@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-0j6",
+  "title": "SEC7: no AES-GCM KAT test; zero-length plaintext returns BAD_FUNC_ARG",
+  "description": "Two related gaps: (1) AES-GCM is the primary TLS 1.3 cipher but has no Known-Answer Test in crypto2dev_test.c. A NIST CAVP AES-GCM vector should be added covering encrypt (producing tag) and decrypt (verifying tag). (2) crypto2dev_cipher() returns BAD_FUNC_ARG when data_sz == 0 (line 785: 'if ... data_sz == 0'). AES-GCM with empty plaintext is valid (encrypt/decrypt AAD only, producing a tag). wolfSSL calls this pattern for TLS record layer in some configurations. The guard should only check for NULL buffers, not zero length, for GCM mode (CBC and CTR legitimately require nonzero plaintext).",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:39:08Z",
+  "updated_at": "2026-04-20T20:54:10Z",
+  "closed_at": "2026-04-20T20:54:10Z"
+}

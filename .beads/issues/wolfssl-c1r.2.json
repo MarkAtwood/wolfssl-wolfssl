@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-c1r.2",
+  "title": "pool_acquire: leaked slot reservation when recovery open fails under lock contention",
+  "description": "In crypto2dev_pool_acquire(), when the fast path finds no ready fd and falls into the recovery_slot path: the slot is marked in_use=1 outside the lock, then open() is called without the lock. If open() fails, in_use is reset to 0 (correct). However: a concurrent thread that also entered crypto2dev_pool_acquire() and found all slots in_use (including the recovery slot which was in_use=1 at that moment) will have returned fd=-1 and reported WC_HW_E \u2014 a spurious error. The recovery slot's 'in_use=1 while open is in flight' window is a transient false exhaustion. This is low probability but real: under load with exactly 'capacity' threads acquiring simultaneously, all threads but one see a full pool for the duration of the open() syscall.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:25:19Z",
+  "updated_at": "2026-04-21T19:43:56Z",
+  "closed_at": "2026-04-21T19:43:56Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:25:19Z"
+    }
+  ]
+}

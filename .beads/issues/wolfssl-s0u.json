@@ -1,0 +1,14 @@
+{
+  "id": "wolfssl-s0u",
+  "title": "crypto2dev: distro and CI validation",
+  "description": "Validate that the crypto2dev shim builds cleanly and all tests pass across the Linux distro matrix supported by tests/ci/test-on-aws.sh. Covers: Ubuntu 22.04 LTS (kernel 5.15), Ubuntu 24.04 LTS (kernel 6.8), Debian 12 (Bookworm), Rocky Linux 9, Fedora latest, Amazon Linux 2023, ARM64/Graviton. Also validates FIPS mode (Rocky 9 with fips-mode-setup, Ubuntu with Ubuntu Pro). Tracks first successful run on each distro and any distro-specific fixes required.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:37:06Z",
+  "updated_at": "2026-04-22T02:42:15Z",
+  "closed_at": "2026-04-22T02:42:15Z",
+  "notes": "Script: tests/ci/test-on-aws.sh with TEST_CRYPTO2DEV=1 TEST_LINUXKM=1. Each distro test is a separate issue under this epic. The epic is complete when all distros show a clean run. Depends on wolfssl-0h3 (implementation) and wolfssl-c62 (tests)."
+}

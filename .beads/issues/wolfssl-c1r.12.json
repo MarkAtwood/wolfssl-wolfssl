@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-c1r.12",
+  "title": "sim.h macro redefinition of open/close/write/read is ABI-unsafe for code in included headers",
+  "description": "crypto2dev_sim.h redefines 'open', 'close', 'write', 'read', and 'ioctl' as macros. The header comment says 'must be included AFTER all system headers'. This works only if: (a) no other header after this point in the translation unit uses these names as function identifiers, and (b) the macros are not active in any other TU that happens to include sim.h. If a contributor adds a wolfSSL include after the sim.h include in a .c file that uses any of these names for something other than a direct open()/close() syscall (e.g., a struct field named 'write', or a function taking a 'write' argument), the macro silently transforms it. The 'open' macro is particularly dangerous: 'open(path, flags, ...)' strips the variadic args. Any code that calls open() with O_CREAT (which requires a mode argument) after including sim.h will silently drop the mode argument \u2014 UB or wrong permissions. The macros should be function-like wrappers with explicit names, not ABI-unsafe macro replacements.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:27:46Z",
+  "updated_at": "2026-04-21T19:44:12Z",
+  "closed_at": "2026-04-21T19:44:12Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:27:46Z"
+    }
+  ]
+}

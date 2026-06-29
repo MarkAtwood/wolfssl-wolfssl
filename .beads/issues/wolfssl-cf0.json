@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-cf0",
+  "title": "SEC1: dead code in crypto2dev_hash",
+  "description": "In crypto2dev_hash(), the check 'if (devctx_ptr == NULL) return BAD_FUNC_ARG;' at line 886 is unreachable dead code.\n\nEvery case in the preceding switch either sets devctx_ptr to a non-NULL address (e.g., &info->hash.sha256->devCtx) or hits 'default: return CRYPTOCB_UNAVAILABLE'. There is no code path that leaves devctx_ptr as NULL and falls through to line 886.\n\nThis dead check suggests the function was either copied from a template where the check was meaningful, or a future case was anticipated but never materialized. Either way, it adds false noise: a reader may wonder what scenario it guards against.\n\nFix: remove the dead NULL check. If a future case genuinely needs it, it should be added back with a comment explaining the scenario.\n\nAffected line: crypto2dev_port.c:886-887.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:36:22Z",
+  "updated_at": "2026-04-20T20:54:16Z",
+  "closed_at": "2026-04-20T20:54:16Z"
+}

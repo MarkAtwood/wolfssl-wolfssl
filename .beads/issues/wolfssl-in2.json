@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-in2",
+  "title": "SEC1: magic numbers 32/64 in context structs",
+  "description": "Crypto2DevAesCtx.key is declared as byte key[32] with a comment explaining the sizes. Crypto2DevHmacCtx.key is declared as byte key[64].\n\nThese bare integer literals should be replaced with named wolfSSL constants:\n- key[32] -> key[AES_256_KEY_SIZE]         (defined in wolfssl/wolfcrypt/aes.h)\n- key[64] -> key[WC_HMAC_BLOCK_SIZE]       (defined in wolfssl/wolfcrypt/hmac.h; note: = 128 after fixing wolfssl-eyl)\n- keySz > 32 guard -> keySz > AES_256_KEY_SIZE\n- keySz > 64 guard -> keySz > WC_HMAC_BLOCK_SIZE\n\nUsing named constants ensures the buffer size and the validation guard stay in sync if the constant ever changes, and makes the code self-documenting.\n\nThis issue tracks the naming change only. The correctness fix (key[64] is too small) is tracked separately in wolfssl-eyl.\n\nAffected lines: crypto2dev_port.c:250, 255, 612, 969.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:37:10Z",
+  "updated_at": "2026-04-20T20:54:17Z",
+  "closed_at": "2026-04-20T20:54:17Z"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-kpf",
+  "title": "SEC0: open() called while holding pool mutex in pool_release",
+  "description": "crypto2dev_port.c lines 421-429: crypto2dev_pool_release holds pool->lock across the open(CRYPTO2DEV_PATH, ...) syscall (line 424). open() is a blocking syscall that can stall if /dev/crypto2dev is under load or the kernel driver is slow. Holding the mutex during open() blocks all concurrent crypto2dev_pool_acquire calls for the duration of the open, serializing all operations behind a single blocked thread. Fix: perform the open() outside the mutex; acquire the mutex only to store the new fd and clear in_use. If the open fails outside the mutex, re-acquire and leave fd=-1 with appropriate logging (consistent with the fix for wolfssl-mp4).",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:35:42Z",
+  "updated_at": "2026-04-20T20:54:08Z",
+  "closed_at": "2026-04-20T20:54:08Z"
+}

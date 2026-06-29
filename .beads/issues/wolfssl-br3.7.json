@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-br3.7",
+  "title": "SimFdSlot.in_buf/out_buf[65536] hardcoded without named constant or comment",
+  "description": "crypto2dev_sim.c SimFdSlot has 'byte in_buf[65536]; byte out_buf[65536];' \u2014 hardcoded 64KB. There is no named constant (e.g. CRYPTO2DEV_SIM_MAX_DATA) and no comment explaining the limit. A contributor who adds a large-input test will silently get EMSGSIZE from sim_write() without knowing why. The struct is 128KB+ per slot, 2MB total for 16 slots \u2014 worth calling out as a known limitation of the test simulator. Suggested fix: define SIM_MAX_DATA 65536 and add a comment noting the limit is a simulator constraint, not a wire-protocol constraint.",
+  "status": "closed",
+  "priority": 4,
+  "issue_type": "chore",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:29:23Z",
+  "updated_at": "2026-04-21T15:03:15Z",
+  "closed_at": "2026-04-21T15:03:15Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-br3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:29:22Z"
+    }
+  ]
+}

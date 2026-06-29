@@ -1,0 +1,26 @@
+{
+  "id": "wolfssl-kyk",
+  "title": "Write Makefile for caliptra_test with hw-model backend",
+  "description": "Create wolfcrypt/src/port/caliptra/sim/Makefile to build caliptra_test linked against the hw-model backend instead of caliptra_sim.c. Must link: libcaliptra_hw_model_c_binding.a (~/caliptra/target/debug/), libcaliptra.a (built from ~/caliptra/libcaliptra/), and the Rust system libs needed by the static library (pthread, dl, m). Include paths: ~/caliptra/hw-model/c-binding/out/ (for caliptra_model.h), ~/caliptra/libcaliptra/inc/ (for caliptra_api.h, caliptra_if.h, caliptra_types.h). Also needs wolfssl headers and caliptra_port.h.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-05T04:44:40Z",
+  "updated_at": "2026-04-05T05:51:53Z",
+  "closed_at": "2026-04-05T05:51:53Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c07",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-04T21:44:48Z"
+    },
+    {
+      "depends_on_id": "wolfssl-gob",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-04T21:44:49Z"
+    }
+  ]
+}

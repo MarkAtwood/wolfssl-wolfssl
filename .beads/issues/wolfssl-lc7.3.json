@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-lc7.3",
+  "title": "FIPS probe uses throw-away fd: REQUIRE_FIPS side-effects not applied to g_crypto2dev_fd",
+  "description": "wc_crypto2dev_init (port.c:1386) opens a separate fips_probe_fd, issues CRYPTO2DEV_IOC_REQUIRE_FIPS on it, then closes it. If REQUIRE_FIPS is a query-only ioctl (check if FIPS is available) the extra fd is just wasteful. But if REQUIRE_FIPS configures the fd for FIPS-only operation (as its name suggests), the side-effect applies to the throw-away fd, not to g_crypto2dev_fd. g_crypto2dev_fd would then be used for all ECDSA operations without FIPS enforcement \u2014 defeating the purpose of WOLFSSL_CRYPTO2DEV_REQUIRE_FIPS. No comment explains why a separate fd is used instead of g_crypto2dev_fd directly. Kernel driver semantics are not documented in-tree.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:43:45Z",
+  "updated_at": "2026-04-21T14:52:35Z",
+  "closed_at": "2026-04-21T14:52:35Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-lc7",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:43:45Z"
+    }
+  ]
+}

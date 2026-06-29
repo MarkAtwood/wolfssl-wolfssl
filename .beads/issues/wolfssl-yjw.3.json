@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-yjw.3",
+  "title": "GCM encrypt: authTagSz > CRYPTO2DEV_TAG_MAXLEN silently skips GET_TAG",
+  "description": "Trigger: caller reaches crypto2dev_cipher for GCM encrypt with info->cipher.aesgcm_enc.authTagSz > 16 (e.g., via direct CryptoCb call bypassing wc_AesGcmEncrypt). Path: GET_TAG block condition is 'authTag \\!= NULL && authTagSz > 0 && authTagSz <= CRYPTO2DEV_TAG_MAXLEN' \u2014 authTagSz > 16 fails the last check, entire GET_TAG is skipped. Return value: 0 (success). Bad outcome: authTag buffer holds stale data from before the call; caller propagates wrong auth tag without any error signal. Inconsistency: decrypt path returns BUFFER_E for authTagSz > TAG_MAXLEN; encrypt path silently succeeds. Fix: change encrypt condition to return BUFFER_E (matching decrypt) when authTagSz > CRYPTO2DEV_TAG_MAXLEN.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T23:12:35Z",
+  "updated_at": "2026-04-21T23:31:35Z",
+  "closed_at": "2026-04-21T23:31:35Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-yjw",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T16:12:34Z"
+    }
+  ]
+}

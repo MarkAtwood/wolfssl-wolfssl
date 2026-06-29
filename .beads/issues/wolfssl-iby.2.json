@@ -1,0 +1,22 @@
+{
+  "id": "wolfssl-iby.2",
+  "title": "Test double-registers device; double-unregisters on cleanup",
+  "description": "Trigger: wc_crypto2dev_test() calls wc_CryptoCb_RegisterDevice(WOLF_CRYPTO2DEV_DEVID, ...) directly, then test_tls13_integration() calls wc_crypto2dev_assign_devid(ctx), which calls RegisterDevice again on the same DEVID and sets g_devid_registered=1. At done:, the test calls wc_CryptoCb_UnRegisterDevice once, then wc_crypto2dev_cleanup() calls it again because g_devid_registered=1. Bad behavior: (1) if wolfSSL rejects double-registration with an error, test_tls13_integration fails spuriously. (2) double-unregister at test end \u2014 benign if wolfSSL is idempotent but represents broken state tracking. The test should either not call RegisterDevice directly (let assign_devid do it) or reset g_devid_registered=0 after the manual registration so cleanup does not double-unregister.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:40:39Z",
+  "updated_at": "2026-04-21T17:14:54Z",
+  "closed_at": "2026-04-21T17:14:54Z",
+  "notes": "RegisterDevice silently overwrites on duplicate devId (confirmed in cryptocb.c:444-453). UnRegisterDevice on an already-removed devId is a silent no-op (returns void, GetDevice returns NULL). So: the double-registration causes no error and no behavioral difference (same callback). The double-unregister at done: is also harmless \u2014 second call is a no-op. Not a real failure mode, just messy state tracking in the test. Downgraded from P0.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:40:39Z"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-yjw.5",
+  "title": "COPY callback: cipher devCtx not guarded \u2014 aliased Aes.devCtx causes double-free",
+  "description": "Trigger: wc_AesCopy(&dst, &src) where src.devId == WOLF_CRYPTO2DEV_DEVID and src.devCtx != NULL (i.e., SETKEY has run). Path: WC_ALGO_TYPE_COPY callback with copy.algo == WC_ALGO_TYPE_CIPHER returns CRYPTOCB_UNAVAILABLE without checking src devCtx; wolfSSL falls through to XMEMCPY of the Aes struct; dst.devCtx = src.devCtx (same heap pointer). wc_AesFree(src) \u2192 crypto2dev_free_cipher \u2192 ForceZero+XFREE(src.devCtx); dst.devCtx now dangling. wc_AesFree(dst) \u2192 crypto2dev_free_cipher \u2192 ForceZero(dangling ptr) + XFREE(dangling ptr): use-after-free + double-free. The hash COPY path (WC_ALGO_TYPE_HASH) already correctly returns WC_HW_E when src_devctx != NULL; the cipher path needs the same guard. Fix: in WC_ALGO_TYPE_COPY handler, add a devCtx check for WC_ALGO_TYPE_CIPHER analogous to the existing WC_ALGO_TYPE_HASH check.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T23:12:45Z",
+  "updated_at": "2026-04-21T23:31:34Z",
+  "closed_at": "2026-04-21T23:31:34Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-yjw",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T16:12:45Z"
+    }
+  ]
+}

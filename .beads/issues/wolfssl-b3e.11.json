@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-b3e.11",
+  "title": "Decision: wc_static_assert2 on WC_HW_E \\!= CRYPTOCB_UNAVAILABLE is correct and must stay",
+  "description": "The static assert at crypto2dev_port.c:275 guards a subtle semantic invariant: if WC_HW_E == CRYPTOCB_UNAVAILABLE (which is -1 on some builds), hardware errors would silently fall through to software, defeating the purpose of the hardware error path. A future contributor might remove the assert as 'redundant' since they are unlikely to have the same value in practice. They are correct that they are unlikely \u2014 but the consequence when they are wrong (silent auth bypass on HMAC streaming) is severe. The assert documents the invariant correctly and must stay.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T13:55:20Z",
+  "updated_at": "2026-04-21T14:14:41Z",
+  "closed_at": "2026-04-21T14:14:41Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-b3e",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T06:55:20Z"
+    }
+  ]
+}

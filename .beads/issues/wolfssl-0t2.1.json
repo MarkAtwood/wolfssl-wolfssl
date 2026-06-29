@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-0t2.1",
+  "title": "AES-GCM decrypt: oversized authTagSz silently skips SET_TAG ioctl",
+  "description": "~~CORRECTED from P0~~ The original concern was authentication bypass if SET_TAG ioctl is skipped. Both premises were wrong after checking the source of truth. (1) CRYPTO2DEV_TAG_MAXLEN = 16 (uapi/crypto2dev_ioctl.h:88). Standard AES-GCM tags are at most 16 bytes \u2014 authTagSz > CRYPTO2DEV_TAG_MAXLEN is unreachable from any standard call path. (2) The kernel driver (wolfssl_aes_gcm_finalize, line 484): if SET_TAG was never called, ctx->taglen == 0, and FINALIZE returns -EINVAL. The device fails closed \u2014 no silent authentication bypass. Remaining issue: the code is still inconsistent \u2014 AAD oversize returns BUFFER_E, tag oversize silently skips. This should return BUFFER_E for symmetry and defensive hygiene, but it is not a security hole. Reduce to P2 defensive hardening.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:10:38Z",
+  "updated_at": "2026-04-21T19:19:49Z",
+  "closed_at": "2026-04-21T19:19:49Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0t2",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:10:38Z"
+    }
+  ]
+}

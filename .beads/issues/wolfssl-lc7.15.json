@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-lc7.15",
+  "title": "TLS-safe-mode limitation note at port.c:1513 is unusually good",
+  "description": "The NOTE block at port.c:1513-1519 proactively documents a known limitation: g_tls_safe_mode is process-global, disables hardware hash for ALL WOLF_CRYPTO2DEV_DEVID objects (not just TLS), and explains the workaround (register a separate devId + callback for bulk-hash use). This comment is rare in embedded/crypto code \u2014 most limitations live only in the author's head. A contributor who wants to 'fix' TLS-safe mode by making it per-WOLFSSL object should read this comment first to understand the full implications.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:45:09Z",
+  "updated_at": "2026-04-21T14:55:13Z",
+  "closed_at": "2026-04-21T14:55:13Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-lc7",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:45:08Z"
+    }
+  ]
+}

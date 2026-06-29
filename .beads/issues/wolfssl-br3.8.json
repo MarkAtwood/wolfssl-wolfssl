@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-br3.8",
+  "title": "CRYPTOCB_UNAVAILABLE from AES SETKEY: correct design, defend against 'just return 0'",
+  "description": "crypto2dev_aes_setkey_ctx() returns CRYPTOCB_UNAVAILABLE instead of 0. A future contributor might assume 0 (handled) is more correct. It is not: returning 0 skips the software key schedule, leaving aes->rounds=0, which causes wc_AesGcmEncrypt to call wc_AesEncrypt for the H-subkey and fail with KEYUSAGE_E. The hardware cipher path checks devCtx first and uses the device regardless of what the software schedule produced. The CRYPTOCB_UNAVAILABLE return is load-bearing. The comment at line 542-549 explains this correctly and should not be removed.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:29:44Z",
+  "updated_at": "2026-04-21T15:00:32Z",
+  "closed_at": "2026-04-21T15:00:32Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-br3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:29:43Z"
+    }
+  ]
+}

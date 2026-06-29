@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-bfn",
+  "title": "Audit: crypto2dev-shim 2026-04-21 (pass 5)",
+  "description": "Full re-audit of crypto2dev port after HMAC streaming refactor, pool_stats/selftest/fips_status additions. Check for new issues in new code and anything missed in prior passes.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T04:44:46Z",
+  "updated_at": "2026-04-22T04:49:00Z",
+  "closed_at": "2026-04-22T04:49:00Z"
+}

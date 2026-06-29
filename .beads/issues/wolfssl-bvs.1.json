@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bvs.1",
+  "title": "SEC1: ssl.h in wolfcrypt port header (layer violation)",
+  "description": "crypto2dev_port.h includes <wolfssl/ssl.h> at line 31 (unconditionally, inside the feature guard). This is a layer violation: wolfcrypt should not depend on the TLS layer. Consequences: (1) Any consumer of the header in a wolfcrypt-standalone build (e.g., kernel module, bare wolfcrypt, NO_WOLFSSL_SERVER+CLIENT) will fail to compile if ssl.h is absent. (2) The include drags the entire TLS API surface into every .c file that uses the port header, inflating compilation time and coupling. The same include exists in crypto2dev_port.c line 59 (implementation file), which is also wrong but less virulent since .c files are not re-included. The fix is to forward-declare WOLFSSL_CTX and WOLFSSL in the header and move the ssl.h include into the .c file only, behind a guard that documents the dependency. This is a high-maintenance-burden risk because it will break any wolfcrypt standalone build that does not include the full TLS layer.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:21:36Z",
+  "updated_at": "2026-04-20T23:36:10Z",
+  "closed_at": "2026-04-20T23:36:10Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bvs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:21:35Z"
+    }
+  ]
+}

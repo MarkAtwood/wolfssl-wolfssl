@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-iby.6",
+  "title": "HMAC accumulation buffer has no size cap",
+  "description": "Complexity: accumulation buffer doubles per Update, allocating O(total HMAC input). For TLS record MACs (max ~16 KB per record) this is fine. For bulk HMAC (e.g., file integrity check with wc_HmacUpdate over a 100 MB file), the buffer allocates 100 MB on the heap silently. With WOLFSSL_CRYPTO2DEV_POOL_SIZE=8 in-flight HMACs of 1 GB each, this allocates 8 GB. The comment at port.c:1019-1026 says 'use a second devId that skips HMAC offload for bulk data' \u2014 but there is no max-size guard, no error, and no diagnostic when the buffer grows large. Impact at scale: OOM on servers that accidentally route bulk HMAC through this port. Fix: add a compile-time cap (e.g., WOLFSSL_CRYPTO2DEV_HMAC_MAX_BUF, default 64KB) and return CRYPTOCB_UNAVAILABLE when the cap is exceeded.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:41:10Z",
+  "updated_at": "2026-04-21T17:10:33Z",
+  "closed_at": "2026-04-21T17:10:33Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:41:10Z"
+    }
+  ]
+}

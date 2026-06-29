@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-ta5.1",
+  "title": "HMAC Final returns CRYPTOCB_UNAVAILABLE after Update claims data",
+  "description": "Trigger: device returns EOPNOTSUPP on CRYPTO2DEV_IOC_INIT during wc_HmacFinal (device doesn't support hmac(sha256/384/512) but port claimed WC_SETKEY_HMAC and all wc_HmacUpdate calls). Bad behavior: crypto2dev_hmac() promotes NOT_COMPILED_IN to CRYPTOCB_UNAVAILABLE on Final, causing wolfSSL to fall through to software HMAC. But since the port returned 0 for all prior Update calls, wolfSSL did NOT run the software HMAC update path \u2014 the software HMAC state has zero data. The software fallback computes HMAC over empty input instead of the actual accumulated data and writes it to the hash buffer silently. In TLS, this produces a wrong MAC with no error returned. Fix: return WC_HW_E (not CRYPTOCB_UNAVAILABLE) when INIT fails in the Final path, because data has already been consumed from wolfSSL software state.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:14:08Z",
+  "updated_at": "2026-04-21T16:32:24Z",
+  "closed_at": "2026-04-21T16:32:24Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:14:08Z"
+    }
+  ]
+}

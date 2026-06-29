@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-xap",
+  "title": "R2 fix: cleanup() must unregister CryptoCb device",
+  "description": "wc_crypto2dev_cleanup() closes fds and resets pool but never calls wc_CryptoCb_UnRegisterDevice(WOLF_CRYPTO2DEV_DEVID). Since wc_crypto2dev_assign_devid() calls wc_CryptoCb_RegisterDevice, cleanup must unregister to maintain init/cleanup symmetry. Without this, a stale callback registration points to closed fds after cleanup.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:45:32Z",
+  "updated_at": "2026-04-20T23:55:20Z",
+  "closed_at": "2026-04-20T23:55:20Z"
+}

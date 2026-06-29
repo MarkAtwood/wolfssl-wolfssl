@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-b3e.12",
+  "title": "Decision: HMAC data accumulated in userspace (not streaming to hardware) is correct",
+  "description": "The crypto2dev HMAC path buffers all data in userspace on Update calls and flushes in one write+FINALIZE at Final. A future contributor might suggest 'streaming the data in chunks' to reduce peak memory. That would be wrong: the device's IOC_INIT for HMAC must include the key inline, and there is no streaming-update ioctl for HMAC. The only way to do incremental HMAC in the current device protocol would be to keep the operation fd open across updates, but the fd protocol does not support mid-operation reads. Accumulate-and-flush is the only correct implementation for this device interface.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T13:55:26Z",
+  "updated_at": "2026-04-21T14:14:43Z",
+  "closed_at": "2026-04-21T14:14:43Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-b3e",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T06:55:25Z"
+    }
+  ]
+}

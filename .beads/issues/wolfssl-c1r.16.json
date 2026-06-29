@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.16",
+  "title": "Per-AES-GCM-encrypt: 5 syscalls minimum (acquire open, INIT ioctl, SET_IV ioctl, write, FINALIZE ioctl, read, GET_TAG ioctl, release open) = 7-8 syscalls",
+  "description": "For each AES-GCM encrypt, the hot path issues: (1) pool_acquire recovers an fd (no syscall if already open), (2) ioctl CRYPTO2DEV_IOC_INIT, (3) ioctl CRYPTO2DEV_IOC_SET_IV, (4) write() plaintext, (5) ioctl CRYPTO2DEV_IOC_FINALIZE, (6) read() ciphertext, (7) ioctl CRYPTO2DEV_IOC_GET_TAG, (8) close() the op_fd after done, (9) open() new fd for pool_release. That is 7 ioctls/syscalls per operation (excluding the pool maintenance open/close). For TLS 1.3 record encryption, this is the critical path for every record. The uapi design (separate INIT, SET_IV, SET_AAD, write, FINALIZE, read, GET_TAG ioctls) does not allow combining these into fewer syscalls. This is a protocol design constraint, not a code bug \u2014 but the port could batch multiple records through the same session fd if the kernel supported RESET, which the sim currently rejects (EBUSY). Expected impact: ~7 context switches per TLS record vs ~1 for in-process software AES-GCM.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:28:35Z",
+  "updated_at": "2026-04-21T21:34:18Z",
+  "closed_at": "2026-04-21T21:34:18Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:28:35Z"
+    }
+  ]
+}

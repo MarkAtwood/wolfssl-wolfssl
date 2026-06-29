@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-c1r",
+  "title": "Review: crypto2dev CryptoCb port pre-merge",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:23:59Z",
+  "updated_at": "2026-04-21T21:34:22Z",
+  "closed_at": "2026-04-21T21:34:22Z",
+  "notes": "Maintainer risk: MEDIUM \u2014 Three footguns: REQUIRE_FIPS gives weaker enforcement than its name implies, sim.h macro pollution is dangerous when sim and real code share TUs, and ECDSA serialization is undiscoverable from throughput alone. None are design disasters but each will generate issues when the port is used in production.\nConfidence: 80% chance of no missed bug in the code paths reviewed. Uncertainty driven by: (1) have not run or instrumented the code \u2014 all analysis is static; (2) wc_HmacFree interaction with the crypto2dev Final callback depends on wolfSSL internal behavior that required source verification \u2014 checked wolfcrypt/src/hmac.c:1438 directly; (3) ECC SETKEY behavior regarding which wolfSSL function triggers WC_SETKEY_ECC_PRIV vs WC_SETKEY_ECC_PUB was not verified against cryptocb.c dispatch \u2014 assumed from the comment; (4) the 'const Aes*' cast-away issue (wolfssl-c1r.6) depends on whether wc_CryptoInfo carries const-qualified pointers \u2014 not verified against cryptocb.h struct definitions; (5) the pool contention race (wolfssl-c1r.2) is a low-probability transient, not a data corruption \u2014 severity assessment may be off. Would raise confidence if: ran under valgrind or asan with the test suite; verified const-qualification of cipher fields in wc_CryptoInfo; ran thread sanitizer on pool acquire/release under contention."
+}

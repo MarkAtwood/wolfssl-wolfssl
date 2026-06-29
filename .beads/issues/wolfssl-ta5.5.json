@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-ta5.5",
+  "title": "wc_crypto2dev_cleanup unconditionally unregisters devId even if manually registered",
+  "description": "Scenario: Application calls wc_CryptoCb_RegisterDevice(WOLF_CRYPTO2DEV_DEVID, custom_cb, ctx) to register its own callback, then calls wc_crypto2dev_init(), then later calls wc_crypto2dev_cleanup(). Bad behavior: cleanup calls wc_CryptoCb_UnRegisterDevice(WOLF_CRYPTO2DEV_DEVID) unconditionally, removing the application's registration, not just the one installed by init. Subsequent crypto operations silently fall through to software. Maintenance consequence: hard-to-reproduce bug when mixing wc_crypto2dev_init/cleanup with manual device registration; init and cleanup should only undo their own registration.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:14:42Z",
+  "updated_at": "2026-04-21T16:32:22Z",
+  "closed_at": "2026-04-21T16:32:22Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:14:42Z"
+    }
+  ]
+}

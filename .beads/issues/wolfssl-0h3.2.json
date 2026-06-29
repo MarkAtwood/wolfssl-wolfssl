@@ -1,0 +1,28 @@
+{
+  "id": "wolfssl-0h3.2",
+  "title": "crypto2dev: WOLF_CRYPTO_CB_COPY \u2014 streaming hash snapshot policy",
+  "description": "Decide and implement the policy for WOLF_CRYPTO_CB_COPY when used with streaming hardware hash. crypto2dev has no 'snapshot session' ioctl \u2014 once data is written to an fd it cannot be read back. Two options: (A) Transcript replay buffer: allocate a growable buffer in hash devCtx, accumulate all written data, on Copy open a new fd and replay the buffer. Works for TLS but adds O(transcript_size) memory per hash object. (B) CRYPTOCB_UNAVAILABLE for Copy: return CRYPTOCB_UNAVAILABLE from the WC_ALGO_TYPE_COPY callback, causing wolfSSL to fall back to software for the copied object. Correct but means the transcript hash runs in software (still HMAC and one-shot hash can use hardware). Recommendation: implement option B (CRYPTOCB_UNAVAILABLE for Copy) as the default, with option A available via WOLFSSL_CRYPTO2DEV_HASH_REPLAY_COPY compile flag. Document the TLS implication: when using the crypto2dev shim, transcript hashes (wc_Sha256 with devId set and Copy called) will run in software, while HMAC-SHA256 for Finished will run on hardware.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:36:21Z",
+  "updated_at": "2026-04-20T20:29:50Z",
+  "closed_at": "2026-04-20T20:29:50Z",
+  "notes": "This affects TLS 1.3 integration. In wolfSSL's TLS 1.3 handshake, wc_Sha256Copy is called for the Transcript-Hash during key derivation. If the shim is active, that copy will return CRYPTOCB_UNAVAILABLE and wolfSSL will do a software copy \u2014 which requires the software state to exist. Since the hardware fd has consumed all the data, the software state is empty. Conclusion: for TLS transcript hashes, the devId on wc_Sha256/wc_Sha384 objects used for the transcript MUST be INVALID_DEVID. Only set devId for one-shot hash uses. The TLS integration helper (separate issue) must handle this.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:36:20Z"
+    },
+    {
+      "depends_on_id": "wolfssl-ctl",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:13Z"
+    }
+  ]
+}

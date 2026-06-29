@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.18",
+  "title": "crypto2dev_ecdsa_hash_algo_name: digest-length-to-hash inference is a hidden footgun for non-NIST curves",
+  "description": "The function inferring hash algorithm from digest length (port.c:1266-1274) with the comment 'DO NOT add SHA-3 cases here' is an inelegant design with a landmine comment. The right fix is to carry the hash algorithm through the SETKEY path and store it in key->devCtx alongside the fd, so the sign/verify path reads it directly. Current design: digest_len \u2192 hash_name inference. Better design: store (fd, hash_algo) in devCtx at SETKEY time. This eliminates the footgun entirely rather than documenting it. Suggested rewrite: define a Crypto2DevEccCtx struct with int fd and char hash_algo[CRYPTO2DEV_ALGO_MAXLEN], allocate at SETKEY time, store in key->devCtx. FREE callback closes fd and frees the struct. Sign/verify reads hash_algo from devCtx rather than inferring from digest_len.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:28:54Z",
+  "updated_at": "2026-04-21T19:46:48Z",
+  "closed_at": "2026-04-21T19:46:48Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:28:53Z"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-c1r.6",
+  "title": "crypto2dev_cipher: AES-CBC post-encrypt reg update uses cast-away-const",
+  "description": "In crypto2dev_cipher(), aes is declared 'const Aes*'. The CBC post-encrypt update writes to aes->reg via '(byte*)((Aes*)aes)->reg' \u2014 casting away const to write. This is undefined behavior in C89/C99 (writing through a pointer derived from a const-qualified pointer to an object that was originally declared non-const is defined; writing to an object that was originally declared const is UB). The wc_CryptoInfo struct carries 'const Aes*' for cipher operations, so the original object may or may not have been declared const. The compiler is permitted to optimize away this store or generate a SIGBUS on read-only-mapped memory. The fix is for aes to be non-const in cipher(), which requires matching the info struct field type \u2014 or using info->cipher.aescbc.aes directly (which has the same type). Also applies to AES-CTR reg update.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:25:59Z",
+  "updated_at": "2026-04-21T19:44:07Z",
+  "closed_at": "2026-04-21T19:44:07Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:25:58Z"
+    }
+  ]
+}

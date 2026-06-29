@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-br3.11",
+  "title": "ForceZero on all key material: key bytes in ctx structs and init_op all zeroed before free",
+  "description": "Raw AES keys (Crypto2DevAesCtx), HMAC keys (Crypto2DevHmacCtx), and the on-stack crypto2dev_init_op (which contains the inline key) are all wiped with ForceZero before being freed or returned from functions. ForceZero is a volatile write that cannot be optimized away by the compiler. A contributor might replace with XMEMSET arguing they are equivalent. They are not: XMEMSET on a variable about to go out of scope can be elided by an optimizing compiler. ForceZero is the correct choice for secret material.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:30:08Z",
+  "updated_at": "2026-04-21T14:55:29Z",
+  "closed_at": "2026-04-21T14:55:29Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-br3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:30:07Z"
+    }
+  ]
+}

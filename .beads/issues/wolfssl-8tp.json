@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-8tp",
+  "title": "SEC7r3: HMAC CryptoCb streaming broken \u2014 BAD_FUNC_ARG on every call",
+  "description": "crypto2dev_hmac() guards: if (info->hmac.in == NULL || info->hmac.digest == NULL) return BAD_FUNC_ARG;\n\nwolfSSL dispatches HMAC via two separate CryptoCb calls:\n  wc_HmacUpdate  -> wc_CryptoCb_Hmac(in=data, inSz=N, digest=NULL)  [hmac.c:925]\n  wc_HmacFinal   -> wc_CryptoCb_Hmac(in=NULL, inSz=0, digest=buf)   [hmac.c:1051]\n\nBoth calls hit the guard:\n  - Update: in!=NULL but digest==NULL -> BAD_FUNC_ARG\n  - Final:  in==NULL -> BAD_FUNC_ARG\n\nBAD_FUNC_ARG != CRYPTOCB_UNAVAILABLE so wolfSSL does not fall through to software. HmacUpdate() returns BAD_FUNC_ARG to its caller. HMAC is completely inoperative through the hardware path.\n\nThe port was written for a one-shot model (in + digest both non-NULL in one call) but wolfSSL's CryptoCb HMAC contract is streaming: Update can be called multiple times (digest=NULL each time), then Final (in=NULL, digest=buf).\n\nFix: restructure crypto2dev_hmac() to use the same streaming model as crypto2dev_hash():\n- On Update (digest==NULL): acquire pool slot, send INIT+write, store op_fd in hmac->devCtx (a new Crypto2DevHmacOpCtx alongside the key ctx, or reuse a state field).\n- On Final (in==NULL): send FINALIZE, read digest, release slot.\n\nThe test_hmac_sha256() KAT would also fail for this reason.\n\nFile: wolfcrypt/src/port/crypto2dev/crypto2dev_port.c, lines 1052-1053",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T21:02:04Z",
+  "updated_at": "2026-04-20T21:06:00Z",
+  "closed_at": "2026-04-20T21:06:00Z"
+}

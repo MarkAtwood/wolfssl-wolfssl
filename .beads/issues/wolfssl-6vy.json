@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-6vy",
+  "title": "SEC4: pool uses close+reopen, not RESET; explain why",
+  "description": "CRYPTO2DEV_IOC_RESET is defined (line 152) but never called. The pool always closes the used fd and opens a fresh one in crypto2dev_pool_release(). No comment explains why RESET is not used. The RESET ioctl resets operation state but preserves the key binding on an fd. A future maintainer who 'optimises' pool release to use RESET instead of close+reopen would get fds that appear clean but carry stale key associations, silently producing wrong results for subsequent operations that rely on inline key setup via CRYPTO2DEV_IOC_INIT. Add a comment in crypto2dev_pool_release() explaining that close+reopen (not RESET) is required because each operation sets its own key via INIT, and RESET would preserve key state from the previous operation.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:34:11Z",
+  "updated_at": "2026-04-20T20:54:17Z",
+  "closed_at": "2026-04-20T20:54:17Z"
+}

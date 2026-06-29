@@ -1,0 +1,27 @@
+{
+  "id": "wolfssl-s0u.3",
+  "title": "crypto2dev CI: FIPS mode validation (Rocky 9 + Ubuntu Pro)",
+  "description": "Validate the FIPS mode path for the crypto2dev shim. Rocky 9: DISTRO=rocky FIPS_MODE=1 TEST_CRYPTO2DEV=1. Ubuntu Pro: FIPS_MODE=1 UA_TOKEN=$UA_TOKEN TEST_CRYPTO2DEV=1. With FIPS mode active, crypto2dev_wolfssl.ko should load a FIPS-validated wolfcrypt.ko and all REQUIRE_FIPS checks should succeed. Verify: (1) FIPS state in /sys/class/misc/crypto2dev/fips_state shows OPERATIONAL, (2) all shim tests pass, (3) shim test suite does not trigger any fallback to software (all operations served by FIPS-validated hardware).",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:37:26Z",
+  "updated_at": "2026-04-21T01:49:09Z",
+  "closed_at": "2026-04-21T01:49:09Z",
+  "notes": "For Ubuntu FIPS, the 5.15-fips kernel is used. For Rocky, fips=1 is a boot parameter. The wolfcrypt.ko built in CI is not a FIPS-validated binary (requires commercial CMVP artifact) \u2014 but the FIPS path in crypto2dev can still be tested with a non-FIPS wolfcrypt.ko by verifying the REQUIRE_FIPS ioctl behavior (returns ENOENT when no FIPS provider loaded).",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3.4",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:18Z"
+    },
+    {
+      "depends_on_id": "wolfssl-s0u",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:37:25Z"
+    }
+  ]
+}

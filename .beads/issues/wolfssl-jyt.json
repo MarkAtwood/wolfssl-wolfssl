@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-jyt",
+  "title": "SEC0: HMAC key >64 bytes incorrectly rejected",
+  "description": "crypto2dev_port.c line 969: crypto2dev_hmac_setkey_ctx rejects any key with keySz > 64. RFC 2104 allows HMAC keys of any length; HMAC-SHA384 and HMAC-SHA512 have a 128-byte block size, and keys between 65 and 128 bytes are valid and common (e.g. TLS 1.3 uses 48-byte HMAC-SHA384 keys, and keys larger than 64 bytes appear in some protocols). Crypto2DevHmacCtx.key is only 64 bytes (line 255). If a caller presents a 65\u2013128-byte key for HMAC-SHA384 or HMAC-SHA512, the port returns BAD_FUNC_ARG instead of CRYPTOCB_UNAVAILABLE, so wolfSSL does not fall back to software and the HMAC fails. Note: wolfSSL itself may hash keys > block_size before calling SETKEY (depends on version/config), which would reduce real exposure, but the port contract should not impose a lower bound than the hardware supports. Fix: expand Crypto2DevHmacCtx.key to 128 bytes and update the guard to keySz > 128; if the hardware also has a limit, return CRYPTOCB_UNAVAILABLE (not BAD_FUNC_ARG) so software fallback occurs.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:35:22Z",
+  "updated_at": "2026-04-20T20:54:08Z",
+  "closed_at": "2026-04-20T20:54:08Z"
+}

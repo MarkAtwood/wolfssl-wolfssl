@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bfn.1",
+  "title": "selftest: vacuous pass if WOLF_CRYPTO2DEV_DEVID unregistered",
+  "description": "wc_crypto2dev_selftest() checks g_pool_inited but NOT that WOLF_CRYPTO2DEV_DEVID is in g_devid_table. Trigger: wc_crypto2dev_init() + wc_crypto2dev_register_ex(MY_ID) (not registering WOLF_CRYPTO2DEV_DEVID) + wc_crypto2dev_selftest(). Outcome: wc_AesInit(&aes, NULL, WOLF_CRYPTO2DEV_DEVID) sets devId but CryptoCb has no callback for it; every AesGcmEncrypt returns CRYPTOCB_UNAVAILABLE and falls through to software. Software oracle and 'hardware' both use software; comparison passes; selftest returns 0 without ever touching hardware. Fix: add crypto2dev_find_devid(WOLF_CRYPTO2DEV_DEVID) check at selftest entry.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T04:48:34Z",
+  "updated_at": "2026-04-22T04:49:00Z",
+  "closed_at": "2026-04-22T04:49:00Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bfn",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T21:48:34Z"
+    }
+  ]
+}

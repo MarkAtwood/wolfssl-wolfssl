@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-qlh",
+  "title": "Review round 5: crypto2dev TLS integration",
+  "description": "Verification sweep after round-4 fixes. Stop condition: P0=P1=P2=0 across all reviewers. Round-4 fixes: stale-fd on re-key (P1), WC_HW_E for owned-key ECDSA (P2), eccverify.res NULL check (P2), hash init_op ForceZero (P2), header install (P2), init docs (P2).",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "epic",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T00:11:17Z",
+  "updated_at": "2026-04-21T00:12:38Z",
+  "closed_at": "2026-04-21T00:12:38Z"
+}

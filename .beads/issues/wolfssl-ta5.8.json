@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-ta5.8",
+  "title": "AAD auth-bypass prevention is explicitly guarded and commented",
+  "description": "The oversized-AAD check (port.c cipher path) returns BUFFER_E rather than silently skipping SET_AAD when authInSz > CRYPTO2DEV_AAD_MAXLEN, with an explicit comment: 'silently skipping SET_AAD would cause the device to authenticate with empty AAD instead of the provided one \u2014 an authentication bypass for the caller.' A contributor might suggest removing this check or converting it to a truncation for 'compatibility.' It should be defended: skipping AAD authentication silently is an AES-GCM authentication bypass \u2014 BUFFER_E is the correct hard failure.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:15:04Z",
+  "updated_at": "2026-04-21T16:33:25Z",
+  "closed_at": "2026-04-21T16:33:25Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:15:04Z"
+    }
+  ]
+}

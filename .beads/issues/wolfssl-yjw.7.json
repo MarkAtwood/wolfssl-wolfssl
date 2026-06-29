@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-yjw.7",
+  "title": "Defend: HMAC Final promotes NOT_COMPILED_IN to WC_HW_E \u2014 prevents MAC bypass",
+  "description": "In crypto2dev_hmac Final path: if CRYPTO2DEV_IOC_INIT returns EOPNOTSUPP/ENOSYS/ENOENT (mapped to NOT_COMPILED_IN), the code promotes this to WC_HW_E instead of CRYPTOCB_UNAVAILABLE. Why this is correct: by the time Final is called, one or more Update calls have already returned 0 (success) \u2014 wolfSSL's software HMAC path has no accumulated data. A CRYPTOCB_UNAVAILABLE at Final would cause wolfSSL to call wc_HmacFinal on empty software state, computing HMAC over zero bytes with an all-zeros key and returning it as the correct MAC \u2014 a silent MAC bypass. WC_HW_E surfaces a hard failure. Do not change this to CRYPTOCB_UNAVAILABLE under any 'simplification' pressure. The same logic applies to the GCM and CBC cipher paths but is less critical there because init failure before write/finalize means no partial state has been claimed.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T23:12:57Z",
+  "updated_at": "2026-04-21T23:34:38Z",
+  "closed_at": "2026-04-21T23:34:38Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-yjw",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T16:12:57Z"
+    }
+  ]
+}

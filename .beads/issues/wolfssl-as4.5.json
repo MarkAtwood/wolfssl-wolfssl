@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-as4.5",
+  "title": "WOLF_CRYPTO2DEV_DEVID is hardcoded in all public API \u2014 no runtime custom-devId support",
+  "description": "Scenario: user wants hardware cipher/HMAC for TLS (via assign_devid) AND hardware SHA for bulk data simultaneously. The header documents the workaround (register a second devId with wc_CryptoCb_RegisterDevice directly). But wc_crypto2dev_register() and wc_crypto2dev_assign_devid() are both hardcoded to WOLF_CRYPTO2DEV_DEVID \u2014 there is no public API to pass in a custom devId at runtime. The compile-time override (#ifndef WOLF_CRYPTO2DEV_DEVID) only works if all users in the process agree on the same devId, which is impossible in a shared library scenario. Maintenance consequence: first user who asks how to run two instances or use a custom devId will need a code change to the port, and the API is now frozen. This is the right time to fix it (add devId parameter to wc_crypto2dev_register and wc_crypto2dev_assign_devid) before it ships.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T17:23:52Z",
+  "updated_at": "2026-04-21T18:42:28Z",
+  "closed_at": "2026-04-21T18:42:28Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-as4",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T10:23:52Z"
+    }
+  ]
+}

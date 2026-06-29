@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bvs.11",
+  "title": "SEC1: test guard inconsistency and no CI hook",
+  "description": "test.c: include guard (line 478) uses 2 conditions (WOLFSSL_CRYPTO2DEV && WOLFSSL_CRYPTO2DEV_TEST) while declaration and call (lines 1073-1075, 3325-3330) use 3 (adds WOLF_CRYPTO_CB). If WOLFSSL_CRYPTO2DEV + WOLFSSL_CRYPTO2DEV_TEST are set without WOLF_CRYPTO_CB the header is included but the test is not wired. Also: WOLFSSL_CRYPTO2DEV_TEST is not set by any configure.ac option so TLS integration tests never run in CI.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:21:56Z",
+  "updated_at": "2026-04-20T23:36:14Z",
+  "closed_at": "2026-04-20T23:36:14Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bvs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:21:56Z"
+    }
+  ]
+}

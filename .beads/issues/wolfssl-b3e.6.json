@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-b3e.6",
+  "title": "AWS CI script hardcodes ~/WORK/WOLFKM path; other contributors cannot use it",
+  "description": "tests/ci/test-on-aws.sh hardcodes WOLFKM_ROOT=${HOME}/WORK/WOLFKM with no env-var override and no useful error message when absent. The file is checked into the wolfssl repo and will appear in any clone, but TEST_CRYPTO2DEV=1 will silently proceed then fail or succeed vacuously if that path is absent. Scenario: a contributor or CI runner clones the repo, runs TEST_CRYPTO2DEV=1, gets a confusing failure unrelated to the code under test. Maintenance consequence: CI script is not reusable by anyone other than the original author as-is.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T13:54:39Z",
+  "updated_at": "2026-04-21T14:10:51Z",
+  "closed_at": "2026-04-21T14:10:51Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-b3e",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T06:54:38Z"
+    }
+  ]
+}

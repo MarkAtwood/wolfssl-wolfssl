@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.17",
+  "title": "pool_release: open() on release path adds a syscall to every operation completion",
+  "description": "crypto2dev_pool_release() calls open(CRYPTO2DEV_PATH, O_RDWR|O_CLOEXEC) to pre-open a fresh fd for the next caller. This means every cipher/hash operation completion incurs one extra open() syscall. Alternative: do not pre-open; let acquire() open on demand (recovery_slot path already handles this). The pre-open amortizes open() latency from the acquire critical path to the release path, which is correct for hide-latency scenarios. However, for steady-state TLS where every encrypt is followed by a decrypt before the slot is reused, the fd returned from release is immediately re-acquired by the next operation \u2014 the pre-open is wasted. The benefit only appears when multiple threads compete for pool slots. For single-threaded use (common in embedded), the pre-open is pure overhead.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:28:44Z",
+  "updated_at": "2026-04-21T21:34:20Z",
+  "closed_at": "2026-04-21T21:34:20Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:28:44Z"
+    }
+  ]
+}

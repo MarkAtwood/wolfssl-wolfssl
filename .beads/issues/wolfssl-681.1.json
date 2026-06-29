@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-681.1",
+  "title": "Observability: ECDSA pool exhaustion returns WC_HW_E with no diagnostic log",
+  "description": "crypto2dev_ecdsa() acquires a pool slot for sign and verify operations (lines ~1480, ~1550). If the pool is exhausted (op_fd < 0), the code sets ret=WC_HW_E and jumps to the cleanup label with no WOLFSSL_MSG. The cipher, hash, and HMAC paths all emit 'pool exhausted \u2014 increase WOLFSSL_CRYPTO2DEV_POOL_SIZE' before returning WC_HW_E; the ECDSA paths do not.\n\nTrigger: all pool slots are in use when wc_EccSign or wc_EccVerify is called under the crypto2dev devId (e.g. TLS handshake with many concurrent connections and an undersized pool).\n\nBad outcome: the caller gets WC_HW_E with no context. A support engineer debugging 'TLS handshake fails with WC_HW_E during ECDSA sign' has no indication that the pool is the problem rather than the hardware. The fix is the same two-line pattern used for cipher/hash/HMAC: check g_pool.slots != NULL after acquire fails and emit the 'pool exhausted' message.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T02:07:41Z",
+  "updated_at": "2026-04-22T02:36:48Z",
+  "closed_at": "2026-04-22T02:36:48Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-681",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T19:07:40Z"
+    }
+  ]
+}

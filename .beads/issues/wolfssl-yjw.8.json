@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-yjw.8",
+  "title": "Defend: GCM nonce check returns CRYPTOCB_UNAVAILABLE for ivSz \\!= 12",
+  "description": "In crypto2dev_cipher, AES-GCM with ivSz \\!= GCM_NONCE_MID_SZ (12) returns CRYPTOCB_UNAVAILABLE rather than BAD_FUNC_ARG or WC_HW_E. Why this is correct: some wolfSSL callers legitimately use 96-bit nonces and may also want to handle non-standard nonce lengths by software fallback. Returning CRYPTOCB_UNAVAILABLE allows wolfSSL's software GCM (which supports arbitrary nonce lengths via GHASH-based derivation) to handle the unusual case correctly. Returning WC_HW_E would block the operation entirely even though software could handle it. The alternative \u2014 passing non-12-byte nonces to the kernel device \u2014 risks EINVAL or silent wrong behavior. Reviewer suggestion to reject unconditionally is wrong for wolfSSL's semantics; CRYPTOCB_UNAVAILABLE is the right choice for 'I don't support this variant, try software.'",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T23:13:07Z",
+  "updated_at": "2026-04-21T23:34:37Z",
+  "closed_at": "2026-04-21T23:34:37Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-yjw",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T16:13:07Z"
+    }
+  ]
+}

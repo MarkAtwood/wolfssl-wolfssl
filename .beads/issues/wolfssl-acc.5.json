@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-acc.5",
+  "title": "POOL_SIZE is compile-time only: WC_HW_E misleadingly looks like hardware failure",
+  "description": "Scenario: A TLS server with more than WOLFSSL_CRYPTO2DEV_POOL_SIZE=8 concurrent in-flight AES-GCM records gets WC_HW_E from crypto2dev_pool_acquire. This propagates up as a wolfSSL record-layer error, which looks like hardware failure or a broken connection. The error message is 'crypto2dev: cipher pool exhausted'.\n\nUsers who see WC_HW_E on a loaded server will assume hardware is broken and open a support issue before reading the pool size comments.\n\nThe fix (increase WOLFSSL_CRYPTO2DEV_POOL_SIZE and recompile) is correct, but requiring recompilation to tune for concurrency level is surprising for a library.\n\nA runtime-configurable pool size (passed to wc_crypto2dev_init(int pool_size)) would let the user set it once in their initialization code. This is an API-breaking change now if added later.\n\nDecision point: Should wc_crypto2dev_init() accept a pool_size parameter now, before this API fossilizes?",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T15:37:18Z",
+  "updated_at": "2026-04-21T15:46:44Z",
+  "closed_at": "2026-04-21T15:46:44Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-acc",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T08:37:18Z"
+    }
+  ]
+}

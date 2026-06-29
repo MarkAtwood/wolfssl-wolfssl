@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-iby.1",
+  "title": "ENOENT from INIT not promoted to CRYPTOCB_UNAVAILABLE",
+  "description": "Trigger: INIT ioctl returns ENOENT when no provider is registered for the requested algo (confirmed in crypto2dev_fd.c:767 and 781 \u2014 also returned when FIPS mode is active and the algo has no FIPS-validated provider). crypto2dev_to_wc_err(ENOENT) = BAD_FUNC_ARG. Neither crypto2dev_cipher() nor crypto2dev_hash() promotes BAD_FUNC_ARG to CRYPTOCB_UNAVAILABLE \u2014 only NOT_COMPILED_IN (from EOPNOTSUPP/ENOSYS) is promoted. Bad behavior: wc_AesGcmEncrypt / wc_Sha256Update returns BAD_FUNC_ARG (hard error) instead of CRYPTOCB_UNAVAILABLE (software fallback). Real trigger: any deployment where not all algorithms have providers loaded \u2014 e.g., FIPS mode with a provider that registers AES but not SHA. The SHA INIT gets ENOENT; the port returns BAD_FUNC_ARG; wolfSSL aborts instead of using software SHA.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:40:22Z",
+  "updated_at": "2026-04-21T17:04:02Z",
+  "closed_at": "2026-04-21T17:04:02Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:40:21Z"
+    }
+  ]
+}

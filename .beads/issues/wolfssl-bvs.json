@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-bvs",
+  "title": "Review round 1: crypto2dev TLS integration (wolfssl-2ed)",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:20:10Z",
+  "updated_at": "2026-04-20T23:39:32Z",
+  "closed_at": "2026-04-20T23:39:32Z",
+  "notes": "Confidence: 85% chance of missed bug. Round 1 counts: P0=0, P1=7, P2=7 (6 design-review endorsements + 1 stale comment bug), opinion=5. All 7 P1s are genuine correctness/safety/test-integrity issues. wolfssl-bvs.20 (wc_AesGcmSetKey unusable) and wolfssl-bvs.5 (global flag never reset) are the highest-impact actionable bugs. wolfssl-bvs.19 (round-trip-only TLS13 AES-GCM test) violates project test-vector discipline. wolfssl-bvs.11 (guard mismatch + no CI hook) means TLS integration tests are dead code in CI. wolfssl-bvs.1 (ssl.h layer violation) is a compilation hazard for wolfcrypt-standalone users. wolfssl-bvs.17 (data race) is formally UB. wolfssl-bvs.13 (undocumented constraint) is a maintenance trap. These are NOT bikeshed \u2014 each has an engineering failure mode. Verdict: we are NOT running out of real complaints; 7 genuine P1 issues remain open."
+}

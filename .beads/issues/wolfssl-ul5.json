@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-ul5",
+  "title": "Integrate wolfKM FIPS status into shim public API",
+  "description": "wolfKM exposes FIPS aggregate state via CRYPTO2DEV_IOC_STATUS ioctl (returns struct crypto2dev_status.fips_state). The shim has no way to surface this. Add wc_crypto2dev_fips_status() public function, update selftest to check FIPS state before AES-GCM oracle, and replace WOLFSSL_CRYPTO2DEV_REQUIRE_FIPS probe-fd with STATUS query.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "feature",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T04:01:32Z",
+  "updated_at": "2026-04-22T04:04:37Z",
+  "closed_at": "2026-04-22T04:04:37Z"
+}

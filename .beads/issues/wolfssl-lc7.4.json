@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-lc7.4",
+  "title": "assign_devid silently disables all hardware hash via g_tls_safe_mode",
+  "description": "wc_crypto2dev_assign_devid / assign_devid_ssl set g_tls_safe_mode=1, which routes ALL WC_ALGO_TYPE_HASH ops in the process to CRYPTOCB_UNAVAILABLE (software). This is a global side-effect invisible from the function name and signature. User scenario: an application that wants hardware SHA for bulk file-integrity AND hardware AES+HMAC for TLS calls assign_devid(ctx) to set up TLS, and then finds their bulk SHA256 calls no longer use hardware. The NOTE at port.c:1513-1519 documents this but the documentation only appears in the implementation, not in the header declaration. Any user who reads only crypto2dev_port.h will be surprised.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:43:51Z",
+  "updated_at": "2026-04-21T14:52:33Z",
+  "closed_at": "2026-04-21T14:52:33Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-lc7",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:43:50Z"
+    }
+  ]
+}

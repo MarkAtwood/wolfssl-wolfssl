@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-bhz",
+  "title": "SEC3: FREE callback missing WC_ALGO_TYPE_HASH case",
+  "description": "The WC_ALGO_TYPE_FREE dispatch in wc_crypto2dev_cb() handles CIPHER, HMAC, and PK but has no case for WC_ALGO_TYPE_HASH. If a wolfSSL hash object with devId set is freed while a streaming hash is in progress (digest never called), the Crypto2DevHashCtx heap allocation and the leased pool op_fd are both leaked. The pool slot is never reclaimed, eventually exhausting the pool.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:34:35Z",
+  "updated_at": "2026-04-20T20:53:53Z",
+  "closed_at": "2026-04-20T20:53:53Z"
+}

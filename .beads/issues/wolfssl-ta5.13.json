@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-ta5.13",
+  "title": "TLS-safe mode process-global side-effect is fully documented in public header",
+  "description": "The header comment on wc_crypto2dev_assign_devid() dedicates ~15 lines to explaining that g_tls_safe_mode is process-global, affects all objects using WOLF_CRYPTO2DEV_DEVID in the process including those in other libraries, and provides the workaround pattern (register a second devId for bulk-hash use). This level of documentation at the API boundary is the correct approach for a global side effect. A contributor might shorten it to 'sets TLS-safe mode.' The full explanation must be preserved: the process-wide side effect is the most likely source of user confusion and the comment is the only warning they will read before being burned.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:15:32Z",
+  "updated_at": "2026-04-21T16:33:35Z",
+  "closed_at": "2026-04-21T16:33:35Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:15:32Z"
+    }
+  ]
+}

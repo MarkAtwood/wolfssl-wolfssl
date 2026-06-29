@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-ta5.11",
+  "title": "WC_HW_E \\!= CRYPTOCB_UNAVAILABLE static assert documents critical invariant",
+  "description": "A wc_static_assert2 at top of port.c verifies that WC_HW_E and CRYPTOCB_UNAVAILABLE are distinct values, because the port uses CRYPTOCB_UNAVAILABLE for 'fall back to software' and WC_HW_E for 'stop with error' semantics. Per CLAUDE.md this assert is mandatory for every port. A contributor might remove it as 'obvious' or because the values have never collided in practice. The assert must be preserved: if wolfSSL ever changed these error code assignments to collide (unlikely but possible during major version bumps), the silent failure mode would be that hardware errors cause fallback-to-software rather than failures, with no diagnostic.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:15:20Z",
+  "updated_at": "2026-04-21T16:33:31Z",
+  "closed_at": "2026-04-21T16:33:31Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:15:19Z"
+    }
+  ]
+}

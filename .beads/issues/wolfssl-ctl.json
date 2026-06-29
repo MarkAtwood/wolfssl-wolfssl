@@ -1,0 +1,34 @@
+{
+  "id": "wolfssl-ctl",
+  "title": "crypto2dev: SHA-2 and SHA-3 hash callbacks",
+  "description": "Implement CryptoCb streaming hash handlers for SHA-256, SHA-384, SHA-512, SHA3-256, SHA3-384, SHA3-512. Lifecycle: on Init callback, acquire OPERATION fd from pool, call INIT('sha256' etc.), store fd in hash->devCtx. On Update, write() data to fd. On Final, FINALIZE then read() digest, release fd to pool. On Free (WC_ALGO_TYPE_FREE), release fd if not yet finalized (abort path). Map wolfSSL wc_HashType values to crypto2dev algo strings. SHA-1 and SHA-224: return CRYPTOCB_UNAVAILABLE (not in crypto2dev), fall back to software.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:17:48Z",
+  "updated_at": "2026-04-20T20:20:33Z",
+  "closed_at": "2026-04-20T20:20:33Z",
+  "notes": "Requires WOLF_CRYPTO_CB_FREE for the abort path (hash object freed before Final called). devCtx on wc_Sha256/wc_Sha384/wc_Sha512 structs holds the fd. Must handle the case where Init is called multiple times (re-init: release old fd, acquire new one).",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:19:06Z"
+    },
+    {
+      "depends_on_id": "wolfssl-0h3.1",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:09Z"
+    },
+    {
+      "depends_on_id": "wolfssl-7cg",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:19:15Z"
+    }
+  ]
+}

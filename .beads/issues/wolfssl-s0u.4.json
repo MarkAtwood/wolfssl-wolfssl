@@ -1,0 +1,27 @@
+{
+  "id": "wolfssl-s0u.4",
+  "title": "crypto2dev CI: ARM64 / Graviton 3 validation",
+  "description": "Validate that the crypto2dev shim and wolfcrypt.ko build and pass tests on ARM64 (Graviton 3) via ARM64=1 TEST_CRYPTO2DEV=1 TEST_LINUXKM=1 ./tests/ci/test-on-aws.sh. ARM64 uses c7g.2xlarge and the arm64 Ubuntu AMI. Key differences: --enable-armasm instead of --enable-intelasm, ARCH=arm64, gcc cross-compile not needed (native arm64 instance). wolfSSL linuxkm uses ARM Crypto Extensions (AES, SHA) via --enable-armasm. Verify: no x86-specific asm in the shim, correct KERN_ARCH=arm64 passed to Kbuild.",
+  "status": "closed",
+  "priority": 4,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:37:33Z",
+  "updated_at": "2026-04-21T01:49:18Z",
+  "closed_at": "2026-04-21T01:49:18Z",
+  "notes": "ARM64 instance type: c7g.2xlarge (Graviton 3, 8 vCPU). The crypto2dev shim itself is arch-neutral C \u2014 the ARM64 test validates that the build system flags and wolfSSL configure options are set correctly for ARM64 in the CI script.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-s0u",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:37:33Z"
+    },
+    {
+      "depends_on_id": "wolfssl-s0u.1",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:19Z"
+    }
+  ]
+}

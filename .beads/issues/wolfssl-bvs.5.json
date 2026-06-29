@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bvs.5",
+  "title": "SEC1: g_tls_safe_mode never reset on cleanup",
+  "description": "g_tls_safe_mode (crypto2dev_port.c) is set to 1 by wc_crypto2dev_assign_devid() and wc_crypto2dev_assign_devid_ssl() but is never cleared by wc_crypto2dev_cleanup(). This means: (1) After a cleanup+reinit cycle (e.g., in tests or long-lived daemons that restart the subsystem), TLS-safe mode remains permanently engaged even if the new use is non-TLS. (2) There is no way to use crypto2dev for hardware hash offload in a process that has ever called the TLS integration helper, making the two modes mutually exclusive with no recovery path. (3) If the callback is registered directly via wc_CryptoCb_RegisterDevice (bypassing the helpers), the flag stays 0 and TLS transcript hashes will incorrectly route to hardware, causing silent corruption. The global flag is also process-wide: a multi-tenant library use where one context wants TLS-safe mode and another does not is impossible. A per-registration context flag (passed via the ctx pointer to wc_CryptoCb_RegisterDevice) would solve this without global state.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:21:44Z",
+  "updated_at": "2026-04-20T23:36:12Z",
+  "closed_at": "2026-04-20T23:36:12Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bvs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:21:44Z"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-c1r.3",
+  "title": "crypto2dev_setkey ECC_PRIV: closes old devCtx before new import succeeds \u2014 window of no key",
+  "description": "In crypto2dev_setkey() for WC_SETKEY_ECC_PRIV and WC_SETKEY_ECC_PUB: on the error path ('if (new_fd < 0)'), the code closes the existing devCtx fd and sets it to NULL before returning the error code. This is wrong. If crypto2dev_key_import() fails (e.g., ENOENT because the device temporarily has no ECDSA provider), the old working key fd is destroyed and the key object is left with devCtx=NULL. Any subsequent sign/verify on the same ecc_key object hits 'devCtx == NULL \u2192 CRYPTOCB_UNAVAILABLE' \u2014 the key silently falls to software, but the ecc_key itself may have no software-usable private key bytes loaded (e.g., if the caller only imported a raw scalar into the port and relied on the KEY fd). Trigger: re-keying fails transiently; old key is gone, new key was never installed.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:25:29Z",
+  "updated_at": "2026-04-21T19:43:59Z",
+  "closed_at": "2026-04-21T19:43:59Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:25:28Z"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bvs.17",
+  "title": "SEC0: data race on g_tls_safe_mode write",
+  "description": "g_tls_safe_mode is a plain static int read and written without any mutex. If two threads call wc_crypto2dev_assign_devid() or wc_crypto2dev_assign_devid_ssl() concurrently, the write g_tls_safe_mode=1 is an unsynchronized store while the callback may be simultaneously reading it (unsynchronized load in wc_crypto2dev_cb). Under C11 this is a data race and undefined behavior. In practice both threads write the same value (1 to 1) so the race is benign on cache-coherent architectures with single-word stores, but it is formally UB and will trip ThreadSanitizer. wolfssl-bvs.5 covers the semantic 'never reset' bug; this is the distinct concurrency bug.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:23:03Z",
+  "updated_at": "2026-04-20T23:36:17Z",
+  "closed_at": "2026-04-20T23:36:17Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bvs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:23:02Z"
+    }
+  ]
+}

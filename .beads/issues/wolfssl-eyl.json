@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-eyl",
+  "title": "SEC1: HMAC key buffer too small for SHA-512",
+  "description": "Crypto2DevHmacCtx.key is declared as byte key[64], and crypto2dev_hmac_setkey_ctx() rejects keys longer than 64 bytes with BAD_FUNC_ARG.\n\nHMAC-SHA512 uses a 128-byte block size (WC_SHA512_BLOCK_SIZE = 128). Raw HMAC keys up to 128 bytes are valid and must be accepted before the HMAC key-derivation step. Rejecting 65-128 byte keys with BAD_FUNC_ARG silently breaks HMAC-SHA512 for any caller that passes a key longer than 64 bytes.\n\nAdditionally, the magic numbers 32 and 64 should be replaced with named constants:\n- key[32] in Crypto2DevAesCtx -> AES_256_KEY_SIZE\n- key[64] in Crypto2DevHmacCtx -> WC_HMAC_BLOCK_SIZE (= 128 after fix)\n- keySz > 32 guard -> keySz > AES_256_KEY_SIZE\n- keySz > 64 guard -> keySz > WC_HMAC_BLOCK_SIZE\n\nFix: change key[64] to key[WC_HMAC_BLOCK_SIZE] and update the guard to keySz > WC_HMAC_BLOCK_SIZE.\n\nAffected lines: crypto2dev_port.c:255, 969.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:36:02Z",
+  "updated_at": "2026-04-20T20:54:03Z",
+  "closed_at": "2026-04-20T20:54:03Z"
+}

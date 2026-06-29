@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-681.2",
+  "title": "Observability: FIPS_NOT_ALLOWED_E not named in ioctl error log",
+  "description": "crypto2dev_to_wc_err() maps EACCES \u2192 FIPS_NOT_ALLOWED_E and then emits: 'crypto2dev: ioctl failed errno=%d (wc_err=%d)'. The wc_err field contains the numeric value of FIPS_NOT_ALLOWED_E but the string 'FIPS' or 'FIPS not allowed' does not appear anywhere in the log.\n\nTrigger: the device returns EACCES from any ioctl (cipher INIT, HMAC INIT, FINALIZE, etc.). This happens when the kernel FIPS provider fails its power-on self-test or when the operation is blocked by FIPS policy.\n\nBad outcome: a support engineer debugging 'TLS handshake fails with FIPS_NOT_ALLOWED_E' must know that wc_err=N (numeric) maps to FIPS_NOT_ALLOWED_E without a wolfSSL error code table. The existing message for the FIPS-probe failure at init time (wc_crypto2dev_init REQUIRE_FIPS path) does say 'FIPS provider not available'; per-operation FIPS violations should be equally named. The fix is to add an explicit 'FIPS not allowed' string to the EACCES case in crypto2dev_to_wc_err, separate from the generic errno/wc_err message.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T02:07:46Z",
+  "updated_at": "2026-04-22T02:36:48Z",
+  "closed_at": "2026-04-22T02:36:48Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-681",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T19:07:46Z"
+    }
+  ]
+}

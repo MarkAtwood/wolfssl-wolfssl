@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-c1r.5",
+  "title": "wire.h struct mismatch vs uapi: unsigned int vs __u32 for fields that cross ABI boundary",
+  "description": "crypto2dev_wire.h defines struct fields using 'unsigned int' and 'int'. The actual kernel uapi header (crypto2dev_ioctl.h) defines the same fields as __u32 and __s32 (explicitly sized Linux kernel types). On LP64 Linux, 'unsigned int' is 32 bits and 'int' is 32 bits \u2014 same as __u32/__s32 \u2014 so this happens to be correct today. But: if this code is ever built for a platform where 'unsigned int' is 16 bits (C89 guarantees only 'at least 16 bits'), the struct sizes would differ from the kernel's, the compile-time wc_static_assert2 guards would fire, but only at build time on that platform. More concretely, the wire.h structs use 'char' for algo/provider fields vs the uapi header's explicit 'char'. That part is fine. The concern is future-proofing: wire.h should use exact-width types (uint32_t/int32_t from stdint.h or __u32/__s32 with appropriate guards) not 'unsigned int'. The assert guards exist precisely because of this but they catch it only at build time, not enforce it lexically.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:25:49Z",
+  "updated_at": "2026-04-21T19:44:04Z",
+  "closed_at": "2026-04-21T19:44:04Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:25:49Z"
+    }
+  ]
+}

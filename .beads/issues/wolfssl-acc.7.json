@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-acc.7",
+  "title": "crypto2dev_hash_algo_name infers hash type from digest length: fragile for future algorithms",
+  "description": "What is awkward: crypto2dev_hash_algo_name() maps digest length (32/48/64) to a hash name string for ECDSA sign/verify. SHA-256, SHA-384, and SHA-512 are today uniquely identified by their output lengths in the 32/48/64 byte range. But the inference is not semantically correct: other algorithms (SHA3-256=32, SHA3-384=48, SHA3-512=64, SHAKE-256=variable) produce the same output lengths.\n\nFor ECDSA with TLS this is fine today \u2014 ECDSA over P-256 uses SHA-256, P-384 uses SHA-384, P-521 uses SHA-512, all with fixed digest sizes. But the function is not obviously constrained to these cases.\n\nSuggested rewrite: The ECDSA sign info struct (info->pk.eccsign) carries the digest and its length; the hash type is already known by the caller and could be passed explicitly. Alternatively, rename the function to crypto2dev_ecdsa_hash_name_from_len() and add a comment making the assumption explicit: 'Only valid for ECDSA P-256/384/521 with SHA-256/384/512.'",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T15:37:47Z",
+  "updated_at": "2026-04-21T15:48:24Z",
+  "closed_at": "2026-04-21T15:48:24Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-acc",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T08:37:46Z"
+    }
+  ]
+}

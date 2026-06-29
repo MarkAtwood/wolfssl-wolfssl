@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-tm1",
+  "title": "SEC7: RSA sign/verify path broken without WOLF_CRYPTO_CB_RSA_PAD",
+  "description": "crypto2dev_rsa() is called from wc_RsaFunction_ex() via wc_CryptoCb_Rsa(). At that call site, 'in' is the fully padded RSA block (DigestInfo for PKCS#1 v1.5, or full modulus-sized block), not a raw hash digest. For RSA-2048, inLen=256 bytes. The port treats info->pk.rsa.inLen as a digest length, maps it to an algo string via crypto2dev_hash_algo_name() (default: sha256 for any unrecognized size), and then checks inLen > CRYPTO2DEV_HASH_MAXLEN (64) which fires for any RSA key size >= 512-bit, returning BAD_FUNC_ARG. Result: RSA sign always fails with BAD_FUNC_ARG. The architectural fix requires either: (a) implementing WOLF_CRYPTO_CB_RSA_PAD support so the port receives the raw digest before padding, or (b) performing the DO_SIGN with raw data (pass the padded block as-is if crypto2dev supports it). The port's comment ('wolfSSL uses RSA_PRIVATE_DECRYPT for private-key operations') acknowledges the naming but misses the data format issue. This also affects RSA verify.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:38:38Z",
+  "updated_at": "2026-04-20T20:54:09Z",
+  "closed_at": "2026-04-20T20:54:09Z"
+}

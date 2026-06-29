@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-qsi.9",
+  "title": "Defend: CBC alignment check before pool acquire prevents word32 underflow in IV update",
+  "description": "crypto2dev_cipher rejects CBC with data_sz not aligned to AES_BLOCK_SIZE (line 692) before pool acquisition. A reviewer might suggest removing this as 'redundant' since wolfSSL's wc_AesCbcEncrypt validates alignment. The check protects against a word32 underflow: the IV update at line 831 computes 'src + data_sz - AES_BLOCK_SIZE'. If data_sz < AES_BLOCK_SIZE (e.g., 0 or 7), the subtraction underflows word32 and the XMEMCPY reads from an arbitrary address. wolfSSL only enforces alignment when WOLFSSL_AES_CBC_LENGTH_CHECKS is defined, which is not the default. Without the check, an application calling the CryptoCb API directly with unaligned data would cause a memory read at an arbitrary address with no error. The BAD_FUNC_ARG early return is not redundant; it is the only defense against underflow on non-default builds.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T00:59:02Z",
+  "updated_at": "2026-04-22T01:43:42Z",
+  "closed_at": "2026-04-22T01:43:42Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-qsi",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T17:59:01Z"
+    }
+  ]
+}

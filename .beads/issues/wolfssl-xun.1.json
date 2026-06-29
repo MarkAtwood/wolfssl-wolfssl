@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-xun.1",
+  "title": "AES-CBC: IV update reads OOB if data_sz < AES_BLOCK_SIZE",
+  "description": "crypto2dev_cipher():L771-775 updates aes->reg with `src + data_sz - AES_BLOCK_SIZE`. data_sz is word32, so if data_sz < 16 the subtraction wraps to ~0xFFFFFFF0 and the XMEMCPY reads from completely wrong memory. wolfSSL's own wc_AesCbcEncrypt validates block-alignment before calling CryptoCb, so this is latent today, but the port is a public CryptoCb callback and any caller that bypasses wolfSSL's validation (direct CryptoCb use, future refactor) triggers undefined behaviour. No guard exists in crypto2dev_cipher() itself.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:42:29Z",
+  "updated_at": "2026-04-21T22:19:12Z",
+  "closed_at": "2026-04-21T22:19:12Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-xun",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T14:42:29Z"
+    }
+  ]
+}

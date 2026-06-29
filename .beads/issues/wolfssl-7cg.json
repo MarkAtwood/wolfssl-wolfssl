@@ -1,0 +1,28 @@
+{
+  "id": "wolfssl-7cg",
+  "title": "crypto2dev: OPERATION fd pool",
+  "description": "Implement a pool of reusable OPERATION fds for /dev/crypto2dev. Opening a fresh fd per wolfSSL operation is correct but syscall-heavy; instead maintain a fixed-size pool of open fds and reuse them via CRYPTO2DEV_IOC_RESET between operations. Pool API: acquire(algo, op, key, keylen) \u2192 fd; release(fd). On acquire: scan pool for a matching idle fd, call RESET if algo matches, or close+reopen if algo changed. Thread safety via per-slot mutex or spinlock. Pool size configurable at compile time (default 8).",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:17:30Z",
+  "updated_at": "2026-04-20T20:03:59Z",
+  "closed_at": "2026-04-20T20:03:59Z",
+  "notes": "This is foundational \u2014 all symmetric, hash, MAC, and KDF operations depend on it. Consider whether pool slots should be per-thread (TLS) or global with locking. Global with per-slot trylock avoids TLS complexity.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:19:04Z"
+    },
+    {
+      "depends_on_id": "wolfssl-d2j",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:18:56Z"
+    }
+  ]
+}

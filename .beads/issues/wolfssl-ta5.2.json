@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-ta5.2",
+  "title": "g_tls_safe_mode is process-global: disables hash for other libraries sharing devId",
+  "description": "Scenario: A shared library calls wc_crypto2dev_assign_devid() to enable TLS-safe mode. Any other code in the same process that independently uses WOLF_CRYPTO2DEV_DEVID for hardware SHA will silently fall back to software SHA with no diagnostic. The maintenance consequence: users will file 'hardware hash not working' bugs that are impossible to reproduce in isolation, because the trigger is a separate library in their process setting the global flag. The header comment warns about this but the warning is on the implementation-facing helper function, not on wc_crypto2dev_assign_devid() itself which is the public API.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:14:26Z",
+  "updated_at": "2026-04-21T16:33:02Z",
+  "closed_at": "2026-04-21T16:33:02Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:14:25Z"
+    }
+  ]
+}

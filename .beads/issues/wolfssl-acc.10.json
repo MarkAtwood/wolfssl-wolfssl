@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-acc.10",
+  "title": "AES SETKEY returning CRYPTOCB_UNAVAILABLE deliberately to preserve aes->rounds",
+  "description": "crypto2dev_aes_setkey_ctx() stores the raw key bytes in aes->devCtx, then returns CRYPTOCB_UNAVAILABLE. This causes wolfSSL to also run the software wc_AesSetKey(), which sets aes->rounds (the expanded key schedule).\n\nA future contributor might see 'hardware key set, why run software too?' and change this to return 0. That would break wc_AesGcmEncrypt for callers using the standard wc_AesGcmSetKey + wc_AesGcmEncrypt pattern: wc_AesGcmSetKey needs aes->rounds to precompute the GCM H-subkey (the GHASH key). Without aes->rounds, the first encrypt returns KEYUSAGE_E with no obvious diagnostic.\n\nWhy this is correct: The hardware cipher path (crypto2dev_cipher) checks devCtx first and uses the device regardless of what the software schedule set. Returning CRYPTOCB_UNAVAILABLE preserves both the hardware key handle AND the software schedule, satisfying both the hardware encrypt and any wolfSSL internal code that inspects aes->rounds.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T15:38:18Z",
+  "updated_at": "2026-04-21T15:48:28Z",
+  "closed_at": "2026-04-21T15:48:28Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-acc",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T08:38:18Z"
+    }
+  ]
+}

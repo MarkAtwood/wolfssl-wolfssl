@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-lc7.9",
+  "title": "sim_finalize HMAC/hash distinction via keySz>0 is implicit state",
+  "description": "sim_finalize (sim.c:427-431) distinguishes HMAC from plain hash by checking slot->keySz>0. This is implicit: a future INIT path that sets a key for a non-HMAC operation would incorrectly route to sim_finalize_hmac. Suggested rewrite: add an explicit SIM_OP_HMAC sub-type (distinct from SIM_OP_HASH) set during sim_ioctl_init when algo starts with 'hmac('. This makes the dispatch self-documenting and immune to accidental key presence in other ops.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:44:28Z",
+  "updated_at": "2026-04-21T14:58:30Z",
+  "closed_at": "2026-04-21T14:58:30Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-lc7",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:44:28Z"
+    }
+  ]
+}

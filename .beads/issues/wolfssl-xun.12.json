@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-xun.12",
+  "title": "Decision: AES SETKEY returns CRYPTOCB_UNAVAILABLE to let wolfSSL run the software key schedule",
+  "description": "crypto2dev_aes_setkey_ctx():L559-567. After storing the key in aes->devCtx, the function returns CRYPTOCB_UNAVAILABLE instead of 0. This is intentional: it causes wolfSSL to also run the software key schedule (setting aes->rounds, computing the GCM H-subkey). Without this, wc_AesGcmSetKey callers get KEYUSAGE_E at the first encrypt because aes->rounds == 0. The hardware cipher path (crypto2dev_cipher) checks devCtx first and uses hardware regardless of what the software schedule set. A contributor who changes this to return 0 to 'claim the key' will break GCM without a clear error.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:43:37Z",
+  "updated_at": "2026-04-21T22:15:22Z",
+  "closed_at": "2026-04-21T22:15:22Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-xun",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T14:43:37Z"
+    }
+  ]
+}

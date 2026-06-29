@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-ix8",
+  "title": "Refactor HMAC to stream updates without accumulation buffer",
+  "description": "Replace the 64KB heap accumulation buffer in crypto2dev_hmac with true streaming: acquire pool fd + INIT(key) at first Update, write() each chunk immediately, FINALIZE + read() at Final. Eliminates WOLFSSL_CRYPTO2DEV_HMAC_MAX_BUF limit, the realloc loop, and ForceZero-on-heap complexity. Pool slot held from first Update to Final (same as hash streaming path).",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T03:28:22Z",
+  "updated_at": "2026-04-22T03:35:15Z",
+  "closed_at": "2026-04-22T03:35:15Z"
+}

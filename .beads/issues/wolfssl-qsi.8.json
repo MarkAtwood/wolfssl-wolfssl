@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-qsi.8",
+  "title": "Defend: HMAC max-buffer overflow returns WC_HW_E (not CRYPTOCB_UNAVAILABLE)",
+  "description": "When the HMAC accumulation buffer would exceed WOLFSSL_CRYPTO2DEV_HMAC_MAX_BUF, the Update path returns WC_HW_E (crypto2dev_port.c:1125), not CRYPTOCB_UNAVAILABLE. A reviewer might suggest CRYPTOCB_UNAVAILABLE as a 'softer' failure to allow software fallback. This is wrong: HMAC SETKEY returns 0 (claiming the key), so wolfSSL's software path ran no ipad/opad schedule and has no accumulated state. A software wc_HmacFinal fallback would compute HMAC with all-zeros key over zero bytes and return it as a valid MAC \u2014 an authentication bypass identical to wolfssl-yjw.7. WC_HW_E is the only safe return: it surfaces a hard failure that the caller cannot ignore. Do not change to CRYPTOCB_UNAVAILABLE. The comment at port.h:53 explains this.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T00:58:56Z",
+  "updated_at": "2026-04-22T01:43:40Z",
+  "closed_at": "2026-04-22T01:43:40Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-qsi",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T17:58:56Z"
+    }
+  ]
+}

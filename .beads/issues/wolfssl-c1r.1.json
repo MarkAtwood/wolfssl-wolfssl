@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-c1r.1",
+  "title": "AES-GCM decrypt: authTagSz=0 skips tag validation silently",
+  "description": "In crypto2dev_cipher(), the SET_TAG ioctl is guarded by 'authTagSz > 0 && authTagSz <= CRYPTO2DEV_TAG_MAXLEN'. When authTagSz == 0 (or > CRYPTO2DEV_TAG_MAXLEN), SET_TAG is skipped entirely and decryption proceeds. For the zero-length case, the device decrypts without any authentication check. The caller sees ret=0 as if decryption succeeded with a valid tag. A caller supplying authTagSz=0 gets unauthenticated GCM decrypt silently passing instead of a hard error.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:25:11Z",
+  "updated_at": "2026-04-21T19:43:54Z",
+  "closed_at": "2026-04-21T19:43:54Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:25:10Z"
+    }
+  ]
+}

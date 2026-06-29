@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-yjw",
+  "title": "Audit: crypto2dev shim 2026-04-21",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T23:05:06Z",
+  "updated_at": "2026-04-21T23:34:39Z",
+  "closed_at": "2026-04-21T23:34:39Z",
+  "notes": "Confidence: FIPS error propagation coverage: 90% \u2014 shim correctly maps EACCES to FIPS_NOT_ALLOWED_E on all ioctl paths; no false CRYPTOCB_UNAVAILABLE promotions for FIPS failures found. Key material leak risk: 10% \u2014 ForceZero is used consistently on all heap-allocated key structs and all stack-allocated ioctl structs; only concern is the COPY alias bug (wolfssl-yjw.5) which requires an Aes copy that wolfSSL TLS does not perform. GCM auth correctness: 75% \u2014 two concrete gaps found (authTagSz < 12 not rejected, encrypt oversized tag silent skip); P-192 ECC gap found. UAPI integrity: 80% \u2014 static_assert size guards in place; field-order divergence not catchable without kernel headers (wolfssl-yjw.6). Would raise confidence: run against kernel uapi header with CRYPTO2DEV_HAVE_UAPI_HEADER set; valgrind/ASAN run of crypto2dev_test with SIM enabled; verify wolfSSL never calls wc_AesCopy on devId-bound Aes objects in TLS code."
+}

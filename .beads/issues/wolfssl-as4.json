@@ -1,0 +1,14 @@
+{
+  "id": "wolfssl-as4",
+  "title": "Review: crypto2dev-shim pre-merge",
+  "description": "Pre-merge MY-OSS review of the feature/crypto2dev-shim branch (crypto2dev_port.c, headers, test file). Audience: myself before merging to main on a public GitHub repo.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T17:22:50Z",
+  "updated_at": "2026-04-21T19:03:57Z",
+  "closed_at": "2026-04-21T19:03:57Z",
+  "notes": "Confidence: revised upward to 85% \u2014 wolfssl-as4.2 CONFIRMED via hmac.c. The SETKEY+UNAVAILABLE silent-wrong-MAC bug is real. New bug also found (wolfssl-as4.10): HmacCtx leak every Final+Free cycle. Three P0 correctness bugs total, all in HMAC code. The TLS primary use case avoids HMAC data > 64KB so bugs .1 and .2 don't trigger, but bug .10 (the leak) hits every TLS record MAC. Remaining uncertainty: whether any edge case in the pool/fd management was missed without a multithreaded stress test."
+}

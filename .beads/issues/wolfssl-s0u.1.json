@@ -1,0 +1,33 @@
+{
+  "id": "wolfssl-s0u.1",
+  "title": "crypto2dev CI: Ubuntu 22.04 + 24.04 baseline run",
+  "description": "Execute TEST_CRYPTO2DEV=1 TEST_LINUXKM=1 ./tests/ci/test-on-aws.sh on Ubuntu 22.04 (kernel 5.15) and Ubuntu 24.04 (kernel 6.8). Record: build success/failure for wolfcrypt.ko and crypto2dev.ko, module load/unload clean (no BUG/Oops), userspace wolfSSL tests passing, shim test results. Ubuntu is the primary target and should be the first distro validated.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:37:13Z",
+  "updated_at": "2026-04-21T01:49:17Z",
+  "closed_at": "2026-04-21T01:49:17Z",
+  "notes": "PASS: Ubuntu 22.04 (6.8 HWE, 16/0), Ubuntu 24.04 (6.17, 16/0). Both PASS with TEST_CRYPTO2DEV=1 TEST_LINUXKM=1. wolfcrypt.ko + crypto2dev.ko + crypto2dev_wolfssl.ko all load. /dev/crypto2dev present. wolfSSL rebuilt with --enable-crypto2dev. Shim test SKIP (standalone binary not built yet). Fixes: kcapi utsrelease.h include, LINUXKM_ASM_OPT.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3.5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:18Z"
+    },
+    {
+      "depends_on_id": "wolfssl-c62",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:17Z"
+    },
+    {
+      "depends_on_id": "wolfssl-s0u",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:37:12Z"
+    }
+  ]
+}

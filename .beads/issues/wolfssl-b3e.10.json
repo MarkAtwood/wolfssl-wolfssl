@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-b3e.10",
+  "title": "crypto2dev_cipher: same switch-on-cipher-type written twice",
+  "description": "crypto2dev_cipher has two switch(info->cipher.type) blocks: the first sets aes/algo/iv/ivSz; the second (inside the data block) sets in_buf/out_buf/data_sz. The cases are the same, the logic is symmetric but split. A reader needs to mentally track two parallel switch trees to understand one operation. Suggested rewrite: introduce a single pass that sets all six variables together, or factor out a small inline struct that carries the per-algorithm pointers and pass it around.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T13:55:12Z",
+  "updated_at": "2026-04-21T14:14:14Z",
+  "closed_at": "2026-04-21T14:14:14Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-b3e",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T06:55:12Z"
+    }
+  ]
+}

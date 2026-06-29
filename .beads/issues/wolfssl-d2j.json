@@ -1,0 +1,22 @@
+{
+  "id": "wolfssl-d2j",
+  "title": "crypto2dev: scaffolding and build integration",
+  "description": "Create the directory structure, source/header files, configure flag, and Makefile rules for the crypto2dev CryptoCb shim. Mirrors the caliptra port layout at wolfcrypt/src/port/caliptra/. Includes: wolfcrypt/src/port/crypto2dev/crypto2dev_port.c, wolfssl/wolfcrypt/port/crypto2dev/crypto2dev_port.h, --enable-crypto2dev configure flag (sets WOLFSSL_CRYPTO2DEV + WOLF_CRYPTO_CB + WOLF_CRYPTO_CB_FREE + WOLF_CRYPTO_CB_SETKEY), wolfcrypt/src/include.am entry, device ID constant (WOLF_CRYPTO2DEV_DEVID), wc_crypto2dev_init()/cleanup() lifecycle stubs, and wc_crypto2dev_cb() entry point skeleton with algo_type dispatch.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:17:29Z",
+  "updated_at": "2026-04-20T19:51:05Z",
+  "closed_at": "2026-04-20T19:51:05Z",
+  "notes": "Model after wolfcrypt/src/port/caliptra/caliptra_port.c structure. Device ID should be a 4-byte ASCII constant to avoid collision with small positive IDs.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:19:04Z"
+    }
+  ]
+}

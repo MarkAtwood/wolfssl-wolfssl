@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-x6j",
+  "title": "SEC0: hash FREE missing \u2014 op_fd + ctx leaked",
+  "description": "crypto2dev_port.c: The WC_ALGO_TYPE_FREE dispatch (line 1387) handles WC_ALGO_TYPE_CIPHER, WC_ALGO_TYPE_HMAC, and WC_ALGO_TYPE_PK but has no case for WC_ALGO_TYPE_HASH. wolfSSL calls wc_CryptoCb_Free with WC_ALGO_TYPE_HASH from wc_Sha256Free (sha256.c:2400), wc_Sha384Free, and wc_Sha512Free whenever the hash object carries a non-INVALID_DEVID. If a streaming hash is started (devCtx != NULL, op_fd >= 0) and the hash object is freed without calling Final, the Crypto2DevHashCtx allocation and the op_fd (a leased pool fd that was never returned) are both permanently leaked. Repeated abandoned hash operations will exhaust the fd pool, causing all subsequent operations to fail with WC_HW_E. Fix: add a WC_ALGO_TYPE_HASH case to the FREE dispatch that closes ctx->op_fd, calls crypto2dev_pool_release, frees ctx, and clears devCtx.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:35:02Z",
+  "updated_at": "2026-04-20T20:54:08Z",
+  "closed_at": "2026-04-20T20:54:08Z"
+}

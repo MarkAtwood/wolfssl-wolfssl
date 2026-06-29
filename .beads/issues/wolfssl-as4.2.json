@@ -1,0 +1,22 @@
+{
+  "id": "wolfssl-as4.2",
+  "title": "HMAC: SETKEY claims key (returns 0) but Update may fall back \u2014 software HMAC uninitialized",
+  "description": "Trigger: HmacSetKey with key <= 128B (SETKEY callback returns 0, wolfSSL skips its own ipad/opad key schedule). Then first HmacUpdate with a single call > 64KB (dataSz==0 && need > HMAC_MAX_BUF \u2192 returns CRYPTOCB_UNAVAILABLE). wolfSSL falls back to its software HmacUpdate, but the software Hmac struct was never initialized (SETKEY returned 0). Bad behavior: wolfSSL computes HMAC with zero/garbage key material (depending on Hmac struct initialization) and returns it as success \u2014 silent wrong MAC. Contrast with AES SETKEY which deliberately returns CRYPTOCB_UNAVAILABLE to keep the software schedule valid. Fix: either (a) make HMAC SETKEY also return CRYPTOCB_UNAVAILABLE so wolfSSL keeps a valid software key schedule, or (b) never return CRYPTOCB_UNAVAILABLE from Update after SETKEY claimed the key (i.e., if oversized, return WC_HW_E instead).",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T17:23:22Z",
+  "updated_at": "2026-04-21T18:26:42Z",
+  "closed_at": "2026-04-21T18:26:42Z",
+  "notes": "CONFIRMED via wolfssl/wolfcrypt/src/hmac.c lines 549-558. wc_HmacSetKey_ex calls the SETKEY callback; if it returns anything other than CRYPTOCB_UNAVAILABLE, it returns immediately (line 557) \u2014 BEFORE the software ipad/opad key schedule runs. If our SETKEY returns 0, wolfSSL skips the software key schedule entirely. If wc_HmacUpdate's callback then returns CRYPTOCB_UNAVAILABLE (oversized first chunk), wolfSSL falls through to software HmacUpdate on zero-initialized (never-keyed) HMAC state. Result: HMAC computed with all-zeros ipad/opad, silently wrong.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-as4",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T10:23:22Z"
+    }
+  ]
+}

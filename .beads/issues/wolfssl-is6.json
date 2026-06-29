@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-is6",
+  "title": "Smoke test: run caliptra_test against hw-model, verify RNG and one crypto op",
+  "description": "Build and run caliptra_test with the hw-model backend. Verify at minimum: RNG returns bytes, SHA-384 empty-message KAT passes, AES-256-GCM round-trip passes. Document any firmware command ID mismatches between caliptra_port.h constants and actual Caliptra runtime firmware. Fix any issues found during smoke test.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-05T04:44:42Z",
+  "updated_at": "2026-04-05T05:51:53Z",
+  "closed_at": "2026-04-05T05:51:53Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-kyk",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-04T21:44:49Z"
+    }
+  ]
+}

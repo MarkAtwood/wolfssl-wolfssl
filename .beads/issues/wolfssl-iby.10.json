@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-iby.10",
+  "title": "HMAC Final returns WC_HW_E (not CRYPTOCB_UNAVAILABLE) on hardware INIT failure",
+  "description": "What is correct and why: crypto2dev_hmac() Final path (port.c:1066-1075): when INIT ioctl fails at Final time, the port returns WC_HW_E, not CRYPTOCB_UNAVAILABLE. The comment explains: Update calls already returned 0 (claimed), so wolfSSL's software HMAC state has no accumulated data. A software fallback Final would compute HMAC over empty input \u2014 a silent authentication bypass that produces a wrong MAC with no error. Returning WC_HW_E surfaces a hard failure. A future contributor who sees 'we could fallback gracefully here' and changes this to CRYPTOCB_UNAVAILABLE would introduce a subtle MAC bypass: the caller gets 0 (success) but the MAC is wrong.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:41:43Z",
+  "updated_at": "2026-04-21T17:11:59Z",
+  "closed_at": "2026-04-21T17:11:59Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:41:42Z"
+    }
+  ]
+}

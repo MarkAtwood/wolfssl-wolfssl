@@ -1,0 +1,34 @@
+{
+  "id": "wolfssl-2ed.1",
+  "title": "crypto2dev TLS: hardware coverage analysis",
+  "description": "Systematically trace which operations in a TLS 1.3 and TLS 1.2 handshake will be served by crypto2dev hardware vs. falling back to software, given the constraints of the crypto2dev API (no hash snapshot, ECDH returns OKM not raw Z). For TLS 1.3: ECDHE key generation (hardware via KEY_GENERATE), ECDHE shared secret (software \u2014 DO_AGREE returns OKM, wolfSSL needs raw Z for HKDF), HKDF-Extract/Expand (hardware via DO_KDF), HMAC-SHA256/384 for Finished (hardware), AES-GCM record encryption (hardware), transcript hash (software \u2014 Copy required). For TLS 1.2 (ECDHE-RSA-AES128-GCM): similar analysis. Produce a table: operation, wolfSSL callback, hardware/software, reason.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:36:53Z",
+  "updated_at": "2026-04-20T22:45:10Z",
+  "closed_at": "2026-04-20T22:45:10Z",
+  "notes": "TLS 1.3 coverage table:\n\n| Operation | wolfSSL call | Routing | Reason |\n|---|---|---|---|\n| ECDHE key gen | wc_ecc_make_key | Software | KEY_GENERATE not in CryptoCb path |\n| ECDHE shared secret | wc_ecc_shared_secret | **Software (MUST)** | DO_AGREE returns OKM; wolfSSL needs raw Z |\n| HKDF-Extract/Expand | wc_HKDF_* | Software | No WC_ALGO_TYPE_KDF CryptoCb dispatch |\n| Transcript hash SHA-256/384 | wc_Sha256Update | **Software (MUST)** | wc_Sha256Copy fails; hardware streaming state not snapshottable |\n| Finished HMAC | wc_HmacFinal | **Hardware** | One-shot HMAC; no Copy needed |\n| AES-GCM record encrypt/decrypt | wc_AesGcmEncrypt | **Hardware** | Full support via DO_CIPHER |\n| ECDSA cert verify | wc_ecc_verify_hash | **Hardware** | DO_VERIFY with KEY fd |\n| ECDSA client auth sign | wc_ecc_sign_hash | **Hardware** | DO_SIGN with KEY fd |\n\nTLS 1.2 additions:\n| PRF master secret | wc_PRF_TLS | Software | No CryptoCb dispatch for PRF |\n| RSA server auth sign | wc_RsaSSL_Sign | Software | DO_SIGN needs raw digest; wolfSSL passes DigestInfo (wolfssl-tm1) |\n\nCRITICAL DESIGN DECISION for wolfssl-2ed.2: must NOT route WC_ALGO_TYPE_HASH (streaming hash) to hardware. Solution: add a runtime flag in crypto2dev_port.c; when TLS mode is active the callback returns CRYPTOCB_UNAVAILABLE for WC_ALGO_TYPE_HASH. HMAC (WC_ALGO_TYPE_HMAC), CIPHER (WC_ALGO_TYPE_CIPHER), PK (WC_ALGO_TYPE_PK) all still use hardware.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3.2",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:15Z"
+    },
+    {
+      "depends_on_id": "wolfssl-2ed",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:36:53Z"
+    },
+    {
+      "depends_on_id": "wolfssl-lur",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:15Z"
+    }
+  ]
+}

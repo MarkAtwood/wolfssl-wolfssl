@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-lc7.10",
+  "title": "FIPS probe: no comment explaining why separate fd instead of g_crypto2dev_fd",
+  "description": "wc_crypto2dev_init (port.c:1386-1400) opens fips_probe_fd, issues CRYPTO2DEV_IOC_REQUIRE_FIPS, closes it. There is no comment explaining why g_crypto2dev_fd is not used directly. A future maintainer will see the extra open/close and 'simplify' it to issue the ioctl on g_crypto2dev_fd. If REQUIRE_FIPS has fd-level side effects, this simplification would be wrong. Needs: one-line comment stating the reason (e.g., 'REQUIRE_FIPS locks the fd to FIPS mode; use a probe fd to avoid locking the global fd' OR 'REQUIRE_FIPS is query-only; TODO: simplify to use g_crypto2dev_fd').",
+  "status": "closed",
+  "priority": 4,
+  "issue_type": "chore",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:44:33Z",
+  "updated_at": "2026-04-21T15:01:05Z",
+  "closed_at": "2026-04-21T15:01:05Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-lc7",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:44:33Z"
+    }
+  ]
+}

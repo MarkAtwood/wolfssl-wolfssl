@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-b3e.9",
+  "title": "ECDSA sign/verify serialized: single global fd + mutex blocks all concurrent operations",
+  "description": "All ECDSA sign and verify operations share g_crypto2dev_fd under g_ecdsa_fd_lock. In a TLS server where many connections do ECDSA at handshake time, all sign/verify operations queue behind this one mutex. The device might support concurrent ioctls on separate fds (like the operation fd pool for cipher/hash). Expected impact: measurable throughput reduction on a TLS server with high handshake rate (e.g., 100+ TLS connections/sec all doing ECDSA-256 sign). Fix direction: add ECDSA to the fd pool (open a pool fd, issue the sign ioctl on it, release it). Requires verifying the device supports DO_SIGN on non-global fds.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T13:55:03Z",
+  "updated_at": "2026-04-21T14:14:17Z",
+  "closed_at": "2026-04-21T14:14:17Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-b3e",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T06:55:03Z"
+    }
+  ]
+}

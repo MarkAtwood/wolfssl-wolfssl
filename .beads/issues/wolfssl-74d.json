@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-74d",
+  "title": "SEC2: AES cipher re-imports key on every encrypt/decrypt",
+  "description": "crypto2dev_cipher() always uses the inline key path: it copies ctx->key into init_op.key and sets init_op.key_fd = -1 on every AES-CBC/GCM/CTR operation. The Crypto2DevAesCtx struct (allocated once on SETKEY, correct) stores raw key bytes instead of a KEY fd. For repeated encryption with the same key (e.g., bulk data transfer, TLS record layer), the kernel re-loads the key material on every call. Fix: in crypto2dev_aes_setkey_ctx(), call crypto2dev_key_import() and store the KEY fd in devCtx (as done for RSA/ECC). In crypto2dev_cipher(), set init_op.key_fd to the stored fd, set init_op.keylen = 0, and zero init_op.key. This avoids copying key bytes on every encrypt and lets the kernel reuse the loaded key object.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:34:04Z",
+  "updated_at": "2026-04-20T20:54:16Z",
+  "closed_at": "2026-04-20T20:54:16Z"
+}

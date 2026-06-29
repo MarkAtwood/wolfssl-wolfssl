@@ -1,0 +1,27 @@
+{
+  "id": "wolfssl-s0u.2",
+  "title": "crypto2dev CI: RHEL-family distro matrix (Rocky, Fedora, AL2023)",
+  "description": "Run TEST_CRYPTO2DEV=1 TEST_LINUXKM=1 ./tests/ci/test-on-aws.sh for Rocky Linux 9, Fedora latest, and Amazon Linux 2023. These use DNF and have different kernel-devel alignment requirements. Rocky 9 is the primary enterprise Linux target. Track any distro-specific build failures (kernel header paths, missing packages, vermagic mismatches) and fix them in the script or shim Makefile.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:37:21Z",
+  "updated_at": "2026-04-21T01:49:18Z",
+  "closed_at": "2026-04-21T01:49:18Z",
+  "notes": "Fedora sign-file fix: ldd check + recompile from source. wolfkm crypto2dev_fd.c:2045 op.provider bug fixed. Re-runs launched (v2).",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-s0u",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:37:20Z"
+    },
+    {
+      "depends_on_id": "wolfssl-s0u.1",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:18Z"
+    }
+  ]
+}

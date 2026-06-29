@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-6i2",
+  "title": "Add wc_crypto2dev_pool_stats and wc_crypto2dev_selftest APIs",
+  "description": "Add two public functions: wc_crypto2dev_pool_stats(in_use, total) for runtime pool utilization, and wc_crypto2dev_selftest() that runs a NIST AES-128-GCM KAT to verify the device is alive. Lets callers distinguish pool exhaustion from device failure after WC_HW_E.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "feature",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T03:40:10Z",
+  "updated_at": "2026-04-22T03:44:23Z",
+  "closed_at": "2026-04-22T03:44:23Z"
+}

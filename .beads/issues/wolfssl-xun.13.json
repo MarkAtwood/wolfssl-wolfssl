@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-xun.13",
+  "title": "Add GCM truncated-tag KAT (authTagSz < 16)",
+  "description": "The test suite has no test vector exercising AES-GCM with authTagSz < 16 (truncated tag). The truncation path through the port is: GET_TAG sets tag_op.taglen = authTagSz, sim returns min(requested, stored), port checks tag_op.taglen == authTagSz. This was traced logically but never run against a known-answer vector. NIST SP 800-38D Appendix B provides vectors; truncation is valid down to 4 bytes per the spec. Add a test case to test_aesgcm_empty() or as a sibling: encrypt with authTagSz=12, compare ciphertext and tag against the NIST vector, then decrypt and verify. Absence of this test leaves the truncation path as reviewer-trusted-but-untested.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:46:09Z",
+  "updated_at": "2026-04-21T22:21:53Z",
+  "closed_at": "2026-04-21T22:21:53Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-xun",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T14:46:09Z"
+    }
+  ]
+}

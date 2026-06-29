@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-iby.3",
+  "title": "Wire struct UAPI copy drifts silently from kernel driver",
+  "description": "Scenario: developer adds or reorders a field in the kernel driver's UAPI structs (e.g., crypto2dev_init_op) without updating crypto2dev_wire.h. The _IOW macro encodes sizeof(struct) into the ioctl request code; a size mismatch causes the ioctl to fail with ENOTTY or EINVAL \u2014 no message, just a hard error. The CRYPTO2DEV_HAVE_UAPI_HEADER escape hatch exists in crypto2dev_wire.h but is not wired into configure.ac, so users who have the kernel headers at build time don't get the protection. Maintenance consequence: every kernel driver ABI change requires a manual update to crypto2dev_wire.h that can easily be missed. The wire the configure.ac --with-crypto2dev-uapi-header path or add a CI check that compares struct sizes.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:40:47Z",
+  "updated_at": "2026-04-21T17:06:52Z",
+  "closed_at": "2026-04-21T17:06:52Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:40:47Z"
+    }
+  ]
+}

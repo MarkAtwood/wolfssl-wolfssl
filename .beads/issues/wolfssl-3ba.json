@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-3ba",
+  "title": "SEC7r4: no multi-chunk HMAC Update KAT in test suite",
+  "description": "test_hmac_sha256() calls wc_HmacUpdate exactly once before wc_HmacFinal. The accumulation realloc path in crypto2dev_hmac() (XMALLOC + XMEMCPY of old data) is never exercised. If the realloc or XMEMCPY is wrong (e.g., due to off-by-one in dataSz arithmetic), a multi-chunk HMAC would produce a wrong MAC silently. RFC 4231 Test Case 2 (key=4a656665, data='what do ya want for nothing?' split across two updates) provides a suitable two-chunk KAT with known output.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T21:07:22Z",
+  "updated_at": "2026-04-20T21:08:28Z",
+  "closed_at": "2026-04-20T21:08:28Z"
+}

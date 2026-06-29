@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-bz2",
+  "title": "R2 fixes: sim AES-CTR and FIPS+SIM incompatibility",
+  "description": "Two fixes in crypto2dev_sim.c:\\n1. AES-CTR not handled in sim_ioctl_init: when algo is 'ctr(aes)', sim sets SIM_CIPHER_NONE and eventually returns EIO. The port translates this to WC_HW_E (hard error) instead of CRYPTOCB_UNAVAILABLE (software fallback). Fix: for unrecognized cipher algo strings, return EOPNOTSUPP so the port returns CRYPTOCB_UNAVAILABLE.\\n2. WOLFSSL_CRYPTO2DEV_REQUIRE_FIPS + WOLFSSL_CRYPTO2DEV_SIM: silently fails at init (sim returns EOPNOTSUPP for REQUIRE_FIPS ioctl). Add #error or #warning for this incompatible combination.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:45:50Z",
+  "updated_at": "2026-04-20T23:55:21Z",
+  "closed_at": "2026-04-20T23:55:21Z"
+}

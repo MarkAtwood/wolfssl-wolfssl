@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-0t2",
+  "title": "Review: crypto2dev-shim CryptoCb port",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:10:31Z",
+  "updated_at": "2026-04-21T19:20:02Z",
+  "closed_at": "2026-04-21T19:20:02Z",
+  "notes": "Maintainer risk: LOW \u2014 one real P0 correctness hole (GCM decrypt oversized tag), one P1 code pattern issue. No concurrency bugs beyond the documented caller contract. No key material leaks. No memory corruption paths. The HMAC MAC-bypass prevention is explicitly tested and correctly implemented.\nConfidence: 10% chance of missed bug. Uncertainty driven by: (1) not knowing CRYPTO2DEV_TAG_MAXLEN value \u2014 if it is >=16, the P0 is unreachable with standard GCM; (2) device behavior when SET_TAG is never called (does device pass or fail authentication?); (3) interaction between pool cleanup and in-flight ops not tested. Would raise confidence if: simulator test coverage of oversized-tag decrypt path, and documentation of what the device does when no SET_TAG is issued before FINALIZE.\nConfidence revised: 5% chance of missed bug. Both unknowns resolved: CRYPTO2DEV_TAG_MAXLEN=16 (tag oversize unreachable from standard GCM), device fails closed on missing SET_TAG (FINALIZE returns -EINVAL when taglen==0). wolfssl-0t2.1 demoted from P0 to P2 \u2014 code inconsistency, not a security hole. Remaining uncertainty: cleanup-while-in-flight behavior (caller contract, not tested)."
+}

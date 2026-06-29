@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-qsi.10",
+  "title": "Defend: ECDSA hash dispatch excludes SHA-3 to prevent 32-byte collision with SHA-256",
+  "description": "crypto2dev_ecdsa_hash_algo_name() (line 1346) maps digest length to hash algorithm name (32\u2192sha256, 48\u2192sha384, 64\u2192sha512) but explicitly excludes SHA-3. A reviewer might add SHA3-256/SHA3-384 cases to enable ECDSA with SHA-3 digests. SHA3-256 produces 32 bytes \u2014 the same as SHA-256. Adding a SHA3-256 case would require an OR condition on the 32-byte case, but since only the digest length is known at dispatch time (the calling convention provides a pre-hashed digest, not the hash algorithm), the 32-byte entry cannot distinguish SHA-256 from SHA3-256. Silently dispatching SHA3-256 digests to the SHA-256 ECDSA path uses the wrong hash algorithm in the signature scheme, which may produce a verifiable signature under an unintended algorithm. To support ECDSA with SHA-3, the hash algorithm must be communicated via the SETKEY path (stored in key->devCtx) rather than inferred from digest length. The comment at line 1333 explains this; do not add SHA-3 cases to the switch.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T00:59:09Z",
+  "updated_at": "2026-04-22T01:43:43Z",
+  "closed_at": "2026-04-22T01:43:43Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-qsi",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T17:59:08Z"
+    }
+  ]
+}

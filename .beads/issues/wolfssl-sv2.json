@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-sv2",
+  "title": "R2 fix: test.c guard mismatch for crypto2dev_test",
+  "description": "In wolfcrypt/test/test.c:\\n1. The #include of crypto2dev_port.h is nested inside WOLF_CRYPTO_CB (line ~464) but the extern declaration and call site are not, causing linker break when WOLF_CRYPTO_CB is absent.\\n2. The extern uses plain 'int' but should use wc_test_ret_t to match all neighboring test function declarations.\\nFix: add WOLF_CRYPTO_CB to extern and call site guards; change int to wc_test_ret_t in extern.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:45:29Z",
+  "updated_at": "2026-04-20T23:55:19Z",
+  "closed_at": "2026-04-20T23:55:19Z"
+}

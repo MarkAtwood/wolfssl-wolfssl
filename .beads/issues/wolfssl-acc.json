@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-acc",
+  "title": "Review: crypto2dev CryptoCb port pre-merge",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T15:25:02Z",
+  "updated_at": "2026-04-21T15:48:30Z",
+  "closed_at": "2026-04-21T15:48:30Z",
+  "notes": "Maintainer risk: MEDIUM \u2014 Two P0 correctness bugs must be fixed before merge. The COPY/use-after-free is real but mitigated by TLS-safe mode for the primary use case; the AAD silent-skip is a security issue only for non-TLS callers with large AADs. Three P1 maintenance burden issues (global safe-mode flag, ECDSA serialization, compile-time pool size) will generate repeating support issues but none is a regression from the current state.\n\nConfidence: 75% chance of no missed bug. Uncertainty driven by: (1) WOLF_CRYPTO_CB_COPY path is conditionally compiled and I could not trace exactly what wolfSSL's fallback memcpy copies for each hash type \u2014 the devCtx pointer aliasing analysis assumes a flat struct copy which may not hold for all hash types; (2) the interaction between wc_crypto2dev_assign_devid() registering the device and the caller having previously registered it manually is subtle and I may have missed an error-path combination. Would raise confidence if: the COPY callback behavior was tested explicitly with WOLFSSL_CRYPTO2DEV_SIM + WOLF_CRYPTO_CB_COPY enabled."
+}

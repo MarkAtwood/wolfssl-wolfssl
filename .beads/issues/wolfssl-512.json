@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-512",
+  "title": "SEC0: g_crypto2dev_fd not validated before RSA/ECDSA ioctl",
+  "description": "crypto2dev_port.c: crypto2dev_rsa (line 1138) and crypto2dev_ecdsa (lines 1216, 1263) call ioctl(g_crypto2dev_fd, CRYPTO2DEV_IOC_DO_SIGN/DO_VERIFY, ...) without checking that g_crypto2dev_fd >= 0. If wc_crypto2dev_cb is invoked before wc_crypto2dev_init() (or after wc_crypto2dev_cleanup()), g_crypto2dev_fd == -1, and ioctl(-1, ...) returns EBADF, which maps to BAD_FUNC_ARG via crypto2dev_to_wc_err, not to WC_HW_E or CRYPTOCB_UNAVAILABLE. A caller that has imported a key (devCtx != NULL) will get a confusing BAD_FUNC_ARG rather than WC_HW_E. Fix: add a guard at the top of crypto2dev_rsa and crypto2dev_ecdsa: if (g_crypto2dev_fd < 0) return WC_HW_E;",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:35:35Z",
+  "updated_at": "2026-04-20T20:54:09Z",
+  "closed_at": "2026-04-20T20:54:09Z"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-ums",
+  "title": "R2 fix: AES-CBC/CTR IV not updated after encrypt",
+  "description": "After crypto2dev_cipher() completes AES-CBC encrypt, aes->reg must be updated to the last ciphertext block so chained multi-call CBC is correct. For decrypt, update to last ciphertext (input) block. For CTR mode, advance aes->reg counter by data_sz/AES_BLOCK_SIZE blocks. Without this, second and subsequent wc_AesCbcEncrypt calls on same Aes object use the original IV (wrong output).",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:45:29Z",
+  "updated_at": "2026-04-20T23:55:19Z",
+  "closed_at": "2026-04-20T23:55:19Z"
+}

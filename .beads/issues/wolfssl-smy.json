@@ -1,0 +1,40 @@
+{
+  "id": "wolfssl-smy",
+  "title": "crypto2dev: HMAC and CMAC callbacks",
+  "description": "Implement CryptoCb handlers for HMAC-SHA-256/384/512 and CMAC-AES. HMAC: acquire OPERATION fd, INIT('hmac(sha256)' etc.) with inline key, write() message data across one or more Update calls, FINALIZE, read() MAC, release fd. CMAC: same pattern with algo='cmac(aes)' and AES key. SETKEY path (WC_ALGO_TYPE_SETKEY for HMAC/CMAC): store key material in devCtx on the Hmac/Cmac struct. Free path (WC_ALGO_TYPE_FREE): release fd and free devCtx if operation was in progress.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:17:50Z",
+  "updated_at": "2026-04-20T20:20:33Z",
+  "closed_at": "2026-04-20T20:20:33Z",
+  "notes": "HMAC key fits inline in INIT (max 128 bytes for SHA-512, well within 128-byte INIT key limit). CMAC key is 16/24/32 bytes \u2014 also fits inline. Single fd per HMAC/CMAC object. Safety invariant from caliptra port applies: WC_HW_E \\!= CRYPTOCB_UNAVAILABLE (add static assert).",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:19:06Z"
+    },
+    {
+      "depends_on_id": "wolfssl-0h3.1",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:10Z"
+    },
+    {
+      "depends_on_id": "wolfssl-2mk",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:19:16Z"
+    },
+    {
+      "depends_on_id": "wolfssl-7cg",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:19:16Z"
+    }
+  ]
+}

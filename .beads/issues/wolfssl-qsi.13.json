@@ -1,0 +1,27 @@
+{
+  "id": "wolfssl-qsi.13",
+  "title": "Run wolfcrypt test suite under ASAN with crypto2dev sim enabled",
+  "description": "Build wolfSSL with ASAN and crypto2dev simulator, run the full test suite. This catches double-free, use-after-free, and heap-corruption bugs that code review may miss. Relevant bugs: qsi.2 (HMAC COPY aliased devCtx \u2192 double-free if wc_HmacCopy is reachable), qsi.3 (ECC COPY aliased fd \u2192 double-close). Build command: ./configure --enable-cryptocb --enable-cryptocbutils=free,setkey --enable-crypto2dev --enable-crypto2devsim CFLAGS='-g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer' && make -j$(nproc) && ./wolfcrypt/test/testwolfcrypt. A clean ASAN run does not rule out qsi.2/qsi.3 (COPY paths may not be exercised by the test suite), but a dirty run confirms a live path.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T01:32:48Z",
+  "updated_at": "2026-04-22T01:51:56Z",
+  "closed_at": "2026-04-22T01:51:56Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-qsi",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T18:32:48Z"
+    },
+    {
+      "depends_on_id": "wolfssl-qsi.11",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T18:32:56Z"
+    }
+  ]
+}

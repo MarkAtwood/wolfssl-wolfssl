@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-acc.3",
+  "title": "g_tls_safe_mode process-global: no per-registration hash-disable control",
+  "description": "Scenario: A library that wraps crypto2dev calls wc_crypto2dev_assign_devid(), which sets g_tls_safe_mode=1. This silently disables hardware hash for every wc_Sha* object in the process that uses WOLF_CRYPTO2DEV_DEVID \u2014 including any the calling application created before the library ran. The application has no way to opt out short of registering a second devId.\n\nThe limitation is documented in the header, but the wording does not cover the cross-library case. A future integrator who links a TLS library alongside bulk-data crypto will get silent software hash fallback with no diagnostic and file a performance issue.\n\nMaintenance consequence: Support ticket every time a user finds their SHA throughput is not coming from hardware despite hardware being available.\n\nThe header comment says 'IMPORTANT \u2014 process-wide side effect' but only discusses TLS CTX vs. bulk-data CTX, not inter-library sharing.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T15:26:39Z",
+  "updated_at": "2026-04-21T15:47:22Z",
+  "closed_at": "2026-04-21T15:47:22Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-acc",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T08:26:39Z"
+    }
+  ]
+}

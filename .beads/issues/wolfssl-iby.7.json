@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-iby.7",
+  "title": "Crypto2DevHashCtx.algo field is stored but never read",
+  "description": "What is awkward: Crypto2DevHashCtx stores a 32-byte algo string (port.c:103-105). It is written once at Init time (port.c:900-901) via XSTRNCPY. It is never read again \u2014 Update and Finalize paths use only op_fd and pool_slot. The string is wasted state in every in-flight hash context (32 bytes each). Suggested rewrite: remove the algo field from Crypto2DevHashCtx. The algo string is only needed to pass to INIT ioctl, which happens at allocation time; after that only the fd and slot index matter. This also removes the null-termination boilerplate (port.c:901).",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:41:18Z",
+  "updated_at": "2026-04-21T17:11:56Z",
+  "closed_at": "2026-04-21T17:11:56Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:41:17Z"
+    }
+  ]
+}

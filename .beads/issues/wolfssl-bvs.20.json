@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bvs.20",
+  "title": "SEC0: wc_AesGcmSetKey unusable with crypto2dev devId",
+  "description": "wc_AesGcmSetKey(aes, key, len) internally calls wc_AesSetKey(aes, key, len, zero_iv, AES_ENCRYPTION). With WOLF_CRYPTO_CB_SETKEY active and aes->devId != INVALID_DEVID, the SETKEY callback (crypto2dev_aes_setkey_ctx) returns 0, causing wc_AesSetKey to return early without running software AES key schedule. aes->rounds stays 0. wc_AesGcmSetKey then calls wc_AesEncrypt(aes, iv, aes->gcm.H) to compute the GCM hash subkey H; with aes->rounds==0, wc_AesEncrypt fails (KEYUSAGE_E or wrong computation depending on build). This means any application following wolfSSL documentation that calls wc_AesGcmSetKey with a crypto2dev-bound Aes will fail. The test_tls13_integration test works around this by calling wc_AesSetKey with NULL IV directly instead of wc_AesGcmSetKey, but this workaround is only documented in a test comment, not in the public header or anywhere visible to an application developer. The port must either: (a) document in the header that wc_AesGcmSetKey must not be called and wc_AesSetKey(key, NULL, AES_ENCRYPTION) must be used instead; or (b) have crypto2dev_aes_setkey_ctx detect GCM mode and not return 0 (return CRYPTOCB_UNAVAILABLE so software key schedule runs, then rely on the cipher callback for actual encryption). Option (b) would require the callback to somehow detect GCM intent at setkey time, which is not straightforward.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:23:29Z",
+  "updated_at": "2026-04-20T23:36:22Z",
+  "closed_at": "2026-04-20T23:36:22Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bvs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:23:28Z"
+    }
+  ]
+}

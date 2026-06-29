@@ -1,0 +1,28 @@
+{
+  "id": "wolfssl-2ed.2",
+  "title": "crypto2dev TLS: SSL_CTX devId assignment helper",
+  "description": "Implement wc_crypto2dev_assign_devid(WOLFSSL_CTX* ctx) and wc_crypto2dev_assign_devid_ssl(WOLFSSL* ssl) helper functions that correctly configure a wolfSSL context to use crypto2dev for supported operations. The helper must: (1) call wc_CryptoCb_RegisterDevice() if not already done, (2) set wolfSSL_CTX_SetDevId(ctx, WOLF_CRYPTO2DEV_DEVID) for session keys, (3) explicitly set INVALID_DEVID for any hash types that require Copy (transcript hash objects) \u2014 this may require using wolfSSL's per-hash devId override if available, or documenting that transcript hashes will fall back to software. Also implement wc_crypto2dev_unassign_devid() cleanup.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:37:00Z",
+  "updated_at": "2026-04-20T22:51:17Z",
+  "closed_at": "2026-04-20T22:51:17Z",
+  "notes": "SSL_CTX devId propagates to all WOLFSSL objects created from it via wolfSSL_new(). The key challenge is distinguishing transcript hashes (must be software) from Finished MAC hashes (can be hardware). Currently wolfSSL does not have a per-use devId override \u2014 the devId is set on the wc_Sha256 object, and both transcript and HMAC use the same object type. Workaround: only use hardware for HMAC (WC_ALGO_TYPE_HMAC), not for streaming hash (WC_ALGO_TYPE_HASH). Document this in the helper.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-2ed",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:37:00Z"
+    },
+    {
+      "depends_on_id": "wolfssl-2ed.1",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:15Z"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-yjw.9",
+  "title": "Defend: pool slot fd cleared to -1 at acquire, preventing double-close in cleanup race",
+  "description": "In crypto2dev_pool_acquire, when a slot with a ready fd is leased to the caller, pool->slots[i].fd is immediately set to -1 before releasing the lock. This prevents crypto2dev_pool_cleanup (which closes slots where fd >= 0) from also closing the fd that was just handed to the caller. Without this clearing, a concurrent cleanup could close the same fd the caller is using, causing the OS to reuse the fd number for a different file and the caller's subsequent ioctl to hit the wrong kernel object. The same 'clear before returning' pattern appears in the empty-slot open path. Do not change this to store the fd and use a separate 'leased' flag \u2014 the dual flag+value approach would require a larger critical section.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T23:13:15Z",
+  "updated_at": "2026-04-21T23:34:35Z",
+  "closed_at": "2026-04-21T23:34:35Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-yjw",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T16:13:14Z"
+    }
+  ]
+}

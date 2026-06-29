@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-6g4",
+  "title": "Integrate caliptra port with hw-model emulator",
+  "description": "Wire up the wolfSSL Caliptra CryptoCb port to the Caliptra hw-model C binding so caliptra_test.c exercises real Caliptra firmware instead of the hand-rolled simulator. Pre-built artifacts exist in ~/caliptra/target/debug/ and ~/caliptra/hw-model/c-binding/out/. Architecture: caliptra_test -> caliptra_mailbox_exec (our hook) -> caliptra_mailbox_execute (libcaliptra) -> caliptra_if.h (write_u32/read_u32/wait) -> caliptra_model_apb_* (hw-model C binding) -> libcaliptra_hw_model_c_binding.a (Rust, pre-built).",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "feature",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-05T04:44:06Z",
+  "updated_at": "2026-04-05T05:51:53Z",
+  "closed_at": "2026-04-05T05:51:53Z"
+}

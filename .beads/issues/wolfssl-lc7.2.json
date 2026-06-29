@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-lc7.2",
+  "title": "assign_devid rollback unregisters previously-set callback",
+  "description": "If wc_crypto2dev_assign_devid(ctx) succeeds and wc_crypto2dev_assign_devid_ssl(ssl) is then called and its wolfSSL_SetDevId fails (or RegisterDevice re-registration fails with an error), the failure rollback calls wc_CryptoCb_UnRegisterDevice, which removes the registration that the first call successfully made. ctx still has WOLF_CRYPTO2DEV_DEVID set but no callback is registered. Subsequent TLS operations on ctx silently fall through to software or fail, depending on wolfSSL's no-callback behavior. Severity depends on whether wolfSSL RegisterDevice allows re-registration (overwrites) or rejects it.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:43:30Z",
+  "updated_at": "2026-04-21T14:49:54Z",
+  "closed_at": "2026-04-21T14:49:54Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-lc7",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:43:29Z"
+    }
+  ]
+}

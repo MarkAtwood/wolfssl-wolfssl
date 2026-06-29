@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-qsi.1",
+  "title": "GCM encrypt: oversized-tag check fires after ciphertext written to out_buf",
+  "description": "Encrypt path: authTagSz > CRYPTO2DEV_TAG_MAXLEN (16) is checked AFTER write/FINALIZE/read (crypto2dev_port.c:860). Decrypt path checks the same condition BEFORE pool acquire (line 774). Asymmetry: encrypt with authTagSz=17 acquires pool slot, sends INIT/IV/AAD/write/FINALIZE, reads ciphertext into out_buf, then returns BUFFER_E. Ciphertext without an authentication tag is left in the caller's output buffer. A caller that ignores the return code (or buffers output before checking) holds unauthenticated ciphertext with no signal that the tag was never retrieved. Fix: move the authTagSz > TAG_MAXLEN check before pool acquire on the encrypt path, symmetric with the decrypt path.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T00:58:11Z",
+  "updated_at": "2026-04-22T01:43:26Z",
+  "closed_at": "2026-04-22T01:43:26Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-qsi",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T17:58:11Z"
+    }
+  ]
+}

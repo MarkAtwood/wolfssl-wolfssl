@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-mp4",
+  "title": "SEC0: pool_release open() failure silently loses pool slot",
+  "description": "crypto2dev_port.c line 424: crypto2dev_pool_release opens a fresh /dev/crypto2dev fd to replenish the pool slot after the caller has closed the old fd. If open() fails (e.g. file-descriptor exhaustion, device removed), it returns -1, which is stored in pool->slots[i].fd. The slot is then set in_use=0. On the next crypto2dev_pool_acquire, the slot is skipped because fd < 0 (line 401 checks fd >= 0), making that pool slot permanently unusable without any log or error. Under FD pressure, the pool can silently degrade to zero available slots, causing all subsequent symmetric operations to fail with WC_HW_E. Fix: check the return value of open() in pool_release; log a warning if it fails; consider leaving in_use=1 or marking the slot with a sentinel so the caller can detect pool degradation.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:35:29Z",
+  "updated_at": "2026-04-20T20:54:08Z",
+  "closed_at": "2026-04-20T20:54:08Z"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "wolfssl-lc7",
+  "title": "Review: crypto2dev-shim CryptoCb port",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:37:55Z",
+  "updated_at": "2026-04-21T15:05:10Z",
+  "closed_at": "2026-04-21T15:05:10Z",
+  "notes": "Maintainer risk: MEDIUM \u2014 Two P0 correctness bugs (EOPNOTSUPP not promoted to fallback; assign_devid rollback corrupts state), plus one ambiguous FIPS probe design (P1). These will generate user reports. The HMAC buffer growth is a latent OOM risk for any non-TLS HMAC usage. Core architecture is sound.\nConfidence: 25% chance of missed bug. Uncertainty driven by: (1) REQUIRE_FIPS ioctl semantics are unknown without the kernel driver \u2014 may be a query or may be a fd-level mode switch; (2) wolfSSL's behavior when a devId is set but unregistered (silent software fallback vs error) is not verified; (3) no review of configure.ac, include.am, or CI script changes; (4) no dynamic testing \u2014 all findings are static. Would raise confidence if: kernel driver source for CRYPTO2DEV_IOC_REQUIRE_FIPS is reviewed; and the test suite is run against the simulator."
+}

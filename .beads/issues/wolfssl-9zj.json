@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-9zj",
+  "title": "SEC2: HMAC re-imports key on every call (no KEY fd)",
+  "description": "crypto2dev_hmac() acquires a pool fd, copies the raw key bytes into init_op.key, and sends CRYPTO2DEV_IOC_INIT with an inline key on every single HMAC compute. The infrastructure for persistent KEY fds (crypto2dev_key_import, WC_SETKEY_HMAC, Crypto2DevHmacCtx) is already in place, but the HMAC setkey path stores raw bytes only, not a KEY fd. For TLS workloads that invoke HMAC-SHA256 for every record MAC and Finished message, this causes the kernel to re-load the key on every call. Fix: in crypto2dev_hmac_setkey_ctx(), call crypto2dev_key_import() and store the resulting fd in devCtx (replacing the raw-key struct with a KEY fd, like the RSA/ECC paths). In crypto2dev_hmac(), set init_op.key_fd to the stored fd and clear keylen/key.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:33:52Z",
+  "updated_at": "2026-04-20T20:54:15Z",
+  "closed_at": "2026-04-20T20:54:15Z"
+}

@@ -1,0 +1,226 @@
+{
+  "id": "wolfssl-0h3",
+  "title": "crypto2dev CryptoCb shim",
+  "description": "Implement a wolfSSL CryptoCb provider that routes cryptographic operations through the /dev/crypto2dev kernel interface (from ~/WORK/WOLFKM). This enables wolfSSL to use FIPS-validated kernel crypto without in-process key material. The shim covers all crypto2dev algorithms: AES-CBC/GCM, SHA-2/SHA-3, HMAC, CMAC, HKDF, PBKDF2, RSA, ECDSA, ECDH.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "feature",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:16:54Z",
+  "updated_at": "2026-04-20T21:11:11Z",
+  "closed_at": "2026-04-20T21:11:11Z",
+  "notes": "Design decisions: (1) fd pool for OPERATION fds (reuse via RESET, not open-per-op); (2) WOLF_CRYPTO_CB_FREE required for KEY fd and streaming hash cleanup; (3) RSA and ECC sign both receive pre-hashed digest \u2014 maps cleanly to DO_SIGN; (4) FIPS enforcement conditional (REQUIRE_FIPS ioctl only when build flag set); (5) Full algorithm coverage: all crypto2dev ops.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0j6",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:39:10Z"
+    },
+    {
+      "depends_on_id": "wolfssl-1p6",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:34:47Z"
+    },
+    {
+      "depends_on_id": "wolfssl-295",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:38:27Z"
+    },
+    {
+      "depends_on_id": "wolfssl-3ba",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T14:07:24Z"
+    },
+    {
+      "depends_on_id": "wolfssl-3vw",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T14:07:14Z"
+    },
+    {
+      "depends_on_id": "wolfssl-4i9",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:33:45Z"
+    },
+    {
+      "depends_on_id": "wolfssl-512",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:35:46Z"
+    },
+    {
+      "depends_on_id": "wolfssl-5ud",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:57:32Z"
+    },
+    {
+      "depends_on_id": "wolfssl-6qs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:36:14Z"
+    },
+    {
+      "depends_on_id": "wolfssl-6vy",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:34:13Z"
+    },
+    {
+      "depends_on_id": "wolfssl-74d",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:34:08Z"
+    },
+    {
+      "depends_on_id": "wolfssl-8tp",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T14:02:06Z"
+    },
+    {
+      "depends_on_id": "wolfssl-902",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:57:33Z"
+    },
+    {
+      "depends_on_id": "wolfssl-9zj",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:33:57Z"
+    },
+    {
+      "depends_on_id": "wolfssl-a1c",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:38:50Z"
+    },
+    {
+      "depends_on_id": "wolfssl-bhz",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:34:36Z"
+    },
+    {
+      "depends_on_id": "wolfssl-c0k",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:37:00Z"
+    },
+    {
+      "depends_on_id": "wolfssl-c96",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:34:05Z"
+    },
+    {
+      "depends_on_id": "wolfssl-c9p",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:35:15Z"
+    },
+    {
+      "depends_on_id": "wolfssl-cf0",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:36:24Z"
+    },
+    {
+      "depends_on_id": "wolfssl-eyl",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:36:04Z"
+    },
+    {
+      "depends_on_id": "wolfssl-h9r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:36:47Z"
+    },
+    {
+      "depends_on_id": "wolfssl-in2",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:37:13Z"
+    },
+    {
+      "depends_on_id": "wolfssl-jsh",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:34:57Z"
+    },
+    {
+      "depends_on_id": "wolfssl-jyt",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:35:45Z"
+    },
+    {
+      "depends_on_id": "wolfssl-kbw",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T14:10:13Z"
+    },
+    {
+      "depends_on_id": "wolfssl-kpf",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:35:46Z"
+    },
+    {
+      "depends_on_id": "wolfssl-l0h",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:35:53Z"
+    },
+    {
+      "depends_on_id": "wolfssl-mkk",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:34:23Z"
+    },
+    {
+      "depends_on_id": "wolfssl-mp4",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:35:45Z"
+    },
+    {
+      "depends_on_id": "wolfssl-p91",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:34:28Z"
+    },
+    {
+      "depends_on_id": "wolfssl-tm1",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:38:41Z"
+    },
+    {
+      "depends_on_id": "wolfssl-trp",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:39:00Z"
+    },
+    {
+      "depends_on_id": "wolfssl-u4q",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:36:35Z"
+    },
+    {
+      "depends_on_id": "wolfssl-x6j",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T13:35:44Z"
+    }
+  ]
+}

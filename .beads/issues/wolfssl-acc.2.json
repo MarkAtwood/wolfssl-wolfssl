@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-acc.2",
+  "title": "AES-GCM decrypt: AAD silently dropped when authInSz > 256, authentication runs without AAD",
+  "description": "Trigger: wc_AesGcmDecrypt called with authIn != NULL and authInSz > CRYPTO2DEV_AAD_MAXLEN (256 bytes).\n\nIn crypto2dev_cipher(), the SET_AAD ioctl is skipped when authInSz > 256:\n  if (authIn != NULL && authInSz > 0 && authInSz <= CRYPTO2DEV_AAD_MAXLEN) { /* set AAD */ }\n\nIf authInSz exceeds the limit, the FINALIZE ioctl runs with no AAD set. The device authenticates the ciphertext against an empty AAD. An attacker who modifies the AAD (e.g., TLS record header fields) goes undetected if their modified AAD is still > 256 bytes.\n\nStandard TLS AADs are 5\u201313 bytes so this cannot be triggered via TLS. It would affect any non-TLS caller using AES-GCM with AAD > 256 bytes (e.g., file encryption, custom protocols).\n\nThe encrypt path has the same silent skip: SET_AAD is not issued for oversized AAD, so the tag is computed over empty AAD. A subsequently decrypting party using a correct implementation will correctly reject the ciphertext, but a second crypto2dev instance would incorrectly accept it.\n\nFix: Return BUFFER_E (not CRYPTOCB_UNAVAILABLE) when authInSz > CRYPTO2DEV_AAD_MAXLEN, so the caller gets an explicit error rather than a silently degraded security guarantee.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T15:25:30Z",
+  "updated_at": "2026-04-21T15:45:19Z",
+  "closed_at": "2026-04-21T15:45:19Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-acc",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T08:25:29Z"
+    }
+  ]
+}

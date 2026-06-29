@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-0t2.5",
+  "title": "Pool slot clears fd before returning it to caller (double-close protection)",
+  "description": "crypto2dev_pool_acquire: when leasing a slot fd, sets pool->slots[i].fd = -1 before releasing the lock (line 319). This means cleanup() iterating over slots under the lock cannot close a fd that has already been handed to a caller \u2014 eliminates the double-close race. A contributor might remove this 'redundant' clearing to simplify the code, but it is load-bearing for the cleanup race.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:11:03Z",
+  "updated_at": "2026-04-21T19:20:02Z",
+  "closed_at": "2026-04-21T19:20:02Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0t2",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:11:03Z"
+    }
+  ]
+}

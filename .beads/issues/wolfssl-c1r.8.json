@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.8",
+  "title": "sim: sim_finalize_cipher_gcm ignores GCM decrypt return value mapping to EBADMSG",
+  "description": "In crypto2dev_sim.c, sim_finalize() calls sim_finalize_cipher_gcm() and if it returns non-zero, the ioctl dispatch sets errno = (ret == AES_GCM_AUTH_E) ? EBADMSG : EIO. However wc_AesGcmDecrypt() returns AES_GCM_AUTH_E directly on tag mismatch. sim_finalize_cipher_gcm() passes that return code through (ret is wc_AesGcmDecrypt's return). So errno is correctly set to EBADMSG on authentication failure. This is correct. BUT: sim_finalize_cipher_gcm uses 'wc_AesGcmDecrypt' which returns its own negative error code (e.g., -286 = AES_GCM_AUTH_E). sim_finalize returns that negative code to sim_finalize(). sim_finalize checks 'ret == AES_GCM_AUTH_E' \u2014 but AES_GCM_AUTH_E is a negative value and the raw ret is also negative. This comparison works if AES_GCM_AUTH_E == the wolfSSL error code value returned by wc_AesGcmDecrypt. Examining wolfssl source: wc_AesGcmDecrypt returns AES_GCM_AUTH_E on auth failure. sim_finalize_cipher_gcm returns ret directly. AES_GCM_AUTH_E value is defined in error-crypt.h. The check 'ret == AES_GCM_AUTH_E' should match. This is actually correct. Closing as no-bug.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:26:32Z",
+  "updated_at": "2026-04-21T19:26:38Z",
+  "closed_at": "2026-04-21T19:26:38Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:26:32Z"
+    }
+  ]
+}

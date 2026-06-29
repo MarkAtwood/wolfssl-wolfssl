@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-c1r.9",
+  "title": "crypto2dev_hmac Final: HMAC ctx freed on success path even when op_fd acquire fails",
+  "description": "In crypto2dev_hmac() Final branch: 'op_fd = crypto2dev_pool_acquire(); if (op_fd < 0) return WC_HW_E;' returns immediately without freeing hmac->devCtx or clearing the pointer. wc_HmacFree() (wolfcrypt/src/hmac.c:1438) then sees 'devId \\!= INVALID_DEVID && devCtx \\!= NULL' and calls wc_CryptoCb_Hmac(hmac, type, NULL, 0, finalHash) \u2014 which again enters the Final branch in crypto2dev_hmac() (digest=finalHash \\!= NULL). If pool_acquire now succeeds, the HMAC is silently completed in wc_HmacFree(), and the MAC bytes are written to a stack buffer inside wc_HmacFree() that is immediately discarded. If pool_acquire fails again, we get infinite recursion risk... actually not infinite because wc_HmacFree is only called once and the return of crypto2dev_hmac is ignored. The real harm: the HmacCtx struct and its accumulated data buffer are leaked unless wc_HmacFree is called \u2014 and when it is called, the accumulated plaintext input is silently processed by the hardware and the result discarded. The fix: on the 'op_fd < 0' early return in the Final path, free the ctx and null devCtx so wc_HmacFree has nothing to clean up.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:26:49Z",
+  "updated_at": "2026-04-21T19:44:10Z",
+  "closed_at": "2026-04-21T19:44:10Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:26:49Z"
+    }
+  ]
+}

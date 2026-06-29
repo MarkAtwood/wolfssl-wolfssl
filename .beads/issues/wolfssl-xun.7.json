@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-xun.7",
+  "title": "crypto2dev_ecdsa hash-algo inference from digest length should be in a comment visible from sign/verify callsites",
+  "description": "crypto2dev_ecdsa_hash_algo_name() has an excellent comment (L1258-1271) explaining why SHA-3 is excluded and why length inference works only for P-256/P-384/P-521. But the comment is on the helper function, not at the two callsites in crypto2dev_ecdsa(). A future contributor adding SHA-3 support will likely modify crypto2dev_ecdsa() first and may not read the helper's comment before adding a 32-byte SHA3-256 case. Add a one-line callsite comment: 'digest length \u2192 SHA algo: see crypto2dev_ecdsa_hash_algo_name() comment for SHA-3 exclusion'.",
+  "status": "closed",
+  "priority": 4,
+  "issue_type": "chore",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:43:09Z",
+  "updated_at": "2026-04-21T22:19:17Z",
+  "closed_at": "2026-04-21T22:19:17Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-xun",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T14:43:09Z"
+    }
+  ]
+}

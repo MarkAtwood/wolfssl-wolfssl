@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-iby.8",
+  "title": "Wire struct _pad fields have no alignment comments",
+  "description": "What is unclear: _pad fields in crypto2dev_init_op, crypto2dev_sign_op, etc. have no comment explaining why the padding exists or what property it maintains. The IMPORTANT banner at wire.h:103-106 says never reorder fields, but does not explain which fields require which alignment. A contributor adding a field to crypto2dev_init_op won't know if removing _pad[4] at the end is safe. Worse: if they add a field without adjusting _pad to maintain struct size, the sizeof changes, all IOC_* codes silently change (they encode sizeof), and the port breaks against any kernel module built against the old sizes with no diagnostic. What would make it clear: a per-struct comment stating the total struct size (e.g., /* total: 208 bytes; must match kernel uapi */) and a wc_static_assert2 on sizeof(struct crypto2dev_init_op) == EXPECTED_SIZE.",
+  "status": "closed",
+  "priority": 4,
+  "issue_type": "chore",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:41:27Z",
+  "updated_at": "2026-04-21T17:16:16Z",
+  "closed_at": "2026-04-21T17:16:16Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:41:27Z"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "wolfssl-iby",
+  "title": "Review: crypto2dev CryptoCb port pre-merge",
+  "description": "Pre-merge code review of the crypto2dev CryptoCb shim port (feature/crypto2dev-shim branch). Sections: correctness, maintainer burden, efficiency, elegance, readability.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:35:54Z",
+  "updated_at": "2026-04-21T17:16:17Z",
+  "closed_at": "2026-04-21T17:16:17Z",
+  "notes": "Confidence: 70% chance no missed bug of consequence. Uncertainty driven by: (1) did not trace wolfSSL CryptoCb dispatch internals to confirm every wc_HmacUpdate/Final call pattern \u2014 devCtx NULL edge cases possible; (2) did not verify wolfSSL's wc_CryptoCb_RegisterDevice behavior on double-registration (idempotent or error?), which affects severity of wolfssl-iby.2; (3) pool acquire/release race with cleanup analyzed but not tested \u2014 relies on documented quiescence requirement holding. Would raise confidence if: ran the test suite under ASAN with the sim enabled; had a reference HMAC test that issues wc_HmacFinal with no prior wc_HmacUpdate to verify the in=NULL/inSz=0 no-op path.\nMaintainer risk: MEDIUM \u2014 The ENOENT bug (iby.1) is a real failure in FIPS deployments. The test double-registration (iby.2) may cause spurious test failures. The wire struct drift (iby.3) is a long-term reliability risk. ECDSA throughput (iby.4) and g_tls_safe_mode (iby.5) are documented footguns that will generate support tickets.\nConfidence update after three targeted checks: (1) HMAC Update/Final dispatch is strictly mutually exclusive \u2014 Update always passes digest=NULL, Final always passes in=NULL/inSz=0, confirmed in hmac.c. Port branch logic is correct. (2) RegisterDevice/UnRegisterDevice are both idempotent \u2014 double-registration is a silent overwrite, double-unregister is a no-op. wolfssl-iby.2 downgraded from P0 to P3. (3) Port's bulk CTR counter update (add blocks as big-endian int) is equivalent to wolfSSL's per-block IncrementAesCounter \u2014 confirmed same big-endian right-to-left carry, same ceil(sz/16) increment count. Revised confidence: 85%. Remaining uncertainty: FIPS gate behavior around ENOENT (iby.1) confirmed via driver source but not tested at runtime; pool acquire/release under concurrent load not exercised."
+}

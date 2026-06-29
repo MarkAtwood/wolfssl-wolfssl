@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bvs.19",
+  "title": "SEC0: TLS13 AES-GCM test is round-trip only, not KAT",
+  "description": "test_tls13_integration step d (crypto2dev_test.c ~line 598-649) encrypts a plaintext and decrypts it, then checks decrypt(encrypt(pt)) == pt. This is a round-trip oracle. It would pass even if the hardware used a completely wrong algorithm (e.g., XOR with a constant) as long as encrypt and decrypt are inverses. The test comment explicitly says 'round-trip verify' and does not provide a fixed expected ciphertext. The test does not detect a bug where encrypt produces wrong ciphertext but decrypt inverts it correctly (e.g., wrong IV applied symmetrically). The existing test_aesgcm_empty() does use a proper NIST KAT with a fixed expected tag; the TLS integration test should also verify a fixed expected ciphertext/tag against a NIST SP 800-38D vector rather than relying on round-trip. wolfssl-bvs.15 notes all vectors come from external sources but does not flag this specific gap in test_tls13_integration.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:23:18Z",
+  "updated_at": "2026-04-20T23:36:21Z",
+  "closed_at": "2026-04-20T23:36:21Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bvs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:23:18Z"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-qsi.3",
+  "title": "COPY callback: ECC key devCtx not guarded \u2014 aliased fd causes double-close",
+  "description": "RESEARCH (qsi.11): wc_ecc_copy does NOT exist in wolfSSL. Only wc_ecc_copy_point() exists which copies ECC coordinates (mp_int x/y/z), not the ecc_key struct itself. There is no wolfSSL code path that XMEMCPY's a full ecc_key, so the aliased-fd scenario cannot be triggered by any wolfSSL internal function. Risk is limited to application code that manually XMEMCPY's an ecc_key struct, which would be a coding error on the application side. Downgraded P1\u2192P3. Document as informational: wc_ecc_copy does not exist; if added to wolfSSL in the future it should dispatch through CryptoCb COPY (WC_ALGO_TYPE_PK) and the port COPY handler should guard it.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T00:58:22Z",
+  "updated_at": "2026-04-22T01:43:37Z",
+  "closed_at": "2026-04-22T01:43:37Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-qsi",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T17:58:22Z"
+    }
+  ]
+}

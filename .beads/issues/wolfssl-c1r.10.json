@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.10",
+  "title": "WOLFSSL_CRYPTO2DEV_REQUIRE_FIPS: probe fd approach gives startup-time not per-op FIPS enforcement",
+  "description": "The REQUIRE_FIPS implementation opens a probe fd, calls REQUIRE_FIPS on it, then closes it. The code comment (port.c:1455-1466) correctly documents that this gives startup-time assurance only: pool fds and g_crypto2dev_fd do not carry the REQUIRE_FIPS flag. A future contributor reading 'WOLFSSL_CRYPTO2DEV_REQUIRE_FIPS' will assume per-operation FIPS enforcement and be wrong. If the kernel FIPS provider is unloaded after init but before operations, operations proceed without FIPS. The macro name implies stronger guarantees than it provides. Risk: security engineers will configure WOLFSSL_CRYPTO2DEV_REQUIRE_FIPS and believe per-operation FIPS enforcement is active.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:27:22Z",
+  "updated_at": "2026-04-21T20:06:36Z",
+  "closed_at": "2026-04-21T20:06:36Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:27:21Z"
+    }
+  ]
+}

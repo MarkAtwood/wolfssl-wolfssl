@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-lc7.5",
+  "title": "RSA SETKEY imports key to device but RSA PK always returns CRYPTOCB_UNAVAILABLE",
+  "description": "With WOLF_CRYPTO_CB_SETKEY enabled, wc_RsaSetKey on a crypto2dev-bound key calls crypto2dev_setkey which opens a device fd, imports the DER to hardware, and stores the fd in key->devCtx. But crypto2dev_rsa() always returns CRYPTOCB_UNAVAILABLE so RSA operations use software with the wolfSSL key struct. The device fd stored in devCtx is never used for any crypto operation; it just sits open until the key is freed. Consequence per RSA key: one wasted open fd and one wasted DER import ioctl, for zero benefit. A future maintainer or contributor will see key->devCtx set and assume RSA hardware is working. Should either skip RSA SETKEY (return CRYPTOCB_UNAVAILABLE) or document explicitly that SETKEY succeeds so the fd is pre-positioned for future RSA implementation.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:44:00Z",
+  "updated_at": "2026-04-21T14:52:30Z",
+  "closed_at": "2026-04-21T14:52:30Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-lc7",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:44:00Z"
+    }
+  ]
+}

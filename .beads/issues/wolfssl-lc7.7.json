@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-lc7.7",
+  "title": "AES-CTR: counter advance is O(blocks) loop, could be 128-bit add",
+  "description": "After AES-CTR encrypt/decrypt, port.c:764-774 advances aes->reg by iterating block-by-block with an inner byte-carry loop. Cost is O(n/16) iterations. Alternative: compute blocks=(data_sz+15)/16, add blocks to the 128-bit big-endian counter in one pass (one 128-bit add). For a 1MB CTR block, the current code does 65536 loop iterations; the 128-bit add does 1. Not a bottleneck for TLS record sizes (max 1024 iterations per 16KB record) but measurably slower for bulk CTR encryption. The loop is correct; this is a gratuitous inefficiency.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:44:15Z",
+  "updated_at": "2026-04-21T14:53:36Z",
+  "closed_at": "2026-04-21T14:53:36Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-lc7",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:44:14Z"
+    }
+  ]
+}

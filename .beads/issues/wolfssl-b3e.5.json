@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-b3e.5",
+  "title": "g_tls_safe_mode is global: affects all uses of the devId, not just TLS contexts",
+  "description": "g_tls_safe_mode is a process-global flag. Once wc_crypto2dev_assign_devid*() is called, ALL hash operations via WOLF_CRYPTO2DEV_DEVID fall back to software, even those in non-TLS wolfcrypt contexts. If a caller registers the device manually (wc_CryptoCb_RegisterDevice) for standalone hash acceleration, and then later calls wc_crypto2dev_assign_devid for a TLS CTX, hardware hash is silently disabled for both. Scenario: caller wants hardware hash for bulk data plus hardware cipher/HMAC for TLS. After assign_devid for TLS, the standalone hash starts falling back to software with no error, just a silent performance regression. Maintenance consequence: impossible to use hardware hash and TLS acceleration simultaneously, and the reason is non-obvious.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T13:54:31Z",
+  "updated_at": "2026-04-21T14:10:50Z",
+  "closed_at": "2026-04-21T14:10:50Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-b3e",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T06:54:30Z"
+    }
+  ]
+}

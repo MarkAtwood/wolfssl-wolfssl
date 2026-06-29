@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-0h3.6",
+  "title": "crypto2dev AES-CBC KAT fails: IV not copied when SETKEY intercepts wc_AesSetKey",
+  "description": "In crypto2dev_port.c, when WOLF_CRYPTO_CB_SETKEY is active, the WC_SETKEY_AES callback returns 0 (handled), causing wolfSSL to exit wc_AesSetKey without running the software path that copies the IV into aes->reg. As a result, aes->reg is all-zeros when crypto2dev_cipher reads it for CBC mode. The cipher sends wrong IV to hardware, producing wrong ciphertext. Fix: in the WC_SETKEY_AES case, copy the IV from info->setKey.iv (if available) to aes->reg before returning, OR store IV in devCtx.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:08:36Z",
+  "updated_at": "2026-04-20T23:18:42Z",
+  "closed_at": "2026-04-20T23:18:42Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:08:35Z"
+    }
+  ]
+}

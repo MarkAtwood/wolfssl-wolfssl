@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-as4.6",
+  "title": "HMAC Final refuses CRYPTOCB_UNAVAILABLE to prevent auth bypass \u2014 defend this",
+  "description": "Why this choice is correct: after HmacUpdate(s) claimed the data (returned 0), wolfSSL's software HMAC state has no accumulated data. If Final returned CRYPTOCB_UNAVAILABLE, the software fallback would compute HMAC over zero bytes and return a wrong MAC with no error. The code deliberately returns WC_HW_E at Final when the device lacks the algo (INIT fails with EOPNOTSUPP/ENOENT), trading a hard error for a silent auth bypass. What a future contributor might incorrectly change: 'why not fall back to software if hardware is unavailable at Final? That would be more resilient.' Answer: because the data was already consumed by Update \u2014 there is nothing for software to authenticate. Resilience here would mean silent wrong MACs.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T17:24:01Z",
+  "updated_at": "2026-04-21T19:03:52Z",
+  "closed_at": "2026-04-21T19:03:52Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-as4",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T10:24:01Z"
+    }
+  ]
+}

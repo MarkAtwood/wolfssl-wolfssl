@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-mkk",
+  "title": "SEC4: AES/HMAC hw silently disabled without SETKEY",
+  "description": "crypto2dev_cipher() and crypto2dev_hmac() both check ctx == NULL (aes->devCtx / hmac->devCtx) and return CRYPTOCB_UNAVAILABLE when no context is present. The context is only populated by crypto2dev_aes_setkey_ctx() and crypto2dev_hmac_setkey_ctx(), which are only compiled in when WOLF_CRYPTO_CB_SETKEY is defined. If a user builds with WOLFSSL_CRYPTO2DEV but without WOLF_CRYPTO_CB_SETKEY, all AES and HMAC operations silently fall through to software with no warning or build error. The NULL check should have a comment at both sites (lines 688-689 and 1012-1013) explaining: 'devCtx is only populated via WOLF_CRYPTO_CB_SETKEY; without it, hardware AES/HMAC is never used.' A build-time assert or #warning would be even better, but a comment is the minimum to prevent silent misconfiguration going undiagnosed.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:34:21Z",
+  "updated_at": "2026-04-20T20:54:17Z",
+  "closed_at": "2026-04-20T20:54:17Z"
+}

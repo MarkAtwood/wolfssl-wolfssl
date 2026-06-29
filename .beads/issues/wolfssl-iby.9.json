@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-iby.9",
+  "title": "COPY handler returns WC_HW_E for active state, CRYPTOCB_UNAVAILABLE for idle",
+  "description": "What is correct and why: The WC_COPY handler (port.c:1532-1595) checks devCtx before deciding its return code. If devCtx \\!= NULL (op_fd is open, data has been fed to hardware), it returns WC_HW_E. If devCtx == NULL (no active hardware state), it returns CRYPTOCB_UNAVAILABLE (safe to copy). A future contributor might 'simplify' this to always return WC_HW_E (breaking lazy-copy of idle sha objects in TLS) or always return CRYPTOCB_UNAVAILABLE (causing use-after-free when both the original and the copy try to Finalize the same op_fd and free the same ctx pointer, then double-close the fd \u2014 which the OS may have reused). The distinction is correct and load-bearing.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:41:36Z",
+  "updated_at": "2026-04-21T17:11:58Z",
+  "closed_at": "2026-04-21T17:11:58Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-iby",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:41:35Z"
+    }
+  ]
+}

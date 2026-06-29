@@ -1,0 +1,14 @@
+{
+  "id": "wolfssl-2ed",
+  "title": "crypto2dev: TLS integration",
+  "description": "Wire the crypto2dev CryptoCb shim into wolfSSL's TLS layer so that a TLS server or client can transparently use /dev/crypto2dev for its cryptographic operations. Covers: helper APIs to assign devId to SSL_CTX objects, analysis of which TLS handshake operations will hit hardware vs. fall back to software, transcript hash policy, and integration tests verifying a TLS 1.3 and TLS 1.2 handshake end-to-end with crypto2dev active.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "feature",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:36:42Z",
+  "updated_at": "2026-04-21T00:12:39Z",
+  "closed_at": "2026-04-21T00:12:39Z",
+  "notes": "Depends on wolfssl-0h3 (all CryptoCb callbacks implemented). Key constraint: transcript hashes (wc_Sha256/wc_Sha384 objects used for the Transcript-Hash during key derivation) must NOT have devId set because wolfSSL calls wc_Sha256Copy() on them and hardware cannot snapshot mid-stream state. The helper API must handle this distinction."
+}

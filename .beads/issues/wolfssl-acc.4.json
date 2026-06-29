@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-acc.4",
+  "title": "ECDSA fd mutex serializes all sign/verify: throughput cliff for multi-session TLS servers",
+  "description": "Scenario: A TLS server handling N concurrent handshakes. Each TLS 1.3 handshake requires at least one ECDSA sign. All N sign operations queue behind g_ecdsa_fd_lock. This is serialized even if the hardware supports concurrent DO_SIGN ioctls on multiple fds.\n\nThe comment in the code acknowledges this: 'On a TLS server with many concurrent handshakes this can become a throughput bottleneck.'\n\nThe design is intentional (DO_SIGN/DO_VERIFY were verified only on the global fd). But this becomes a support issue the moment someone benchmarks the port on a loaded server. They will file a performance issue, it will look like a hardware bottleneck, and the root cause is the single-fd serialization.\n\nMaintenance consequence: Performance complaint with non-obvious root cause. The comment naming this bottleneck is the current mitigation.\n\nLeaving a tracked issue here so the future-me who pools ECDSA fds has the context.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T15:26:57Z",
+  "updated_at": "2026-04-21T15:47:24Z",
+  "closed_at": "2026-04-21T15:47:24Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-acc",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T08:26:57Z"
+    }
+  ]
+}

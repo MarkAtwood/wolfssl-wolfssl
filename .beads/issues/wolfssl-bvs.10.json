@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bvs.10",
+  "title": "SEC3: mixed test vector encoding styles in test file",
+  "description": "crypto2dev_test.c uses two styles to express test vectors. Tests 1-3b use hex string literals decoded at runtime via hex_decode(). Tests 5-6 use static const byte[] initializers with hex byte literals. test_tls13_integration mixes both in the same function (hex_decode for expected SHA/HMAC, byte-literal initializer for AES key/IV). Pick one style and apply it consistently. Runtime hex_decode adds code that cannot be inspected by a diff viewer; static const byte[] is more grep-friendly and has zero runtime cost.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:21:55Z",
+  "updated_at": "2026-04-20T23:37:17Z",
+  "closed_at": "2026-04-20T23:37:17Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bvs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:21:54Z"
+    }
+  ]
+}

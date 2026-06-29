@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-5ud",
+  "title": "SEC7r2: sim_close/sim_ioctl_key_import lack HAVE_ECC guard",
+  "description": "In crypto2dev_sim.c, sim_close() accesses slot->ecc_inited at line 561 and sim_ioctl_key_import() accesses slot->ecc and slot->ecc_inited at lines 748-769, both without an #ifdef HAVE_ECC guard. The SimFdSlot struct's ecc and ecc_inited fields are inside #ifdef HAVE_ECC (lines 263-266). Without HAVE_ECC defined, the sim fails to compile. Affects any build without ECC support. Fix: wrap both access sites in #ifdef HAVE_ECC.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:57:21Z",
+  "updated_at": "2026-04-20T20:59:46Z",
+  "closed_at": "2026-04-20T20:59:46Z"
+}

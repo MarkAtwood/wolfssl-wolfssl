@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-68z.2",
+  "title": "ECDSA op_fd leaked in sign and verify paths",
+  "description": "crypto2dev_ecdsa() acquires an op_fd via pool_acquire() for DO_SIGN and DO_VERIFY ioctls, then calls pool_release() without first calling close(op_fd).\n\npool_release() opens a NEW fd for the pool slot but does NOT close the caller's acquired fd (by design \u2014 caller owns it). Compare: cipher path at line 833-836 does close(op_fd) THEN pool_release().\n\nTrigger: any ECDSA sign or verify operation.\nOutcome: 1 fd leaked per operation. Under TLS load (ECDSA handshakes), process fd table exhausts \u2192 EMFILE \u2192 WC_HW_E on all subsequent crypto ops \u2192 denial of service.\n\nFix: add close(op_fd) before each pool_release() in the sign (line ~1360) and verify (line ~1425) paths, matching the cipher path pattern.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T22:57:52Z",
+  "updated_at": "2026-04-21T23:00:34Z",
+  "closed_at": "2026-04-21T23:00:34Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-68z",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T15:57:51Z"
+    }
+  ]
+}

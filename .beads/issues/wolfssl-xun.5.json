@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-xun.5",
+  "title": "Pool sizing guidance lives only in .c \u2014 header says pass 0 for default but does not explain consequence of under-sizing",
+  "description": "The wc_crypto2dev_init() header in crypto2dev_port.h says 'Pass 0 to use the compile-time default WOLFSSL_CRYPTO2DEV_POOL_SIZE (8)' but does not mention that under-sizing returns WC_HW_E under concurrent load. The sizing guidance (TLS server needs N slots for N concurrent in-flight AES-GCM records) is in the .c file only. Users integrating from the header will configure pool_size=0 and later get unexplained WC_HW_E at scale. Add the key guidance to the header where it can be found without reading the implementation.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:42:49Z",
+  "updated_at": "2026-04-21T22:19:16Z",
+  "closed_at": "2026-04-21T22:19:16Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-xun",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T14:42:48Z"
+    }
+  ]
+}

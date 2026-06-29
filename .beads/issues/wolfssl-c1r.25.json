@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.25",
+  "title": "compile-time struct size assertions in wire.h catch ABI drift at build time",
+  "description": "The wc_static_assert2() block at the end of crypto2dev_wire.h checks exact byte sizes for every wire struct. This catches struct layout drift (field reordering, type width changes, missing padding) before it becomes a silent ioctl mismatch (which would produce ENOTTY with no other diagnostic). The expected sizes are hardcoded and must match the kernel uapi. This is the correct approach for a binary ABI boundary: the _IOW/_IOR macros encode struct size into the ioctl command word, so any size mismatch produces a hard failure at the kernel boundary, and the compile-time assert catches it before reaching the kernel. A future contributor might remove the asserts as 'redundant' because the ioctl will fail at runtime anyway \u2014 wrong, because runtime ENOTTY has no diagnostic pointing to the struct field that changed.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:30:12Z",
+  "updated_at": "2026-04-21T19:45:53Z",
+  "closed_at": "2026-04-21T19:45:53Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:30:11Z"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-b3e.2",
+  "title": "AES-CTR counter increment assumes big-endian; hardware endianness unverified",
+  "description": "After hardware AES-CTR, crypto2dev_port.c manually increments aes->reg as a big-endian byte array (rightmost byte first). wolfSSL's software AES-CTR counter increment uses IncrementAesCounter which on some builds increments a 32-bit word in host byte order. If the hardware uses a different counter representation, aes->reg goes out of sync with the hardware counter after the first call, producing wrong output on the second and subsequent calls. Trigger: any multi-call AES-CTR stream where the hardware uses little-endian counter increment and the host is little-endian. No test exercises multi-call CTR. Fix: document the assumed counter endianness and add a multi-call CTR KAT to verify the counter tracks correctly.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T13:54:05Z",
+  "updated_at": "2026-04-21T14:07:24Z",
+  "closed_at": "2026-04-21T14:07:24Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-b3e",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T06:54:04Z"
+    }
+  ]
+}

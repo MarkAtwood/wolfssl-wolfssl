@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-p91",
+  "title": "SEC3: pool release uses closed fd as slot key",
+  "description": "crypto2dev_pool_release() finds the pool slot by matching pool->slots[i].fd == slot_fd, but the caller has already called close(op_fd) before calling pool_release(). In a multi-threaded caller, the OS may recycle that fd number between close() and the pool slot scan, causing pool_release() to find and overwrite the wrong slot. Even single-threaded, the protocol is fragile: slot identity should be by index, not by fd value. Affects cipher path (lines 826-829), hash finalize (lines 941-944), and hash error path (lines 950-955).",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:34:26Z",
+  "updated_at": "2026-04-20T20:54:09Z",
+  "closed_at": "2026-04-20T20:54:09Z"
+}

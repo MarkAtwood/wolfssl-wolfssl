@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-h9r",
+  "title": "SEC1: WOLFSSL_MSG absent on most error paths",
+  "description": "The file has 37+ error return sites (WC_HW_E, MEMORY_E, BAD_FUNC_ARG, BUFFER_E, etc.) but only 2 WOLFSSL_MSG calls, both in wc_crypto2dev_init(). All error returns from crypto2dev_cipher, crypto2dev_hash, crypto2dev_hmac, crypto2dev_rsa, crypto2dev_ecdsa, and the pool functions are silent.\n\nIn the Caliptra reference port and in wolfSSL's own cryptocb.c, WOLFSSL_MSG is present on significant error returns to aid debugging in production builds (WOLFSSL_MSG is a no-op when logging is disabled, so there is no runtime cost concern).\n\nWithout these messages, diagnosing hardware errors in the field requires attaching a debugger or adding instrumentation, which increases maintenance burden.\n\nFix: add WOLFSSL_MSG calls on hard error paths (WC_HW_E returns from ioctl failures, MEMORY_E from XMALLOC failures in the pool, and BUFFER_E in rsa/ecdsa). BAD_FUNC_ARG returns from argument validation can remain silent.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:36:44Z",
+  "updated_at": "2026-04-20T20:54:17Z",
+  "closed_at": "2026-04-20T20:54:17Z"
+}

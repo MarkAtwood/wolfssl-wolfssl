@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-acc.6",
+  "title": "HMAC buffers entire input before hardware dispatch: O(input) heap for bulk HMAC",
+  "description": "The accumulation buffer in Crypto2DevHmacCtx grows unbounded: every wc_HmacUpdate appends to a heap buffer that is flushed in one write() at Final time.\n\nFor TLS record MACs (max ~16 KB), this allocates 16 KB per in-flight HMAC. At 10 Gbps with many sessions, this is modest.\n\nFor any non-TLS caller using bulk HMAC (e.g., file integrity over GB-scale input), memory usage is proportional to the HMAC input size. A 1 GB file HMAC would hold 1 GB in the process heap during computation.\n\nExpected impact at scale: Memory pressure on bulk-data use cases. The comment documents this and suggests using a separate devId that skips HMAC offload for bulk data. That workaround is correct but requires the user to understand the HMAC batching design.\n\nRoot cause: crypto2dev device has no stateful streaming HMAC fd (no multiple-write-then-final protocol). The buffering is intrinsic to the device design, not a port choice.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T15:37:38Z",
+  "updated_at": "2026-04-21T15:48:12Z",
+  "closed_at": "2026-04-21T15:48:12Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-acc",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T08:37:37Z"
+    }
+  ]
+}

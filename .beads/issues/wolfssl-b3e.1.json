@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-b3e.1",
+  "title": "pool slot: stale fd in slot after acquire causes double-close in cleanup",
+  "description": "crypto2dev_pool_acquire sets slots[i].in_use=1 but does NOT clear slots[i].fd. The caller takes the fd and later calls close(fd). If wc_crypto2dev_cleanup runs before crypto2dev_pool_release returns, pool_cleanup iterates all slots, sees fd >= 0 (the stale, already-closed value), and calls close(stale_fd) \u2014 double close. If the OS has reassigned that fd number to another file, this closes the wrong fd. Trigger: concurrent cleanup + in-flight operation (violates documented contract, but the bug is silent when violated). Fix: set slots[i].fd = -1 in crypto2dev_pool_acquire immediately after recording the fd value.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T13:54:00Z",
+  "updated_at": "2026-04-21T14:15:13Z",
+  "closed_at": "2026-04-21T14:15:13Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-b3e",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T06:53:59Z"
+    }
+  ]
+}

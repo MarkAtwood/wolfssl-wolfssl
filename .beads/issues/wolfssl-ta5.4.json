@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-ta5.4",
+  "title": "ECDSA global mutex serializes all sign/verify across all threads",
+  "description": "Scenario: TLS server with N concurrent handshakes \u2014 N ECDSA DO_SIGN calls queue behind g_ecdsa_fd_lock. All use the single g_crypto2dev_fd. Maintenance consequence: throughput regression reports that require pool-based ECDSA to fix; the architectural limitation is hard to explain to users and requires a non-trivial pool change. The in-code comment calls out the bottleneck and the fix path (validate DO_SIGN on non-global pool fds) but leaves the limitation in place. This is a ship-now-fix-later decision that needs to be tracked explicitly.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:14:38Z",
+  "updated_at": "2026-04-21T16:33:16Z",
+  "closed_at": "2026-04-21T16:33:16Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:14:38Z"
+    }
+  ]
+}

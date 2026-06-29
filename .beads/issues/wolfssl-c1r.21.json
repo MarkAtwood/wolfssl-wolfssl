@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.21",
+  "title": "crypto2dev_cb: WC_ALGO_TYPE_FREE dispatch is nested switch \u2014 free.algo inner switch is non-obvious",
+  "description": "The FREE handler in wc_crypto2dev_cb() uses a nested switch: outer on algo_type (WC_ALGO_TYPE_FREE), inner on info->free.algo. The inner field name 'free.algo' meaning 'the algorithm category being freed' is not obvious \u2014 a reader might expect 'free.type' to discriminate (which it does for HASH and PK, but 'free.algo' discriminates the top-level category). The nomenclature WC_ALGO_TYPE_HASH vs info->free.algo == WC_ALGO_TYPE_HASH is confusing (both use algo_type values). Adding a comment 'free.algo identifies the algorithm category (cipher/hash/pk) of the object being freed' at the inner switch would clarify.",
+  "status": "closed",
+  "priority": 4,
+  "issue_type": "chore",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:29:34Z",
+  "updated_at": "2026-04-21T19:46:42Z",
+  "closed_at": "2026-04-21T19:46:42Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:29:33Z"
+    }
+  ]
+}

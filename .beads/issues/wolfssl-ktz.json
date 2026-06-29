@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-ktz",
+  "title": "R2 fix: ECDSA g_crypto2dev_fd needs mutex for PK ops",
+  "description": "crypto2dev_ecdsa() calls ioctl(g_crypto2dev_fd, CRYPTO2DEV_IOC_DO_SIGN/VERIFY) without holding any lock. Two threads can race: (1) concurrent SIGN/VERIFY on same fd, (2) cleanup() closing fd while ioctl is in progress. Fix: add wolfSSL mutex (wc_InitMutex/wc_LockMutex/wc_UnLockMutex) around the PK ioctl calls. Init in wc_crypto2dev_init(), free in wc_crypto2dev_cleanup().",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:45:29Z",
+  "updated_at": "2026-04-20T23:55:19Z",
+  "closed_at": "2026-04-20T23:55:19Z"
+}

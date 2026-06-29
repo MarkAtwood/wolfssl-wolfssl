@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-as4.1",
+  "title": "HMAC: no memory cap after first Update commits",
+  "description": "Trigger: HmacSetKey (key <= 128B \u2192 ctx allocated, returns 0), then HmacUpdate with 1 byte (committed, dataSz=1), then HmacUpdate with arbitrarily large chunk. Bad behavior: the cap check (line ~1053) only fires when dataSz==0. Once committed (dataSz>0), there is no upper bound on the accumulation buffer \u2014 subsequent Updates grow it without limit via XMALLOC doubling. A caller can OOM the process by sending a small first chunk then a huge second chunk. Fix: apply the cap on every Update, not just the first; if cap exceeded after commitment, return WC_HW_E instead of CRYPTOCB_UNAVAILABLE.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T17:23:11Z",
+  "updated_at": "2026-04-21T18:26:43Z",
+  "closed_at": "2026-04-21T18:26:43Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-as4",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T10:23:10Z"
+    }
+  ]
+}

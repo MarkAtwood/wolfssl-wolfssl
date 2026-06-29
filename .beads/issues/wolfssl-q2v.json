@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-q2v",
+  "title": "Round-4 fixes: port.c P1+P2 security findings",
+  "description": "Fix four SEC findings from round-4 review: (1) P1: failed re-key leaves stale fd in devCtx causing silent key confusion; (2) P2: CRYPTOCB_UNAVAILABLE for owned-key ECDSA when fd gone (should be WC_HW_E); (3) P2: eccverify.res not NULL-checked before write; (4) P2: no ForceZero on init_op in hash early-return path.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T00:09:03Z",
+  "updated_at": "2026-04-21T00:11:13Z",
+  "closed_at": "2026-04-21T00:11:13Z"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "wolfssl-xun",
+  "title": "Review: crypto2dev-shim pre-merge",
+  "description": "Pre-merge code review of the crypto2dev CryptoCb port per PROMPT-review-myoss.md. Covers correctness, maintainer burden, efficiency, elegance, and readability of wolfcrypt/src/port/crypto2dev/ and its headers.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:42:06Z",
+  "updated_at": "2026-04-21T22:21:54Z",
+  "closed_at": "2026-04-21T22:21:54Z",
+  "notes": "Confidence revised: 90% chance of no missed bug. DO_SIGN/DO_VERIFY uncertainty resolved by reading WOLFKM/src/cdev/crypto2dev_fd.c:1198-1291. The kernel handlers receive (state, file, arg): state is the calling fd's state, file is the struct file for the calling fd. The state parameter is NOT used inside either handler at all \u2014 only file->f_op is checked (to verify key_fd is also a crypto2dev fd) and op.key_fd carries all key context. Issuing DO_SIGN/DO_VERIFY on a pool-acquired operation fd is confirmed correct. Remaining uncertainty (10%): no GCM truncated-tag KAT in the test suite (truncation path traced through the sim but not exercised with a NIST vector)."
+}

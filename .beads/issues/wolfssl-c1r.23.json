@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-c1r.23",
+  "title": "TLS-safe mode design is correct and the documented rationale is complete",
+  "description": "The TLS-safe mode (cfg->tls_safe prevents hardware hash dispatch for TLS devIds) solves a real problem correctly: TLS 1.3 calls wc_Sha256Copy() for transcript hashing and hardware hash cannot snapshot in-flight state. The alternative \u2014 returning CRYPTOCB_UNAVAILABLE for COPY when devCtx is non-null \u2014 is also present in the WOLF_CRYPTO_CB_COPY handler, but that would cause WC_HW_E if TLS 1.3 tries to copy a hash mid-update. The per-devId scoping (tls_safe is per-registered-devId, not global) correctly allows a separate bulk-data devId to use hardware hash. The port.h comment explaining WHY is comprehensive and would prevent a future contributor from naively re-enabling hardware hash for TLS. This is the right design. A future contributor might suggest 'just use hardware hash and implement COPY via a second Init+Replay' \u2014 which is wrong because the replay would require buffering all hash input, turning O(1) memory per hash into O(N) \u2014 worse than the current HMAC accumulation approach.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:29:52Z",
+  "updated_at": "2026-04-21T19:45:48Z",
+  "closed_at": "2026-04-21T19:45:48Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:29:52Z"
+    }
+  ]
+}

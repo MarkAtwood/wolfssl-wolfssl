@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-b3e.13",
+  "title": "Decision: pool slot re-open attempt at acquire (not just at release) is correct",
+  "description": "crypto2dev_pool_acquire tries to re-open a failed slot (fd == -1) at acquire time. A contributor might simplify this to 'only re-open at release'. The current approach is correct: release calls open() and on transient failure sets fd = -1. The next acquire then gets a chance to recover, rather than permanently burning the slot for the lifetime of the pool. This provides graceful recovery from transient device unavailability (e.g., device module reload). Without the acquire-side retry, a single failed open during release would permanently drain the pool.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T13:55:32Z",
+  "updated_at": "2026-04-21T14:14:44Z",
+  "closed_at": "2026-04-21T14:14:44Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-b3e",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T06:55:32Z"
+    }
+  ]
+}

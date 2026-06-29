@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-lc7.12",
+  "title": "ForceZero on init_op after every cipher/HMAC operation",
+  "description": "crypto2dev_cipher (port.c:804) and crypto2dev_hmac (port.c:1101) call ForceZero(&init_op, sizeof(init_op)) at the done: label even when successful. init_op contains the inline AES/HMAC key bytes (up to 128 bytes). The ForceZero is correct even though init_op is stack-allocated: it prevents the key from surviving in compiler-optimized spill slots or residual stack frames. A contributor might argue 'the compiler will optimize this out' \u2014 it won't if properly annotated (ForceZero uses volatile). Should be kept even if it looks redundant.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:44:47Z",
+  "updated_at": "2026-04-21T14:55:07Z",
+  "closed_at": "2026-04-21T14:55:07Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-lc7",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:44:46Z"
+    }
+  ]
+}

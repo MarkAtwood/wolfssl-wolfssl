@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bvs.2",
+  "title": "SEC3: g_tls_safe_mode name obscures its effect",
+  "description": "The global g_tls_safe_mode (crypto2dev_port.c:343) is named after the motivation (TLS safety) rather than what it actually does: suppress hardware hash dispatch and return CRYPTOCB_UNAVAILABLE. A reader encountering 'if (g_tls_safe_mode) return CRYPTOCB_UNAVAILABLE' in wc_crypto2dev_cb must consult the distant comment on the global declaration to understand the effect. A name like g_hash_sw_fallback or g_suppress_hw_hash would make the code self-documenting at the call site.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:21:37Z",
+  "updated_at": "2026-04-20T23:37:08Z",
+  "closed_at": "2026-04-20T23:37:08Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bvs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:21:36Z"
+    }
+  ]
+}

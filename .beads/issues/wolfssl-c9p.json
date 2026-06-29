@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-c9p",
+  "title": "SEC3: sim struct duplication risks ioctl mismatch",
+  "description": "Sim redefines wire structs with sim_ prefix. Ioctl codes are computed from struct sizes via _IOW/_IOR. Size divergence causes dispatch to never match silently. No size asserts exist.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:35:13Z",
+  "updated_at": "2026-04-20T20:54:09Z",
+  "closed_at": "2026-04-20T20:54:09Z"
+}

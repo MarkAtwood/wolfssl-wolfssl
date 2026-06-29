@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-xun.10",
+  "title": "Decision: TLS-safe mode returns CRYPTOCB_UNAVAILABLE for all hash ops to keep wc_Sha256Copy working",
+  "description": "wc_crypto2dev_cb():L1527-1529. For devIds registered via wc_crypto2dev_assign_devid*, all WC_ALGO_TYPE_HASH ops return CRYPTOCB_UNAVAILABLE immediately. This forces TLS 1.3 transcript hashing (which calls wc_Sha256Copy multiple times) to stay in software. The alternative \u2014 allowing hardware hash and implementing a kernel-side snapshot ioctl \u2014 would require a non-trivial kernel driver change. The current approach is minimal and correct. A contributor who adds a new hash algo to hardware support should not enable it for TLS devIds without implementing copy semantics.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:43:36Z",
+  "updated_at": "2026-04-21T22:15:19Z",
+  "closed_at": "2026-04-21T22:15:19Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-xun",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T14:43:36Z"
+    }
+  ]
+}

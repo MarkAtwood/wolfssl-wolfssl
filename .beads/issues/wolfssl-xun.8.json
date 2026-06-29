@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-xun.8",
+  "title": "Decision: HMAC Final must hard-fail (WC_HW_E) if device unavailable, not CRYPTOCB_UNAVAILABLE",
+  "description": "crypto2dev_hmac():L1096-1104. When IOC_INIT fails at Final time after SETKEY already claimed the key, the code promotes NOT_COMPILED_IN to WC_HW_E and does NOT return CRYPTOCB_UNAVAILABLE. This is correct: SETKEY returns 0 (claims the key), so wolfSSL skips its software ipad/opad key schedule. A software-fallback Final would compute HMAC with an all-zero key and return success \u2014 a silent authentication bypass. A future contributor seeing 'if NOT_COMPILED_IN -> return WC_HW_E' may think this is a missed fallback and 'fix' it to CRYPTOCB_UNAVAILABLE. Do not change. The comment explains this but it is non-obvious and worth recording as a decision.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:43:35Z",
+  "updated_at": "2026-04-21T22:15:16Z",
+  "closed_at": "2026-04-21T22:15:16Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-xun",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T14:43:34Z"
+    }
+  ]
+}

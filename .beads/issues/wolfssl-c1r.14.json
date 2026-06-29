@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-c1r.14",
+  "title": "wc_crypto2dev_cleanup() does not unregister devIds registered directly via wc_CryptoCb_RegisterDevice",
+  "description": "The port comment (port.c:207-213) documents that wc_crypto2dev_cleanup() only unregisters devIds that went through wc_crypto2dev_register_ex() or wc_crypto2dev_assign_devid_ex(). If a caller uses wc_CryptoCb_RegisterDevice(MY_DEVID, wc_crypto2dev_cb, &my_cfg) directly (bypassing the port's registration helpers), cleanup will close the pool fds while MY_DEVID remains registered. Subsequent crypto ops on MY_DEVID will call the callback which will try to use closed pool fds, producing WC_HW_E. This is a caller contract violation, but the contract is only documented in a comment \u2014 not in the API header where callers look. The port.h header documents the safe functions but does not warn against direct wc_CryptoCb_RegisterDevice use.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:28:07Z",
+  "updated_at": "2026-04-21T19:44:17Z",
+  "closed_at": "2026-04-21T19:44:17Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:28:06Z"
+    }
+  ]
+}

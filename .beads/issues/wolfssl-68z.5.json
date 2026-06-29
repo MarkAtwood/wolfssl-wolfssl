@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-68z.5",
+  "title": "Hash Update-after-Final silently reinitialises context",
+  "description": "In crypto2dev_hash(), the Final path (info->hash.digest != NULL) frees devCtx and sets *devctx_ptr = NULL (lines 956-959). A subsequent Update call finds *devctx_ptr == NULL and enters the init-new-context branch (line 895), silently starting a fresh hash over the new data.\n\nTrigger: caller calls wc_Sha256Update() after wc_Sha256Final() on the same wc_Sha256 object with a hardware devId.\nOutcome: the subsequent Update produces wrong hash output (hash of only the post-Final data, not an error). wolfSSL's wc_Sha256GetHash also calls Final path; a wc_Sha256Update after wc_Sha256GetHash would be silently wrong.\n\nNote: wolfSSL typically Init()s before re-use, so normal TLS code paths do not hit this. Still a latent correctness hazard for direct API users.\n\nFix: on entry to crypto2dev_hash(), if info->hash.in != NULL (Update) and *devctx_ptr == NULL, distinguish between 'never inited' and 'already finaled'. One approach: return BAD_FUNC_ARG for Update with no active context (0-length Update is a no-op but nonzero Update without prior Init is an API misuse).",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T22:58:13Z",
+  "updated_at": "2026-04-21T23:04:11Z",
+  "closed_at": "2026-04-21T23:04:11Z",
+  "notes": "Deferred: fix requires a sentinel value (e.g. FINALIZED_SENTINEL = (void*)(-1)) in devctx_ptr to distinguish never-inited from already-finalized. Design decision needed before implementing.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-68z",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T15:58:12Z"
+    }
+  ]
+}

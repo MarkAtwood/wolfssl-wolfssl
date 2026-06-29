@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-c96",
+  "title": "SEC4: agree_op.okm sized PUBKEY not OKM maxlen",
+  "description": "In struct crypto2dev_agree_op (line 222), the okm field is sized CRYPTO2DEV_PUBKEY_MAXLEN (256) instead of CRYPTO2DEV_KDF_OKM_MAXLEN (64). No comment explains the intentional over-sizing. A maintainer writing code that reads or bounds-checks the okm output against CRYPTO2DEV_KDF_OKM_MAXLEN would either silently truncate or be confused about the true capacity. Either add a comment explaining why PUBKEY_MAXLEN is used (e.g., agreed-point size can exceed OKM size for large curves), or fix the field size to match its semantic purpose.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:34:03Z",
+  "updated_at": "2026-04-20T20:54:17Z",
+  "closed_at": "2026-04-20T20:54:17Z"
+}

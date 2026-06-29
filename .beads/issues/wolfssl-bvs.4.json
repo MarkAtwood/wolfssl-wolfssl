@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-bvs.4",
+  "title": "SEC3: assign_devid missing _ctx suffix for CTX variant",
+  "description": "wc_crypto2dev_assign_devid(WOLFSSL_CTX*) and wc_crypto2dev_assign_devid_ssl(WOLFSSL*) are inconsistently named. wolfSSL's own API uses CTX/SSL suffix symmetry (wolfSSL_CTX_SetDevId vs wolfSSL_SetDevId). The bare 'assign_devid' name gives no indication it takes a CTX argument; a reader expecting consistency would guess _ctx and _ssl as the two variants. Rename to wc_crypto2dev_assign_devid_ctx to match the wolfSSL convention and make the pairing explicit in the header.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:21:41Z",
+  "updated_at": "2026-04-20T23:37:12Z",
+  "closed_at": "2026-04-20T23:37:12Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-bvs",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:21:41Z"
+    }
+  ]
+}

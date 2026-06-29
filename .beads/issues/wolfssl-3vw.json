@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-3vw",
+  "title": "SEC7r4: HMAC ctx->data/dataSz uninitialized after XMALLOC",
+  "description": "In crypto2dev_hmac_setkey_ctx(), the XMALLOC for Crypto2DevHmacCtx does not initialize ctx->data or ctx->dataSz. wolfSSL XMALLOC maps to malloc(), which does not zero-initialize. On the first wc_HmacUpdate() call, ctx->dataSz is uninitialized garbage, leading to XMALLOC(garbage + inSz) \u2014 a massive or wrapping allocation \u2014 and if ctx->data is non-NULL garbage, XMEMCPY reads from that garbage pointer. This is a P0 heap corruption / out-of-bounds read. Triggered on the very first HmacUpdate after HmacSetKey. Fix: after the XMALLOC, set ctx->data = NULL and ctx->dataSz = 0 before filling the other fields, or zero the struct with XMEMSET before populating it.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T21:07:11Z",
+  "updated_at": "2026-04-20T21:08:28Z",
+  "closed_at": "2026-04-20T21:08:28Z"
+}

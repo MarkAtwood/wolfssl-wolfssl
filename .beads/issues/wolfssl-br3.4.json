@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-br3.4",
+  "title": "devctx_ptr NULL check in crypto2dev_hash is unreachable dead code",
+  "description": "In crypto2dev_hash() (port.c ~line 836), after the hash-type switch, there is: 'if (devctx_ptr == NULL) return BAD_FUNC_ARG;'. The switch has a default branch that returns CRYPTOCB_UNAVAILABLE, so every non-default case assigns devctx_ptr. The NULL check can never trigger. It is dead code that adds noise. Suggested rewrite: remove the check; add a comment above the switch that the default handles all unsupported types.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "chore",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:28:58Z",
+  "updated_at": "2026-04-21T15:00:11Z",
+  "closed_at": "2026-04-21T15:00:11Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-br3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:28:58Z"
+    }
+  ]
+}

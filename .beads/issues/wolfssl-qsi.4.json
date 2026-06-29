@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-qsi.4",
+  "title": "FIPS minimum: HMAC key < 14 bytes accepted \u2014 SETKEY returns 0, no minimum enforced",
+  "description": "crypto2dev_hmac_setkey_ctx (crypto2dev_port.c:1033) checks keySz == 0 (BAD_FUNC_ARG) and keySz > 128 (CRYPTOCB_UNAVAILABLE) but has no minimum check. FIPS SP 800-107 \u00a75.3 requires HMAC keys >= 14 bytes (112-bit security level). A 10-byte HMAC key passes through, SETKEY returns 0 (claiming the key), and wolfSSL's software path is NOT run (wolfSSL skips software key validation when callback returns 0, unlike CRYPTOCB_UNAVAILABLE which falls through). The raw 10-byte key is then passed to hardware in init_op.key at Final time. In FIPS mode the device should reject it with EACCES, but this relies on device-side enforcement rather than port-side enforcement. Non-FIPS device builds would silently compute HMAC with a sub-minimum key. Fix: add 'if (keySz < 14) return CRYPTOCB_UNAVAILABLE' (not WC_HW_E) before storing the key, so wolfSSL's own FIPS minimum check can apply.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T00:58:30Z",
+  "updated_at": "2026-04-22T01:43:27Z",
+  "closed_at": "2026-04-22T01:43:27Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-qsi",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T17:58:30Z"
+    }
+  ]
+}

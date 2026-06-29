@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-qsi.2",
+  "title": "COPY callback: HMAC devCtx not guarded \u2014 aliased Crypto2DevHmacCtx double-free",
+  "description": "wc_HmacCopy (hmac.c:341-359) does XMEMCPY(dst, src, sizeof(*dst)) directly \u2014 it does NOT dispatch through CryptoCb COPY at all. The COPY handler in wc_crypto2dev_cb cannot intercept this. However the aliasing is still real: after XMEMCPY, dst->devCtx == src->devCtx (same Crypto2DevHmacCtx*, same data buffer pointer, same key bytes). When either object is freed or finalized, ForceZero+XFREE runs on the shared block; the other then holds dangling pointers \u2014 use-after-free, double-free, key material readable in the second object's stale devCtx.\n\nFix direction (revised after qsi.11 research): the COPY handler guard originally proposed will NOT work since wolfSSL never calls it for HMAC copy. The correct fix options are:\n(a) UPSTREAM: add CryptoCb COPY dispatch to wc_HmacCopy in wolfSSL, similar to wc_Sha256Copy. Until then the port cannot intercept.\n(b) DOCUMENT: add a header warning that wc_HmacCopy is unsafe when devCtx is set; recommend not calling wc_HmacCopy on hardware-bound HMAC objects.\n(c) WORKAROUND: on the devCtx callback, detect a stale devCtx by storing the owning hmac* in the Crypto2DevHmacCtx and asserting it matches \u2014 aborts rather than silent corruption.\n\nSince wc_HmacCopy is not called internally by wolfSSL for TLS (only hash objects are copied for transcript), practical risk is application code that explicitly calls wc_HmacCopy on a hardware-bound HMAC. Priority downgraded P1\u2192P2 pending upstream dispatch support.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-22T00:58:17Z",
+  "updated_at": "2026-04-22T01:51:43Z",
+  "closed_at": "2026-04-22T01:51:43Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-qsi",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T17:58:17Z"
+    }
+  ]
+}

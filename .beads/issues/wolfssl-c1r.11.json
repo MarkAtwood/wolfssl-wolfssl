@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-c1r.11",
+  "title": "ECDSA serialization via g_ecdsa_fd_lock is a documented scalability bottleneck with no migration path",
+  "description": "DO_SIGN and DO_VERIFY can be called on ANY open crypto2dev fd \u2014 not just g_crypto2dev_fd. The kernel ioctl_do_sign() uses fget(op.key_fd) to reach the key fd and locks only key_state->lock (the KEY fd's own mutex). The calling fd is irrelevant. This is documented in the kernel source: 'These handlers hold only the KEY fd's mutex. They do NOT lock the calling fd's state because they operate entirely on the key fd's data.' (crypto2dev_fd.c:1193-1195).\n\nThe global g_ecdsa_fd_lock + g_crypto2dev_fd design in the port is therefore unnecessary. There is no kernel-side constraint requiring a single global fd for ECDSA \u2014 the constraint was invented by the port and defends nothing.\n\nPLAN:\n1. In crypto2dev_ecdsa(): replace the g_crypto2dev_fd + g_ecdsa_fd_lock pattern with crypto2dev_pool_acquire / ioctl DO_SIGN or DO_VERIFY on the pool fd / crypto2dev_pool_release. Same pattern as cipher and hash.\n2. Remove g_ecdsa_fd_lock, g_ecdsa_fd_lock_inited globals.\n3. Remove g_crypto2dev_fd global (only used for ECDSA after this change).\n4. Remove ECDSA mutex init from wc_crypto2dev_init() and mutex cleanup from wc_crypto2dev_cleanup().\n5. Remove the open() of g_crypto2dev_fd in wc_crypto2dev_init().\n6. Update the comment block above g_ecdsa_fd_lock (now deleted) to remove the false claim that DO_SIGN only works on g_crypto2dev_fd.\n\nResult: ECDSA sign/verify becomes as parallel as cipher/hash. Pool contention is shared but there is no new global serialization point. Concurrent DO_SIGN on different key fds runs with no shared lock. Concurrent DO_SIGN on the same key fd is serialized by that key fd's mutex \u2014 correct behavior.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T19:27:32Z",
+  "updated_at": "2026-04-21T20:29:56Z",
+  "closed_at": "2026-04-21T20:29:56Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-c1r",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T12:27:32Z"
+    }
+  ]
+}

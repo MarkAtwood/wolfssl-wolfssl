@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-xun.9",
+  "title": "Decision: COPY handler returns WC_HW_E when devCtx \\!= NULL, CRYPTOCB_UNAVAILABLE when NULL",
+  "description": "wc_crypto2dev_cb():L1584-1623. When a hash object has active hardware state (devCtx \\!= NULL, op_fd open), returning WC_HW_E prevents wolfSSL from doing a struct memcpy that would alias the devCtx pointer in both copies \u2014 leading to double-close of the fd and use-after-free of the heap ctx. When devCtx == NULL, CRYPTOCB_UNAVAILABLE allows the safe memcpy. The split is exactly right. A future contributor who wants to 'simplify' by always returning CRYPTOCB_UNAVAILABLE will introduce a dangling-pointer bug on wc_Sha256Copy while hardware hash is active.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T21:43:35Z",
+  "updated_at": "2026-04-21T22:15:18Z",
+  "closed_at": "2026-04-21T22:15:18Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-xun",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T14:43:35Z"
+    }
+  ]
+}

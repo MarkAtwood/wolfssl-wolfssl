@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-68z",
+  "title": "Audit: crypto2dev-shim 2026-04-21",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T22:47:59Z",
+  "updated_at": "2026-04-21T23:04:12Z",
+  "closed_at": "2026-04-21T23:04:12Z"
+}

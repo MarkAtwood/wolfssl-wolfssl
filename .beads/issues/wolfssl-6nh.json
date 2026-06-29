@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-6nh",
+  "title": "R2 fixes: build system (BUILD_CRYPTO2DEVTEST, crypto2devsim option)",
+  "description": "Three build system fixes:\\n1. Add AM_CONDITIONAL([BUILD_CRYPTO2DEVTEST], [test x$ENABLED_CRYPTO2DEVTEST = xyes]) to configure.ac\\n2. Move crypto2dev_test.c into nested 'if BUILD_CRYPTO2DEVTEST' block within include.am (currently compiled unconditionally within BUILD_CRYPTO2DEV)\\n3. Add --enable-crypto2devsim configure option that sets -DWOLFSSL_CRYPTO2DEV_SIM (currently users must manually pass CFLAGS)",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:45:46Z",
+  "updated_at": "2026-04-20T23:55:20Z",
+  "closed_at": "2026-04-20T23:55:20Z"
+}

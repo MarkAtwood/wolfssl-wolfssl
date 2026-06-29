@@ -1,0 +1,46 @@
+{
+  "id": "wolfssl-2ed.4",
+  "title": "crypto2dev TLS: TLS 1.2 integration test",
+  "description": "Write an integration test that performs a complete TLS 1.2 handshake and data exchange with crypto2dev active. Cover ECDHE-RSA-AES128-GCM-SHA256 and ECDHE-RSA-AES256-GCM-SHA384 cipher suites. RSA server certificate key should be in a KEY fd (imported via wc_crypto2dev_assign_devid()). Verify: handshake completes, RSA signature during Server Key Exchange is served by hardware, AES-GCM record encryption is served by hardware.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T19:37:15Z",
+  "updated_at": "2026-04-20T23:19:49Z",
+  "closed_at": "2026-04-20T23:19:49Z",
+  "notes": "TLS 1.2 RSA auth path: server calls wc_RsaSSL_Sign() \u2192 CryptoCb \u2192 DO_SIGN on KEY fd. This should work cleanly since the digest is pre-hashed before the CryptoCb is called. Confirm this works with the RSA-4096 key size limit of crypto2dev.",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-0h3.6",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:08:48Z"
+    },
+    {
+      "depends_on_id": "wolfssl-0h3.7",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T16:08:49Z"
+    },
+    {
+      "depends_on_id": "wolfssl-2ed",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:37:15Z"
+    },
+    {
+      "depends_on_id": "wolfssl-2ed.2",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:16Z"
+    },
+    {
+      "depends_on_id": "wolfssl-c62",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-20T12:38:17Z"
+    }
+  ]
+}

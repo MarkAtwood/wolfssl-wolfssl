@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-68z.1",
+  "title": "ECDSA NULL ptr: eccsign.in/eccverify.hash/sig unchecked",
+  "description": "crypto2dev_ecdsa() dereferences three caller-supplied pointers without a NULL guard before XMEMCPY:\n- info->pk.eccsign.in (line 1348): copied to sign_op.digest without checking for NULL\n- info->pk.eccverify.hash (line 1406): copied to verify_op.digest without checking for NULL\n- info->pk.eccverify.sig (line 1412): copied to verify_op.sig without checking for NULL\n\nTrigger: caller passes NULL digest/sig pointer with nonzero inlen/hashlen/siglen.\nOutcome: SIGSEGV / process crash.\n\nFix: add NULL guard before each XMEMCPY, returning BAD_FUNC_ARG.\nThe verify path already checks key==NULL and res==NULL (line 1383) but misses hash and sig.",
+  "status": "closed",
+  "priority": 0,
+  "issue_type": "bug",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T22:57:47Z",
+  "updated_at": "2026-04-21T23:00:33Z",
+  "closed_at": "2026-04-21T23:00:33Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-68z",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T15:57:47Z"
+    }
+  ]
+}

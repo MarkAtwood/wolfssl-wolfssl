@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-99p",
+  "title": "R2 fixes: port.c correctness (tag, hash-algo, IV, pool, overflow)",
+  "description": "Five correctness fixes in crypto2dev_port.c:\\n1. AES-GCM GET_TAG: check tag_op.taglen == authTagSz after ioctl or error\\n2. hash_algo_name: return NULL (and caller returns BAD_FUNC_ARG) for unknown digest sizes instead of silently returning sha256\\n3. Partial IV copy: zero full AES_BLOCK_SIZE of aes->reg before XMEMCPY when auxSz < AES_BLOCK_SIZE\\n4. Pool retirement: when re-open fails in pool_release, set in_use=0 so slot can be retried (not permanently retired)\\n5. HMAC Update: guard dataSz+inSz against word32 overflow before XMALLOC",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T23:45:39Z",
+  "updated_at": "2026-04-20T23:55:20Z",
+  "closed_at": "2026-04-20T23:55:20Z"
+}

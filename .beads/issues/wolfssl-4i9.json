@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-4i9",
+  "title": "SEC2: pool_release holds mutex over open() syscall",
+  "description": "In crypto2dev_pool_release() (line 424), open(CRYPTO2DEV_PATH, ...) is called while the pool mutex is held. open() is a blocking syscall that can take O(ms) depending on driver state. All threads waiting for a pool slot are blocked for the entire duration. Fix: clear in_use and release the lock first, then open() the fresh fd and re-acquire the lock to write it back. Alternatively, pre-open a replacement fd before entering the critical section.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:33:43Z",
+  "updated_at": "2026-04-20T20:54:04Z",
+  "closed_at": "2026-04-20T20:54:04Z"
+}

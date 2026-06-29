@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-br3.2",
+  "title": "pool_acquire recovery opens fd inside mutex; pool_release opens outside",
+  "description": "crypto2dev_pool_release correctly opens the replacement fd before taking the mutex (with a comment explaining why). crypto2dev_pool_acquire's recovery path (line ~278: 'open(CRYPTO2DEV_PATH...)' when slot fd<0) does the opposite \u2014 it calls open() while holding the lock. If the device is slow or temporarily busy, this blocks the entire pool under the mutex, stalling all other threads trying to acquire or release slots. The inconsistency also means any contributor copying pool_acquire will copy the bug. The open() should be moved outside the mutex the same way pool_release does it.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:23:43Z",
+  "updated_at": "2026-04-21T14:32:00Z",
+  "closed_at": "2026-04-21T14:32:00Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-br3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:23:43Z"
+    }
+  ]
+}

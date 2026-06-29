@@ -1,0 +1,21 @@
+{
+  "id": "wolfssl-br3.6",
+  "title": "beads issue IDs in code comments are opaque to external contributors",
+  "description": "Comments in port.c reference beads issue IDs: 'wolfssl-tm1' (RSA not implemented, line ~1193), 'wolfssl-1rl' (HKDF via DO_KDF, line ~1339), 'wolfssl-2ed' (TLS devId assignment, line ~1479). These IDs are opaque to anyone without access to this project's beads tracker. A contributor reading the code on GitHub cannot resolve them. Suggested fix: convert each to a self-contained TODO comment that describes the limitation and the path forward without requiring tracker access, or convert to public GitHub issues and reference the URL.",
+  "status": "closed",
+  "priority": 4,
+  "issue_type": "chore",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T14:29:15Z",
+  "updated_at": "2026-04-21T15:03:16Z",
+  "closed_at": "2026-04-21T15:03:16Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-br3",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T07:29:15Z"
+    }
+  ]
+}

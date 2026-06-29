@@ -1,0 +1,14 @@
+{
+  "id": "wolfssl-b3e",
+  "title": "Review: feat: add crypto2dev CryptoCb port for TLS integration",
+  "description": "Pre-merge code review of the crypto2dev CryptoCb shim (two commits: feat port + AWS CI script). Covers correctness, maintainer risk, efficiency, elegance, and decisions worth defending.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "epic",
+  "assignee": "Mark Atwood",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T13:53:38Z",
+  "updated_at": "2026-04-21T14:15:16Z",
+  "closed_at": "2026-04-21T14:15:16Z",
+  "notes": "Maintainer risk: MEDIUM \u2014 The double-close pool bug is under a documented invariant so won't fire in practice; the biggest day-to-day risks are the AesGcmSetKey footgun and the g_tls_safe_mode global behavior, both of which will generate repeated user confusion. The CI script is purely a personal tool issue.\nConfidence: 25% chance of missed bug. Uncertainty driven by: (1) AES-CTR endianness \u2014 the counter increment code looks correct for big-endian CTR (the RFC standard) but I cannot verify the hardware driver's counter behavior without reading the kernel module source; (2) wc_CryptoCb_RegisterDevice idempotency \u2014 the double-registration in assign_devid* paths is probably fine but depends on wolfSSL internals I haven't read; (3) no test exercises multi-call AES-CTR or multi-call AES-CBC chaining across multiple wc_AesCbcEncrypt calls. Would raise confidence if: kernel module source reviewed to confirm CTR counter endianness, multi-call AES-CTR KAT added with independently computed expected values."
+}

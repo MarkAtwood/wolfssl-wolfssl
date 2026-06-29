@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-ta5.9",
+  "title": "Pool slot fd cleared on acquire to prevent double-close by concurrent cleanup",
+  "description": "pool_acquire() clears pool->slots[i].fd = -1 inside the mutex before returning the fd to the caller. This means cleanup() sees -1 and does not close an fd that has already been handed to an active operation. The comment explains this explicitly. A contributor simplifying the pool code might remove the fd=-1 assignment thinking it is redundant. It must be preserved: without it, cleanup() and an active operation holding the fd both call close(fd) \u2014 the OS may reuse the fd between the two closes, closing an unrelated fd in the process.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T16:15:08Z",
+  "updated_at": "2026-04-21T16:33:27Z",
+  "closed_at": "2026-04-21T16:33:27Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-ta5",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T09:15:08Z"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-l0h",
+  "title": "SEC1: g_crypto2dev_fd unprotected for PK ops",
+  "description": "crypto2dev_rsa() and crypto2dev_ecdsa() both call ioctl(g_crypto2dev_fd, ...) for sign and verify without holding any mutex. g_crypto2dev_fd is a single global fd shared across all concurrent callers. Concurrent RSA or ECDSA operations from multiple threads will interleave ioctls on the same fd, producing wrong results or errors with no diagnostic.\n\nCipher and hash ops use the pool (which has a mutex). PK ops use the raw global fd with no locking.\n\nFix: either route PK sign/verify through the operation pool (like cipher/hash), or add a dedicated mutex around all uses of g_crypto2dev_fd for PK ioctls.\n\nAffected lines: crypto2dev_port.c:1138, 1177, 1216, 1263.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:35:51Z",
+  "updated_at": "2026-04-20T20:54:09Z",
+  "closed_at": "2026-04-20T20:54:09Z"
+}

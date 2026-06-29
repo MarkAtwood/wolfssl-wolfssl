@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-u4q",
+  "title": "SEC1: hash_algo_name silent wrong fallback",
+  "description": "crypto2dev_hash_algo_name() maps digest length to an algorithm name string for DigestInfo construction in RSA/ECDSA sign and verify. Its default case returns \"sha256\" with the comment 'safe fallback'.\n\nThis fallback is not safe: if a caller passes a SHA-1 (20-byte) or any non-SHA2 digest, the function silently returns \"sha256\". The resulting DigestInfo OID will be wrong, producing a silently invalid signature or a spurious verification failure. There is no WOLFSSL_MSG or error log at the call site.\n\nFix: return NULL from the default case. Update callers (crypto2dev_rsa and crypto2dev_ecdsa) to check for NULL and return BAD_FUNC_ARG with a WOLFSSL_MSG.\n\nAffected lines: crypto2dev_port.c:1105, and callers at 1129, 1160, 1207, 1247.",
+  "status": "closed",
+  "priority": 2,
+  "issue_type": "task",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:36:33Z",
+  "updated_at": "2026-04-20T20:54:16Z",
+  "closed_at": "2026-04-20T20:54:16Z"
+}

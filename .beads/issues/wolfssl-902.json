@@ -1,0 +1,12 @@
+{
+  "id": "wolfssl-902",
+  "title": "SEC7r2: AES-GCM auth failure returns WC_HW_E not AES_GCM_AUTH_E",
+  "description": "In crypto2dev_cipher(), when AES-GCM decrypt fails authentication (bad tag), the CRYPTO2DEV_IOC_FINALIZE ioctl returns an error. In the sim, sim_finalize_cipher_gcm propagates wc_AesGcmDecrypt's AES_GCM_AUTH_E through sim_finalize, which then sets errno=EIO and returns -1. The port maps EIO\u2192WC_HW_E via crypto2dev_to_wc_err(). On real hardware the driver likely returns EBADMSG which also maps to WC_HW_E. wolfSSL's TLS layer checks for AES_GCM_AUTH_E specifically to generate the correct alert (BAD_RECORD_MAC). WC_HW_E takes a different path and may cause incorrect TLS error handling. Fix: handle EBADMSG\u2192AES_GCM_AUTH_E in the GCM decrypt error path (port level), and update sim to set errno=EBADMSG on auth failure rather than EIO.",
+  "status": "closed",
+  "priority": 1,
+  "issue_type": "bug",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-20T20:57:30Z",
+  "updated_at": "2026-04-20T20:59:47Z",
+  "closed_at": "2026-04-20T20:59:47Z"
+}

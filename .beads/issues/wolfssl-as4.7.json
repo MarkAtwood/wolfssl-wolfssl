@@ -1,0 +1,20 @@
+{
+  "id": "wolfssl-as4.7",
+  "title": "AES SETKEY returns CRYPTOCB_UNAVAILABLE to force software schedule for GCM H-subkey \u2014 defend this",
+  "description": "Why correct: AES-GCM requires aes->rounds to be set for software H-subkey precomputation done inside wc_AesGcmSetKey. If SETKEY returned 0 (claimed), wolfSSL would skip the software key schedule and aes->rounds would be zero/garbage. The first GcmEncrypt call would fail with KEYUSAGE_E or silently use a wrong H-subkey. Returning CRYPTOCB_UNAVAILABLE forces wolfSSL to run the software key schedule. The port's hardware cipher path (crypto2dev_cipher) checks devCtx first and uses the device regardless, so both the hardware key store and the software schedule coexist correctly. What a contributor might change: 'SETKEY should return 0 to avoid the software schedule overhead, and we can init rounds ourselves.' Do not do this \u2014 it creates a subtle KEYUSAGE_E failure that only appears with AES-GCM, not AES-CBC.",
+  "status": "closed",
+  "priority": 3,
+  "issue_type": "decision",
+  "created_by": "Mark Atwood",
+  "created_at": "2026-04-21T17:24:10Z",
+  "updated_at": "2026-04-21T19:03:53Z",
+  "closed_at": "2026-04-21T19:03:53Z",
+  "dependencies": [
+    {
+      "depends_on_id": "wolfssl-as4",
+      "dep_type": "parent_child",
+      "created_by": "Mark Atwood",
+      "created_at": "2026-04-21T10:24:10Z"
+    }
+  ]
+}
