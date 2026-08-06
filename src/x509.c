@@ -11144,6 +11144,7 @@ WOLFSSL_ASN1_INTEGER* wolfSSL_X509_get_serialNumber(WOLFSSL_X509* x509)
 {
     WOLFSSL_ASN1_INTEGER* a;
     int i = 0;
+    word32 hdrSz;
 
     WOLFSSL_ENTER("wolfSSL_X509_get_serialNumber");
 
@@ -11164,16 +11165,24 @@ WOLFSSL_ASN1_INTEGER* wolfSSL_X509_get_serialNumber(WOLFSSL_X509* x509)
     if (a == NULL)
         return NULL;
 
+    #if defined(WOLFSSL_QT) || defined(WOLFSSL_HAPROXY)
+        /* Only the value is stored, so no header is needed. */
+        hdrSz = 0;
+    #else
+        /* A length of 128 or more needs more than one octet to encode. */
+        hdrSz = 1 + SetLength((word32)x509->serialSz, NULL);
+    #endif
+
     /* Make sure there is space for the data, ASN.1 type and length. */
-    if (x509->serialSz > (WOLFSSL_ASN1_INTEGER_MAX - 2)) {
-        /* dynamically create data buffer, +2 for type and length */
-        a->data = (unsigned char*)XMALLOC(x509->serialSz + 2, NULL,
+    if ((word32)x509->serialSz + hdrSz > WOLFSSL_ASN1_INTEGER_MAX) {
+        /* dynamically create data buffer, hdrSz for type and length */
+        a->data = (unsigned char*)XMALLOC((word32)x509->serialSz + hdrSz, NULL,
                 DYNAMIC_TYPE_OPENSSL);
         if (a->data == NULL) {
             wolfSSL_ASN1_INTEGER_free(a);
             return NULL;
         }
-        a->dataMax   = (unsigned int)x509->serialSz + 2;
+        a->dataMax   = (unsigned int)x509->serialSz + hdrSz;
         a->isDynamic = 1;
     }
     else {
@@ -11187,9 +11196,9 @@ WOLFSSL_ASN1_INTEGER* wolfSSL_X509_get_serialNumber(WOLFSSL_X509* x509)
         a->length = x509->serialSz;
     #else
         a->data[i++] = ASN_INTEGER;
-        i += SetLength(x509->serialSz, a->data + i);
+        i += (int)SetLength((word32)x509->serialSz, a->data + i);
         XMEMCPY(&a->data[i], x509->serial, x509->serialSz);
-        a->length = x509->serialSz + 2;
+        a->length = x509->serialSz + (int)hdrSz;
     #endif
 
     x509->serialNumber = a;

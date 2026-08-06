@@ -2087,20 +2087,30 @@ int wolfSSL_OCSP_id_get0_info(WOLFSSL_ASN1_STRING **name,
     if (serial != NULL) {
         int i = 0;
         WOLFSSL_ASN1_INTEGER* ser;
+        word32 hdrSz;
 
         ser = wolfSSL_ASN1_INTEGER_new();
         if (ser == NULL)
             return 0;
 
-        if (cid->status->serialSz > (WOLFSSL_ASN1_INTEGER_MAX - 2)) {
-            /* allocate data buffer, +2 for type and length */
-            ser->data = (unsigned char*)XMALLOC((size_t)cid->status->serialSz + 2, NULL,
+        #if defined(WOLFSSL_QT) || defined(WOLFSSL_HAPROXY)
+            /* Only the value is stored, so no header is needed. */
+            hdrSz = 0;
+        #else
+            /* A length of 128 or more needs more than one octet to encode. */
+            hdrSz = 1 + SetLength((word32)cid->status->serialSz, NULL);
+        #endif
+
+        if ((word32)cid->status->serialSz + hdrSz > WOLFSSL_ASN1_INTEGER_MAX) {
+            /* allocate data buffer, hdrSz for type and length */
+            ser->data = (unsigned char*)XMALLOC(
+                (size_t)((word32)cid->status->serialSz + hdrSz), NULL,
                 DYNAMIC_TYPE_OPENSSL);
             if (ser->data == NULL) {
                 wolfSSL_ASN1_INTEGER_free(ser);
                 return 0;
             }
-            ser->dataMax = (unsigned int)cid->status->serialSz + 2;
+            ser->dataMax = (unsigned int)cid->status->serialSz + hdrSz;
             ser->isDynamic = 1;
         } else {
             /* Use array instead of dynamic memory */
