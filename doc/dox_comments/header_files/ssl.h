@@ -11711,6 +11711,38 @@ int wolfSSL_CTX_SetCertEventCb(WOLFSSL_CTX* ctx, WOLFSSL_CERT_EVENT_CB cb,
         void* cbCtx);
 
 /*!
+    \ingroup CertManager
+    \brief Sets the certificate validation event callback in the Certificate
+    Manager of an X509 store, so that X509_verify_cert() raises events.
+    Requires WOLFSSL_CERT_EVENTS and OPENSSL_EXTRA. See
+    wolfSSL_CertManagerSetCertEventCb() for what the callback receives.
+
+    X509_verify_cert() sends a RESULT for each certificate it tries while
+    building the chain, so one verification can send several, and a chain
+    check after the last one, such as the chain length, can still fail it.
+    Use X509_verify_cert()'s return value for the verdict. These RESULT
+    events have no subject, issuer or serial: use the X509 store context.
+
+    \return WOLFSSL_SUCCESS on success.
+    \return BAD_FUNC_ARG when store is NULL or has no Certificate Manager.
+
+    \param store a pointer to a WOLFSSL_X509_STORE structure.
+    \param cb the event callback. NULL turns events off.
+    \param ctx a pointer passed to the callback with each event.
+
+    _Example_
+    \code
+    WOLFSSL_X509_STORE* store = wolfSSL_X509_STORE_new();
+    ...
+    wolfSSL_X509_STORE_SetCertEventCb(store, myCertEvent, myLogger);
+    \endcode
+
+    \sa wolfSSL_CertManagerSetCertEventCb
+*/
+int wolfSSL_X509_STORE_SetCertEventCb(WOLFSSL_X509_STORE* store,
+        WOLFSSL_CERT_EVENT_CB cb, void* ctx);
+
+/*!
     \brief Check CRL if the option is enabled and compares the cert to the
     CRL list.
 

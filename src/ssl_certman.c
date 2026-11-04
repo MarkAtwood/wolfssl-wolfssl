@@ -1173,6 +1173,45 @@ int CM_VerifyBuffer_ex(WOLFSSL_CERT_MANAGER* cm, const unsigned char* buff,
         NULL);
 }
 
+#ifdef WOLFSSL_CERT_EVENTS
+/* Verify one certificate of a chain, reporting its chain depth in events.
+ *
+ * Does not send the RESULT event: the caller sends it with
+ * CM_CertEventResult() once its own checks and verify callback are done.
+ * When the certificate failed a check the caller may yet accept, the strict
+ * checks still run and their error is returned in strictErr.
+ *
+ * @param [in] cm      Certificate manager.
+ * @param [in] buff    Buffer holding encoded certificate.
+ * @param [in] sz      Size in bytes of data in buffer.
+ * @param [in] format  Format of encoding. Valid values:
+ *                       WOLFSSL_FILETYPE_ASN1, WOLFSSL_FILETYPE_PEM.
+ * @param [in] depth   Chain depth: 0 for the certificate being verified.
+ * @param [out] crlErr  CRL result, not merged into the return value. May be
+ *                      NULL.
+ * @param [out] strictErr  Error of an enforced strict check when the
+ *                         certificate failed another check, otherwise 0.
+ * @return  WOLFSSL_SUCCESS on success.
+ * @return  BAD_FUNC_ARG when cm or buff is NULL, or sz is not positive.
+ * @return  WOLFSSL_BAD_FILETYPE when format is not supported.
+ * @return  Other values on failure, as CM_VerifyBuffer_ex().
+ */
+int CM_VerifyBufferDepth(WOLFSSL_CERT_MANAGER* cm, const unsigned char* buff,
+    long sz, int format, int depth, int* crlErr, int* strictErr)
+{
+    *strictErr = 0;
+    /* Same validation as wolfSSL_CertManagerVerifyBuffer(). */
+    if ((cm == NULL) || (buff == NULL) || (sz <= 0)) {
+        return BAD_FUNC_ARG;
+    }
+    if ((format != WOLFSSL_FILETYPE_ASN1) && (format != WOLFSSL_FILETYPE_PEM)) {
+        return WOLFSSL_BAD_FILETYPE;
+    }
+    return CM_VerifyBuffer_int(cm, buff, sz, format, 0, crlErr, depth,
+        strictErr);
+}
+#endif /* WOLFSSL_CERT_EVENTS */
+
 /* Verify the certificate.
  *
  * Uses the verification callback if available.
@@ -3366,6 +3405,15 @@ int AddCA(WOLFSSL_CERT_MANAGER* cm, DerBuffer** pDer, int type, int verify)
     }
     if (cm->unknownExtCallback != NULL) {
         wc_SetUnknownExtCallback(cert, cm->unknownExtCallback);
+    }
+#endif
+
+#ifdef WOLFSSL_CERT_EVENTS
+    /* A CA the application loads as trusted. CAs from a peer's chain are
+     * reported by the TLS code that verified them. */
+    if ((type == WOLFSSL_USER_CA) && (verify != NO_VERIFY)) {
+        wc_SetCertEventCallback(cert, cm->certEventCb, cm->certEventCtx);
+        wc_CertEventSetPosition(cert, WC_CEV_ROLE_TRUST_ANCHOR, -1);
     }
 #endif
 

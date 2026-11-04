@@ -1703,6 +1703,121 @@ int test_wolfSSL_CertEvents_heldStatus(void)
     return EXPECT_RESULT();
 }
 
+/* A CA the application loads as trusted is reported in the trust anchor
+ * role. */
+int test_wolfSSL_CertEvents_trustAnchor(void)
+{
+    EXPECT_DECLS;
+#ifdef TEST_CERT_EVENTS
+    WOLFSSL_CERT_MANAGER* cm = NULL;
+    CertEventLog log;
+    byte* der = NULL;
+    size_t derSz = 0;
+
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(cm = wolfSSL_CertManagerNew());
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventCb(cm, certEventLogCb, &log),
+        WOLFSSL_SUCCESS);
+
+    /* A good CA: its algorithms, and no defect. */
+    ExpectIntEQ(load_file("./certs/ca-cert.der", &der, &derSz), 0);
+    ExpectIntEQ(wolfSSL_CertManagerLoadCABuffer_ex(cm, der, (long)derSz,
+        WOLFSSL_FILETYPE_ASN1, 0, WOLFSSL_LOAD_FLAG_NONE), WOLFSSL_SUCCESS);
+    XFREE(der, NULL, DYNAMIC_TYPE_TMP_BUFFER);
+    der = NULL;
+    ExpectIntEQ(log.defects, 0);
+
+    /* An expired CA, loaded without permission to ignore its dates. */
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectIntEQ(load_file("./certs/test/expired/expired-ca.der", &der,
+        &derSz), 0);
+    ExpectIntEQ(wolfSSL_CertManagerLoadCABuffer_ex(cm, der, (long)derSz,
+        WOLFSSL_FILETYPE_ASN1, 0, WOLFSSL_LOAD_FLAG_NONE),
+        WC_NO_ERR_TRACE(ASN_AFTER_DATE_E));
+    XFREE(der, NULL, DYNAMIC_TYPE_TMP_BUFFER);
+    ExpectIntEQ(log.defects, 1);
+    ExpectIntEQ(log.defect.role, WC_CEV_ROLE_TRUST_ANCHOR);
+    ExpectIntEQ(log.defect.depth, -1);
+    ExpectIntEQ(log.defect.condition, WC_CEV_COND_CERT_EXPIRED);
+
+    wolfSSL_CertManagerFree(cm);
+#endif
+
+    return EXPECT_RESULT();
+}
+
+/* X509_verify_cert() reports events through the store's certificate
+ * manager, as used by nginx and other OpenSSL-compatible applications. */
+int test_wolfSSL_X509_STORE_CertEvents(void)
+{
+    EXPECT_DECLS;
+#if defined(TEST_CERT_EVENTS) && defined(OPENSSL_EXTRA)
+    WOLFSSL_X509_STORE* store = NULL;
+    WOLFSSL_X509_STORE_CTX* sctx = NULL;
+    WOLFSSL_X509* ca = NULL;
+    WOLFSSL_X509* leaf = NULL;
+    CertEventLog log;
+
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectIntEQ(wolfSSL_X509_STORE_SetCertEventCb(NULL, certEventLogCb,
+        &log), WC_NO_ERR_TRACE(BAD_FUNC_ARG));
+
+    ExpectNotNull(store = wolfSSL_X509_STORE_new());
+    ExpectNotNull(ca = wolfSSL_X509_load_certificate_file(
+        "./certs/ca-cert.der", WOLFSSL_FILETYPE_ASN1));
+    ExpectIntEQ(wolfSSL_X509_STORE_add_cert(store, ca), WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_X509_STORE_SetCertEventCb(store, certEventLogCb,
+        &log), WOLFSSL_SUCCESS);
+    ExpectNotNull(leaf = wolfSSL_X509_load_certificate_file(
+        "./certs/server-cert.der", WOLFSSL_FILETYPE_ASN1));
+
+    /* A good chain: no defects, and the last result passed. */
+    ExpectNotNull(sctx = wolfSSL_X509_STORE_CTX_new());
+    ExpectIntEQ(wolfSSL_X509_STORE_CTX_init(sctx, store, leaf, NULL),
+        WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_X509_verify_cert(sctx), WOLFSSL_SUCCESS);
+    ExpectIntEQ(log.defects, 0);
+    ExpectIntGE(log.results, 1);
+    ExpectIntEQ(log.result.error, 0);
+    wolfSSL_X509_STORE_CTX_free(sctx);
+    sctx = NULL;
+
+    /* An expired leaf: the OpenSSL error is unchanged, and the event says
+     * which field failed and why. */
+    ExpectIntEQ(wc_SetTimeCb(certEventAfterExpiryTimeCb), 0);
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(sctx = wolfSSL_X509_STORE_CTX_new());
+    ExpectIntEQ(wolfSSL_X509_STORE_CTX_init(sctx, store, leaf, NULL),
+        WOLFSSL_SUCCESS);
+    ExpectIntNE(wolfSSL_X509_verify_cert(sctx), WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_X509_STORE_CTX_get_error(sctx),
+        WOLFSSL_X509_V_ERR_CERT_HAS_EXPIRED);
+    ExpectIntGE(log.defects, 1);
+    ExpectIntEQ(log.defect.error, WC_NO_ERR_TRACE(ASN_AFTER_DATE_E));
+    ExpectIntEQ(log.defect.field, WC_CEV_FIELD_VALIDITY);
+    ExpectIntEQ(log.defect.reason, WC_CEV_REASON_EXPIRED);
+    /* The event's depth matches the depth OpenSSL-style callers see. */
+    ExpectIntEQ(log.defect.depth,
+        wolfSSL_X509_STORE_CTX_get_error_depth(sctx));
+    ExpectIntEQ(log.defect.role, WC_CEV_ROLE_CANDIDATE);
+    ExpectIntGE(log.results, 1);
+    ExpectIntEQ(log.result.error, WC_NO_ERR_TRACE(ASN_AFTER_DATE_E));
+    (void)wc_SetTimeCb(NULL);
+
+    wolfSSL_X509_STORE_CTX_free(sctx);
+    sctx = NULL;
+    wolfSSL_X509_free(leaf);
+    leaf = NULL;
+
+    wolfSSL_X509_STORE_CTX_free(sctx);
+    wolfSSL_X509_free(leaf);
+    wolfSSL_X509_free(ca);
+    wolfSSL_X509_STORE_free(store);
+#endif
+
+    return EXPECT_RESULT();
+}
+
 int test_wolfSSL_CertManagerNameConstraint(void)
 {
     EXPECT_DECLS;
