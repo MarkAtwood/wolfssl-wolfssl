@@ -2979,6 +2979,10 @@ struct WOLFSSL_CERT_MANAGER {
 #ifdef HAVE_CRL_UPDATE_CB
     CbUpdateCRL    cbUpdateCRL; /* notify thru cb that crl has updated */
 #endif
+#ifdef WOLFSSL_CERT_EVENTS
+    WOLFSSL_CERT_EVENT_CB certEventCb;   /* validation event callback */
+    void*                 certEventCtx;  /* passed to certEventCb */
+#endif
 };
 
 WOLFSSL_LOCAL int CM_SaveCertCache(WOLFSSL_CERT_MANAGER* cm,
@@ -2993,6 +2997,11 @@ WOLFSSL_LOCAL int CM_GetCertCacheMemSize(WOLFSSL_CERT_MANAGER* cm);
 WOLFSSL_LOCAL int CM_VerifyBuffer_ex(WOLFSSL_CERT_MANAGER* cm, const byte* buff,
                                      long sz, int format, int prev_err,
                                      int* crlErr);
+#ifdef WOLFSSL_CERT_EVENTS
+WOLFSSL_LOCAL void CM_CertEventResult(WOLFSSL_CERT_MANAGER* cm, int error,
+                                      int depth, const byte* der,
+                                      word32 derSz, const DecodedCert* cert);
+#endif
 
 
 #ifndef NO_CERTS
