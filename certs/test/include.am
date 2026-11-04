@@ -127,12 +127,21 @@ EXTRA_DIST += \
          certs/test/cert-events/aia-malformed.der \
          certs/test/cert-events/akid-malformed.der \
          certs/test/cert-events/bc-malformed.der \
+         certs/test/cert-events/ca-no-crlsign.der \
          certs/test/cert-events/chain-good.pem \
          certs/test/cert-events/chain-leaf-eku-client-only.pem \
          certs/test/cert-events/chain-leaf-ku-no-digsig.pem \
          certs/test/cert-events/chain-pathlen-exceeded.pem \
          certs/test/cert-events/chain-signer-no-certsign.pem \
          certs/test/cert-events/chain-signer-not-ca.pem \
+         certs/test/cert-events/crl-bad-signature.der \
+         certs/test/cert-events/crl-expired.der \
+         certs/test/cert-events/crl-good.der \
+         certs/test/cert-events/crl-malformed.der \
+         certs/test/cert-events/crl-revokes-good.der \
+         certs/test/cert-events/crl-signer-no-crlsign.der \
+         certs/test/cert-events/crl-unknown-critical.der \
+         certs/test/cert-events/crl-unknown-issuer.der \
          certs/test/cert-events/crldp-malformed.der \
          certs/test/cert-events/eku-malformed.der \
          certs/test/cert-events/good.der \

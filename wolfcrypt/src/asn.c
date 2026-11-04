@@ -40033,6 +40033,10 @@ static int PaseCRL_CheckSignature(DecodedCRL* dcrl, const byte* sigParams,
 
     if (ret == 0) {
         WOLFSSL_MSG("Found CRL issuer CA");
+    #ifdef WOLFSSL_CERT_EVENTS
+        /* A later ASN_CRL_NO_SIGNER_E means the issuer may not sign CRLs. */
+        dcrl->crlSignerFound = 1;
+    #endif
         /* Verify CRL signature with CA. */
         ret = VerifyCRL_Signature(&sigCtx, buff + dcrl->certBegin,
            dcrl->sigIndex - dcrl->certBegin, dcrl->signature, dcrl->sigLength,

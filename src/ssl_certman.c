@@ -2282,6 +2282,10 @@ int wolfSSL_CertManagerCheckCRL(WOLFSSL_CERT_MANAGER* cm,
         {
             /* Initialize decoded certificate with buffer. */
             InitDecodedCert(cert, der, (word32)sz, NULL);
+        #ifdef WOLFSSL_CERT_EVENTS
+            wc_SetCertEventCallback(cert, cm->certEventCb, cm->certEventCtx);
+            wc_CertEventSetPosition(cert, WC_CEV_ROLE_CANDIDATE, -1);
+        #endif
 
             /* Parse certificate and perform CRL checks. */
             ret = ParseCertRelative(cert, CERT_TYPE, VERIFY_CRL, cm, NULL);

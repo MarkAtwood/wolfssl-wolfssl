@@ -3374,6 +3374,9 @@ struct DecodedCRL {
     WC_BITFIELD extAuthKeyIdSet:1;       /* Auth key identifier set indicator */
 #endif
     WC_BITFIELD crlNumberSet:1;          /* CRL number set indicator */
+#ifdef WOLFSSL_CERT_EVENTS
+    WC_BITFIELD crlSignerFound:1;        /* An issuer was found to verify */
+#endif
 #ifdef WC_ASN_UNKNOWN_EXT_CB
     wc_UnknownExtCallback     unknownExtCallback;
     wc_UnknownExtCallback32   unknownExtCallback32;

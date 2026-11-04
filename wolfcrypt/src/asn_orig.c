@@ -9883,6 +9883,10 @@ int ParseCRL(RevokedCert* rcert, DecodedCRL* dcrl, const byte* buff, word32 sz,
     }
 
     WOLFSSL_MSG("Found CRL issuer CA");
+#ifdef WOLFSSL_CERT_EVENTS
+    /* A later ASN_CRL_NO_SIGNER_E means the issuer may not sign CRLs. */
+    dcrl->crlSignerFound = 1;
+#endif
     ret = VerifyCRL_Signature(&sigCtx, buff + dcrl->certBegin,
            dcrl->sigIndex - dcrl->certBegin, dcrl->signature, dcrl->sigLength,
            dcrl->signatureOID, sigParams, sigParamsSz, ca, dcrl->heap);

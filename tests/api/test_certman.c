@@ -852,6 +852,19 @@ static time_t certEventAfterExpiryTimeCb(time_t* t)
     return when;
 }
 
+#ifdef HAVE_CRL
+/* While certs/test/cert-events/crl-expired.der is still valid. */
+static time_t certEventMarch2025TimeCb(time_t* t)
+{
+    time_t when = (time_t)1740787200; /* 2025-03-01 00:00:00 UTC */
+
+    if (t != NULL) {
+        *t = when;
+    }
+    return when;
+}
+#endif
+
 /* Before certs/server-cert.pem becomes valid. */
 static time_t certEventBeforeValidTimeCb(time_t* t)
 {
@@ -1741,6 +1754,210 @@ int test_wolfSSL_CertEvents_trustAnchor(void)
     ExpectIntEQ(log.defect.condition, WC_CEV_COND_CERT_EXPIRED);
 
     wolfSSL_CertManagerFree(cm);
+#endif
+
+    return EXPECT_RESULT();
+}
+
+#if defined(TEST_CERT_EVENTS) && defined(HAVE_CRL)
+/* A certificate manager that trusts ca-cert, with CRL checking on. */
+static WOLFSSL_CERT_MANAGER* certEventCrlCm(CertEventLog* log)
+{
+    WOLFSSL_CERT_MANAGER* cm = wolfSSL_CertManagerNew();
+    byte* der = NULL;
+    size_t derSz = 0;
+
+    if ((cm == NULL) ||
+            (load_file("./certs/ca-cert.der", &der, &derSz) != 0) ||
+            (wolfSSL_CertManagerLoadCABuffer(cm, der, (long)derSz,
+                WOLFSSL_FILETYPE_ASN1) != WOLFSSL_SUCCESS) ||
+            (wolfSSL_CertManagerEnableCRL(cm, WOLFSSL_CRL_CHECK) !=
+                WOLFSSL_SUCCESS) ||
+            (wolfSSL_CertManagerSetCertEventCb(cm, certEventLogCb, log) !=
+                WOLFSSL_SUCCESS)) {
+        wolfSSL_CertManagerFree(cm);
+        cm = NULL;
+    }
+    XFREE(der, NULL, DYNAMIC_TYPE_TMP_BUFFER);
+    return cm;
+}
+
+/* Load a CRL from certs/test/cert-events. */
+static int certEventLoadCrl(WOLFSSL_CERT_MANAGER* cm, const char* name)
+{
+    char file[64];
+    byte* der = NULL;
+    size_t derSz = 0;
+    int ret;
+
+    (void)XSNPRINTF(file, sizeof(file), "./certs/test/cert-events/%s.der",
+        name);
+    ret = load_file(file, &der, &derSz);
+    if (ret == 0) {
+        ret = wolfSSL_CertManagerLoadCRLBuffer(cm, der, (long)derSz,
+            WOLFSSL_FILETYPE_ASN1);
+    }
+    XFREE(der, NULL, DYNAMIC_TYPE_TMP_BUFFER);
+    return ret;
+}
+#endif
+
+/* Checking a certificate against CRLs reports on that certificate why it
+ * failed: revoked, no CRL from its issuer, or the CRL has expired. */
+int test_wolfSSL_CertEvents_crlCheck(void)
+{
+    EXPECT_DECLS;
+#if defined(TEST_CERT_EVENTS) && defined(HAVE_CRL)
+    static const struct {
+        const char* crl;    /* NULL to load no CRL */
+        int         error;
+        int         field;
+        int         reason;
+        int         condition;
+    } cases[] = {
+        { "crl-good", 0, 0, 0, 0 },
+        { "crl-revokes-good", CRL_CERT_REVOKED, WC_CEV_FIELD_CRL_REVOKED,
+          WC_CEV_REASON_REVOKED, WC_CEV_COND_CERT_REVOKED },
+        { NULL, CRL_MISSING, WC_CEV_FIELD_CHAIN, WC_CEV_REASON_MISSING,
+          WC_CEV_COND_CRL_MISSING },
+    #ifndef WOLFSSL_NO_CRL_DATE_CHECK
+        /* Loaded in March 2025, while it was still valid, and used now. */
+        { "crl-expired", CRL_CERT_DATE_ERR, WC_CEV_FIELD_CRL_NEXT_UPDATE,
+          WC_CEV_REASON_EXPIRED, WC_CEV_COND_CRL_EXPIRED },
+    #endif
+    };
+    WOLFSSL_CERT_MANAGER* cm = NULL;
+    CertEventLog log;
+    size_t i;
+
+    for (i = 0; i < XELEM_CNT(cases); i++) {
+        XMEMSET(&log, 0, sizeof(log));
+        ExpectNotNull(cm = certEventCrlCm(&log));
+        if (cases[i].crl != NULL) {
+            if (cases[i].error == WC_NO_ERR_TRACE(CRL_CERT_DATE_ERR)) {
+                ExpectIntEQ(wc_SetTimeCb(certEventMarch2025TimeCb), 0);
+            }
+            ExpectIntEQ(certEventLoadCrl(cm, cases[i].crl), WOLFSSL_SUCCESS);
+            (void)wc_SetTimeCb(NULL);
+        }
+        ExpectIntEQ(log.defects, 0);
+        ExpectIntEQ(wolfSSL_CertManagerVerify(cm,
+            "./certs/test/cert-events/good.der", WOLFSSL_FILETYPE_ASN1),
+            (cases[i].error == 0) ? WOLFSSL_SUCCESS : cases[i].error);
+        ExpectIntEQ(log.results, 1);
+        ExpectIntEQ(log.result.error, cases[i].error);
+        if (cases[i].error == 0) {
+            ExpectIntEQ(log.defects, 0);
+        }
+        else {
+            ExpectIntEQ(log.defects, 1);
+            ExpectIntEQ(log.defect.category, WC_CEV_CAT_CERT);
+            ExpectIntEQ(log.defect.role, WC_CEV_ROLE_CANDIDATE);
+            ExpectIntEQ(log.defect.error, cases[i].error);
+            ExpectIntEQ(log.defect.field, cases[i].field);
+            ExpectIntEQ(log.defect.reason, cases[i].reason);
+            ExpectIntEQ(log.defect.condition, cases[i].condition);
+        }
+        if (EXPECT_FAIL()) {
+            fprintf(stderr, "cert event test failed for case %d\n", (int)i);
+        }
+        wolfSSL_CertManagerFree(cm);
+        cm = NULL;
+        if (EXPECT_FAIL()) {
+            break;
+        }
+    }
+#endif
+
+    return EXPECT_RESULT();
+}
+
+/* A CRL that is rejected when loaded is reported in the CRL category. */
+int test_wolfSSL_CertEvents_crlLoad(void)
+{
+    EXPECT_DECLS;
+#if defined(TEST_CERT_EVENTS) && defined(HAVE_CRL)
+    static const struct {
+        const char* crl;
+        int         error;
+        int         field;
+        int         reason;
+        int         condition;
+    } cases[] = {
+        { "crl-bad-signature", ASN_CRL_CONFIRM_E, WC_CEV_FIELD_SIGNATURE,
+          WC_CEV_REASON_SIGNATURE, WC_CEV_COND_CRL_SIG_INVALID },
+        { "crl-unknown-issuer", ASN_CRL_NO_SIGNER_E, WC_CEV_FIELD_CHAIN,
+          WC_CEV_REASON_NO_SIGNER, WC_CEV_COND_CRL_NO_SIGNER },
+    #if !defined(WOLFSSL_X509_TINY) && !defined(IGNORE_KEY_EXTENSIONS)
+        /* Tiny builds report it as an unknown issuer, and the key usage is
+         * not checked with IGNORE_KEY_EXTENSIONS. */
+        { "crl-signer-no-crlsign", ASN_CRL_NO_SIGNER_E, WC_CEV_FIELD_CHAIN,
+          WC_CEV_REASON_CONSTRAINT, WC_CEV_COND_CRL_SIGNER_KU },
+    #endif
+        { "crl-malformed", ASN_PARSE_E, WC_CEV_FIELD_ENCODING,
+          WC_CEV_REASON_MALFORMED, WC_CEV_COND_CRL_FORMAT },
+        { "crl-unknown-critical", ASN_CRIT_EXT_E, WC_CEV_FIELD_EXTENSION,
+          WC_CEV_REASON_UNSUPPORTED, WC_CEV_COND_CRL_EXT_UNKNOWN_CRITICAL },
+    #ifndef WOLFSSL_NO_CRL_DATE_CHECK
+        /* Loading checks nextUpdate too. */
+        { "crl-expired", CRL_CERT_DATE_ERR, WC_CEV_FIELD_CRL_NEXT_UPDATE,
+          WC_CEV_REASON_EXPIRED, WC_CEV_COND_CRL_EXPIRED },
+    #endif
+    };
+    WOLFSSL_CERT_MANAGER* cm = NULL;
+    CertEventLog log;
+    byte* der = NULL;
+    size_t derSz = 0;
+    size_t i;
+    int ret;
+
+    for (i = 0; i < XELEM_CNT(cases); i++) {
+        XMEMSET(&log, 0, sizeof(log));
+        ExpectNotNull(cm = certEventCrlCm(&log));
+        /* The CA that may not sign CRLs is trusted for this one. */
+        if (XSTRCMP(cases[i].crl, "crl-signer-no-crlsign") == 0) {
+            ExpectIntEQ(load_file("./certs/test/cert-events/ca-no-crlsign.der",
+                &der, &derSz), 0);
+            ExpectIntEQ(wolfSSL_CertManagerLoadCABuffer(cm, der, (long)derSz,
+                WOLFSSL_FILETYPE_ASN1), WOLFSSL_SUCCESS);
+            XFREE(der, NULL, DYNAMIC_TYPE_TMP_BUFFER);
+            der = NULL;
+            XMEMSET(&log, 0, sizeof(log));
+        }
+        ret = certEventLoadCrl(cm, cases[i].crl);
+        ExpectIntNE(ret, WOLFSSL_SUCCESS);
+    #ifdef WOLFSSL_ASN_TEMPLATE
+        ExpectIntEQ(ret, cases[i].error);
+    #endif
+        ExpectIntEQ(log.defects, 1);
+        ExpectIntEQ(log.defect.category, WC_CEV_CAT_CRL);
+        ExpectIntEQ(log.defect.role, WC_CEV_ROLE_CRL);
+        ExpectIntEQ(log.defect.error, ret);
+    #ifndef WOLFSSL_ASN_TEMPLATE
+        /* The original parser returns a generic error for some of these. */
+        if (ret != cases[i].error) {
+            ExpectIntEQ(log.defect.condition, WC_CEV_COND_CRL_FORMAT);
+        }
+        else
+    #endif
+        {
+            ExpectIntEQ(log.defect.field, cases[i].field);
+            ExpectIntEQ(log.defect.reason, cases[i].reason);
+            ExpectIntEQ(log.defect.condition, cases[i].condition);
+        }
+        /* Known once decoding got that far. */
+        if (log.defect.condition != WC_CEV_COND_CRL_FORMAT) {
+            ExpectIntEQ(log.defect.sigOID, CTC_SHA256wRSA);
+        }
+        if (EXPECT_FAIL()) {
+            fprintf(stderr, "cert event test failed for %s\n", cases[i].crl);
+        }
+        wolfSSL_CertManagerFree(cm);
+        cm = NULL;
+        if (EXPECT_FAIL()) {
+            break;
+        }
+    }
 #endif
 
     return EXPECT_RESULT();
