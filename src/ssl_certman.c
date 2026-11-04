@@ -766,6 +766,38 @@ int wolfSSL_CertManagerSetCertEventCb(WOLFSSL_CERT_MANAGER* cm,
     return WOLFSSL_SUCCESS;
 }
 
+/* Set the strict checks to enforce into certificate manager.
+ *
+ * The strict checks run on certificates verified and CRLs loaded when an
+ * event callback or an enforced check is set. A check that fires is sent as a
+ * NOTICE, or as a DEFECT when it is enforced. An enforced check fails the
+ * certificate or CRL with its ASN_STRICT_*_E error.
+ *
+ * @param [in] cm       Certificate manager.
+ * @param [in] enforce  Checks to enforce. enum wc_CertEventStrict bits, 0 to
+ *                      only report. WC_CEV_STRICT_ALL is every check in this
+ *                      build.
+ * @return  WOLFSSL_SUCCESS on success.
+ * @return  BAD_FUNC_ARG when cm is NULL or enforce has an unknown bit.
+ * @return  NOT_COMPILED_IN when a check named is not in this build.
+ */
+int wolfSSL_CertManagerSetCertEventStrict(WOLFSSL_CERT_MANAGER* cm,
+    word32 enforce)
+{
+    int ret;
+
+    WOLFSSL_ENTER("wolfSSL_CertManagerSetCertEventStrict");
+    if (cm == NULL) {
+        return BAD_FUNC_ARG;
+    }
+    ret = wc_CertEventStrictResolve(enforce, &enforce);
+    if (ret != 0) {
+        return ret;
+    }
+
+    cm->certEventStrict = enforce;
+    return WOLFSSL_SUCCESS;
+}
 #endif /* WOLFSSL_CERT_EVENTS */
 
 #ifdef WC_ASN_UNKNOWN_EXT_CB
@@ -889,6 +921,14 @@ static int cm_verify_err_overridable(int err)
         case WC_NO_ERR_TRACE(ECC_KEY_SIZE_E):
         case WC_NO_ERR_TRACE(FALCON_KEY_SIZE_E):
         case WC_NO_ERR_TRACE(MLDSA_KEY_SIZE_E):
+#ifdef WOLFSSL_CERT_EVENTS
+        /* Strict checks, run after every other check passed. */
+        case WC_NO_ERR_TRACE(ASN_STRICT_UNIQUE_ID_E):
+        case WC_NO_ERR_TRACE(ASN_STRICT_NO_AKID_E):
+        case WC_NO_ERR_TRACE(ASN_STRICT_NO_KEY_USAGE_E):
+        case WC_NO_ERR_TRACE(ASN_STRICT_NO_CRL_DP_E):
+        case WC_NO_ERR_TRACE(ASN_STRICT_NO_OCSP_E):
+#endif
 #ifdef HAVE_CRL
         case WC_NO_ERR_TRACE(CRL_CERT_REVOKED):
         case WC_NO_ERR_TRACE(CRL_MISSING):
@@ -1025,6 +1065,7 @@ static int CM_VerifyBuffer_int(WOLFSSL_CERT_MANAGER* cm,
          * callback, which is not a verification of its own. */
         if (prev_err == 0) {
             wc_SetCertEventCallback(cert, cm->certEventCb, cm->certEventCtx);
+            wc_CertEventStrictDefer(cert, cm->certEventStrict);
             wc_CertEventSetPosition(cert, (depth > 0) ?
                 WC_CEV_ROLE_SIGNER : WC_CEV_ROLE_CANDIDATE, depth);
         }
@@ -1043,6 +1084,17 @@ static int CM_VerifyBuffer_int(WOLFSSL_CERT_MANAGER* cm,
         if (crlRet != 0) {
             WOLFSSL_MSG("CheckCertCRL failed");
         }
+    }
+#endif
+#ifdef WOLFSSL_CERT_EVENTS
+    /* Last, so that a verify callback allowing a strict failure does not also
+     * skip a check that has not run yet. */
+    if ((ret == 0) && (crlRet == 0)) {
+        ret = wc_CertEventStrictChecks(cert);
+    }
+    else if (strictErr != NULL) {
+        /* The caller may yet accept the certificate. */
+        *strictErr = wc_CertEventStrictChecks(cert);
     }
 #endif
 
@@ -1109,6 +1161,15 @@ static int CM_VerifyBuffer_int(WOLFSSL_CERT_MANAGER* cm,
                 ret = DoVerifyCallback(cm, NULL, crlRet, args);
                 crlRet = 0;
             }
+        #ifdef WOLFSSL_CERT_EVENTS
+            /* Another failure was allowed: the strict checks still apply. */
+            if (ret == 0) {
+                ret = wc_CertEventStrictChecks(cert);
+                if (ret != 0) {
+                    ret = DoVerifyCallback(cm, NULL, ret, args);
+                }
+            }
+        #endif
         }
         WC_FREE_VAR_EX(args, cm->heap, DYNAMIC_TYPE_TMP_BUFFER);
     }
@@ -3417,6 +3478,7 @@ int AddCA(WOLFSSL_CERT_MANAGER* cm, DerBuffer** pDer, int type, int verify)
      * reported by the TLS code that verified them. */
     if ((type == WOLFSSL_USER_CA) && (verify != NO_VERIFY)) {
         wc_SetCertEventCallback(cert, cm->certEventCb, cm->certEventCtx);
+        wc_SetCertEventStrict(cert, cm->certEventStrict);
         wc_CertEventSetPosition(cert, WC_CEV_ROLE_TRUST_ANCHOR, -1);
     }
 #endif

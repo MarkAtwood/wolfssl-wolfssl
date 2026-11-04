@@ -39,6 +39,13 @@
   IEC 62351-9 and IEC 62351-3 audit events, for security logging such as the
   EU Cyber Resilience Act calls for. The callback cannot change a result;
   the verify callback still decides.
+  Optional strict profile checks (unique IDs, no AKID, a CA without key
+  usage, no CRL distribution point, no OCSP responder, a CRL thisUpdate in
+  the future) are reported as NOTICE events, and each can be enforced with
+  `wolfSSL_CertManagerSetCertEventStrict()` to fail with its own
+  `ASN_STRICT_*_E` error. They run after every other check, also when the
+  verify callback allows another failure, so allowing one failure never
+  skips another check. by @sameehj
 
 ## Behavioral Changes
 * **Behavioral change (DSA now uses the leftmost |q| bytes of the digest)**:

@@ -23752,6 +23752,100 @@ int wc_SetCertEventCallback(DecodedCert* cert, WOLFSSL_CERT_EVENT_CB cb,
     return 0;
 }
 
+/* Check strict check bits and resolve WC_CEV_STRICT_ALL.
+ *
+ * WC_CEV_STRICT_ALL means every check this build can run. Naming a check on
+ * its own that this build cannot run is an error, since it would never fire.
+ *
+ * @param [in]  enforce   enum wc_CertEventStrict bits.
+ * @param [out] resolved  Bits to use.
+ * @return  0 on success.
+ * @return  BAD_FUNC_ARG when enforce has an unknown bit.
+ * @return  NOT_COMPILED_IN when a check named is not in this build.
+ */
+int wc_CertEventStrictResolve(word32 enforce, word32* resolved)
+{
+    word32 avail = (word32)WC_CEV_STRICT_ALL;
+
+#if defined(WOLFSSL_X509_TINY) && !defined(WOLFSSL_X509_TINY_AKI)
+    /* The AKID is not decoded. */
+    avail &= ~(word32)WC_CEV_STRICT_AKID;
+#endif
+#if defined(WOLFSSL_X509_TINY) && !defined(WOLFSSL_X509_TINY_CRL_DP)
+    /* The CRL distribution points are not decoded. */
+    avail &= ~(word32)WC_CEV_STRICT_CRL_DP;
+#endif
+#if defined(WOLFSSL_X509_TINY) && !defined(WOLFSSL_X509_TINY_AIA)
+    /* The authority information access is not decoded. */
+    avail &= ~(word32)WC_CEV_STRICT_OCSP;
+#endif
+#if !defined(HAVE_CRL) || defined(NO_ASN_TIME) || \
+    defined(WOLFSSL_NO_CRL_DATE_CHECK)
+    /* No CRL dates are checked. */
+    avail &= ~(word32)WC_CEV_STRICT_CRL_THIS_UPDATE;
+#endif
+
+    if ((enforce & ~(word32)WC_CEV_STRICT_ALL) != 0) {
+        return BAD_FUNC_ARG;
+    }
+    if (enforce == (word32)WC_CEV_STRICT_ALL) {
+        enforce = avail;
+    }
+    else if ((enforce & ~avail) != 0) {
+        return NOT_COMPILED_IN;
+    }
+
+    *resolved = enforce;
+    return 0;
+}
+
+/* Turn on the strict checks for a decoded certificate.
+ *
+ * Each check that fires is sent to the event callback as a NOTICE, or as a
+ * DEFECT when it is enforced. An enforced check fails ParseCertRelative()
+ * with its ASN_STRICT_*_E error. The checks run only on a certificate that
+ * otherwise passed. ParseCertRelative() does not check revocation, so a
+ * caller that does should check it first: see wc_CertEventStrictDefer().
+ *
+ * @param [in, out] cert     Decoded certificate.
+ * @param [in]      enforce  Checks to enforce. enum wc_CertEventStrict bits.
+ *                           WC_CEV_STRICT_ALL is every check in this build.
+ * @return  0 on success.
+ * @return  BAD_FUNC_ARG when cert is NULL or enforce has an unknown bit.
+ * @return  NOT_COMPILED_IN when a check named is not in this build.
+ */
+int wc_SetCertEventStrict(DecodedCert* cert, word32 enforce)
+{
+    int ret;
+
+    if (cert == NULL) {
+        return BAD_FUNC_ARG;
+    }
+    ret = wc_CertEventStrictResolve(enforce, &enforce);
+    if (ret == 0) {
+        cert->certEventStrictOn = 1;
+        cert->certEventStrict   = enforce;
+    }
+    return ret;
+}
+
+/* Turn on the strict checks for a decoded certificate, run by the caller.
+ *
+ * ParseCertRelative() does not run them. The caller runs them with
+ * wc_CertEventStrictChecks() after its other checks, revocation included, so
+ * that a verify callback allowing a strict failure does not skip any.
+ *
+ * @param [in, out] cert     Decoded certificate.
+ * @param [in]      enforce  Checks to enforce. enum wc_CertEventStrict bits.
+ */
+void wc_CertEventStrictDefer(DecodedCert* cert, word32 enforce)
+{
+    if (cert != NULL) {
+        cert->certEventStrictOn = 2;
+        cert->certEventStrict   = enforce;
+    }
+}
+
 /* Record the TLS connection whose handshake verifies the certificate.
  *
  * @param [in, out] cert       Decoded certificate.
@@ -24177,6 +24271,152 @@ static void CertEventInfo(DecodedCert* cert)
     ev.der      = cert->source;
     ev.derSz    = cert->maxIdx;
     wc_CertEventSend(cert->certEventCb, cert->certEventCtx, &ev);
+}
+
+/* A strict profile check: what is reported, and the error when enforced. */
+typedef struct CertEventStrictCheck {
+    word32 check;       /* enum wc_CertEventStrict bit */
+    int    error;       /* Returned when enforced. */
+    int    condition;   /* enum wc_CertEventCondition */
+    word32 extOID;      /* Extension checked, 0 for unique IDs. */
+} CertEventStrictCheck;
+
+static const CertEventStrictCheck certEventStrictChecks[] = {
+    { WC_CEV_STRICT_UNIQUE_ID, WC_NO_ERR_TRACE(ASN_STRICT_UNIQUE_ID_E),
+      WC_CEV_COND_CERT_UNIQUE_ID, 0 },
+    { WC_CEV_STRICT_AKID, WC_NO_ERR_TRACE(ASN_STRICT_NO_AKID_E),
+      WC_CEV_COND_CERT_NO_AKID, AUTH_KEY_OID },
+    { WC_CEV_STRICT_KEY_USAGE, WC_NO_ERR_TRACE(ASN_STRICT_NO_KEY_USAGE_E),
+      WC_CEV_COND_CERT_NO_KEY_USAGE, KEY_USAGE_OID },
+    { WC_CEV_STRICT_CRL_DP, WC_NO_ERR_TRACE(ASN_STRICT_NO_CRL_DP_E),
+      WC_CEV_COND_CERT_NO_CRL_DP, CRL_DIST_OID },
+    { WC_CEV_STRICT_OCSP, WC_NO_ERR_TRACE(ASN_STRICT_NO_OCSP_E),
+      WC_CEV_COND_CERT_NO_OCSP, AUTH_INFO_OID },
+};
+
+/* Whether the certificate is self-signed, as wolfSSL judged it.
+ *
+ * A root CA whose AKID names its own key is trusted without checking its
+ * signature, so selfSigned is not set for it.
+ *
+ * @param [in] cert  Decoded certificate.
+ * @return  1 when self-signed, otherwise 0.
+ */
+static int CertEventSelfSigned(const DecodedCert* cert)
+{
+    if (!cert->selfIssued) {
+        return 0;
+    }
+    if (cert->selfSigned) {
+        return 1;
+    }
+    return cert->extAuthKeyIdSet && cert->extSubjKeyIdSet &&
+        (XMEMCMP(cert->extAuthKeyId, cert->extSubjKeyId, KEYID_SIZE) == 0);
+}
+
+/* Whether a strict check fires on a certificate.
+ *
+ * Self-signed certificates are exempt from the checks on what the issuer
+ * should include: AKID, CRL distribution point and OCSP responder. The AKID
+ * check fires when the extension or its keyIdentifier is missing; RFC 5280
+ * 4.2.1.1 requires both.
+ *
+ * @param [in] cert   Decoded certificate.
+ * @param [in] check  The check. enum wc_CertEventStrict bit.
+ * @return  1 when it fires, otherwise 0.
+ */
+static int CertEventStrictFires(const DecodedCert* cert, word32 check)
+{
+    switch (check) {
+        case WC_CEV_STRICT_UNIQUE_ID:
+            return (cert->certEventUid != 0);
+        case WC_CEV_STRICT_AKID:
+        #if defined(WOLFSSL_X509_TINY) && !defined(WOLFSSL_X509_TINY_AKI)
+            /* The AKID is not decoded. */
+            return 0;
+        #else
+            return (!CertEventSelfSigned(cert)) && (!cert->extAuthKeyIdSet);
+        #endif
+        case WC_CEV_STRICT_KEY_USAGE:
+            return cert->isCA && (!cert->extKeyUsageSet);
+        case WC_CEV_STRICT_CRL_DP:
+        #if defined(WOLFSSL_X509_TINY) && !defined(WOLFSSL_X509_TINY_CRL_DP)
+            /* The CRL distribution points are not decoded. */
+            return 0;
+        #else
+            return (!CertEventSelfSigned(cert)) && (!cert->extCRLdistSet);
+        #endif
+        case WC_CEV_STRICT_OCSP:
+        #if defined(WOLFSSL_X509_TINY) && !defined(WOLFSSL_X509_TINY_AIA)
+            /* The authority information access is not decoded. */
+            return 0;
+        #else
+            return (!CertEventSelfSigned(cert)) && (cert->extAuthInfo == NULL);
+        #endif
+        default:
+            return 0;
+    }
+}
+
+/* Run the strict profile checks on a decoded certificate, once.
+ *
+ * Each check that fires is reported: as a NOTICE, or as a DEFECT when it is
+ * enforced. The checks only run when turned on with wc_SetCertEventStrict()
+ * or wc_CertEventStrictDefer(), when an event callback or an enforced check
+ * is set, and when the certificate was fully decoded. Callers run them once
+ * no other failure is pending: when nothing else failed, or when the verify
+ * callback allowed what did. Later calls do nothing.
+ *
+ * @param [in] cert  Decoded certificate.
+ * @return  0 when no enforced check fired.
+ * @return  ASN_STRICT_*_E of the first enforced check that fired.
+ */
+int wc_CertEventStrictChecks(DecodedCert* cert)
+{
+    int ret = 0;
+    size_t i;
+
+    if ((cert == NULL) || (cert->certEventStrictOn == 0) ||
+            (!cert->certEventDecoded) ||
+            ((cert->certEventCb == NULL) && (cert->certEventStrict == 0))) {
+        return 0;
+    }
+    /* Run once. */
+    cert->certEventStrictOn = 0;
+#ifdef WOLFSSL_CERT_REQ
+    if (cert->isCSR) {
+        return 0;
+    }
+#endif
+
+    for (i = 0; i < XELEM_CNT(certEventStrictChecks); i++) {
+        const CertEventStrictCheck* c = &certEventStrictChecks[i];
+        int enforced = ((cert->certEventStrict & c->check) != 0);
+        int field = WC_CEV_FIELD_EXTENSION;
+        const byte* oid = NULL;
+        word32 oidSz = 0;
+
+        if (!CertEventStrictFires(cert, c->check)) {
+            continue;
+        }
+        if (c->extOID != 0) {
+            oid = OidFromId(c->extOID, oidCertExtType, &oidSz);
+        }
+        else {
+            field = (cert->certEventUid & 1) ? WC_CEV_FIELD_ISSUER_UID :
+                WC_CEV_FIELD_SUBJECT_UID;
+        }
+        CertEventSendKind(cert, enforced ? WC_CEV_KIND_DEFECT :
+            WC_CEV_KIND_NOTICE, c->error, field, (c->extOID != 0) ?
+            WC_CEV_REASON_MISSING : WC_CEV_REASON_POLICY, c->extOID, oid,
+            oidSz, 0, c->condition);
+        if (enforced && (ret == 0)) {
+            ret = c->error;
+            WOLFSSL_ERROR_VERBOSE(ret);
+        }
+    }
+
+    return ret;
 }
 
 /* Report why verifying a certificate against its signer failed.
@@ -24837,6 +25077,15 @@ static int DecodeCertInternal(DecodedCert* cert, int verify, int* criticalExt,
     #ifdef WOLFSSL_CERT_EVENTS
         if (ret < 0) {
             cevField = CertEventTemplateField(dataASN);
+        }
+        else {
+            /* Unique IDs are skipped; note them for the strict checks. */
+            if (dataASN[X509CERTASN_IDX_TBS_ISSUERUID].tag != 0) {
+                cert->certEventUid |= 1;
+            }
+            if (dataASN[X509CERTASN_IDX_TBS_SUBJECTUID].tag != 0) {
+                cert->certEventUid |= 2;
+            }
         }
     #endif
     }
@@ -26504,6 +26753,10 @@ int ParseCertRelative(DecodedCert* cert, int type, int verify,
     int ret = ParseCertRelativeInternal(cert, type, verify, cm, extraCAList);
 #ifdef WOLFSSL_CERT_EVENTS
     CertEventChain(cert, ret);
+    /* Deferred checks are run by the caller, after its other checks. */
+    if ((ret == 0) && (cert->certEventStrictOn == 1)) {
+        ret = wc_CertEventStrictChecks(cert);
+    }
     CertEventInfo(cert);
 #endif
     return ret;
@@ -26874,6 +27127,11 @@ static int ParseCertRelativeInternal(DecodedCert* cert, int type, int verify,
             }
 #endif /* HAVE_RPK */
         }
+#endif
+#ifdef WOLFSSL_CERT_EVENTS
+        /* Decoded: the strict checks can run even when a later check fails
+         * and the verify callback allows it. */
+        cert->certEventDecoded = 1;
 #endif
 
 #ifdef HAVE_OCSP

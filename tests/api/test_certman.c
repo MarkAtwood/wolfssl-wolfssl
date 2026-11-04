@@ -764,6 +764,11 @@ int test_wolfSSL_CertManagerSetVerify(void)
     !(defined(NO_WOLFSSL_CLIENT) && defined(NO_WOLFSSL_SERVER))
 #define TEST_CERT_EVENTS
 #endif
+/* Tests that use the strict CRL distribution point check. */
+#if defined(TEST_CERT_EVENTS) && \
+    (!defined(WOLFSSL_X509_TINY) || defined(WOLFSSL_X509_TINY_CRL_DP))
+#define TEST_CERT_EVENTS_CRL_DP
+#endif
 
 #ifdef TEST_CERT_EVENTS
 /* Events seen by certEventLogCb. */
@@ -840,6 +845,10 @@ static void certEventLogCb(const WOLFSSL_CERT_EVENT* ev, void* ctx)
         }
     }
 }
+
+/* Bit in noticeConds for a strict check's condition. */
+#define CEV_NOTICE_BIT(cond) \
+    ((word32)1 << ((cond) - WC_CEV_COND_CERT_UNIQUE_ID))
 
 /* After every test certificate expires, and before 32-bit time_t wraps. */
 static time_t certEventAfterExpiryTimeCb(time_t* t)
@@ -1386,6 +1395,16 @@ static int certEventAllowCb(int preverify, WOLFSSL_X509_STORE_CTX* store)
     (void)store;
     return 1;
 }
+
+#if defined(TEST_CERT_EVENTS_CRL_DP) && defined(OPENSSL_EXTRA) && \
+    defined(HAVE_SSL_MEMIO_TESTS_DEPENDENCIES)
+/* Accept a strict check failure only. */
+static int certEventAllowStrictCb(int preverify, WOLFSSL_X509_STORE_CTX* store)
+{
+    return preverify ||
+        (store->error == WC_NO_ERR_TRACE(ASN_STRICT_NO_CRL_DP_E));
+}
+#endif
 #endif
 
 /* The TLS handshake reports each certificate the peer sends, with its
@@ -2016,6 +2035,522 @@ int test_wolfSSL_CertEvents_crlLoad(void)
     return EXPECT_RESULT();
 }
 
+/* Each strict check reports a NOTICE and leaves the result alone, until it
+ * is enforced: then it fails with its own error and reports a DEFECT. */
+int test_wolfSSL_CertEvents_strict(void)
+{
+    EXPECT_DECLS;
+#ifdef TEST_CERT_EVENTS
+    static const byte akidOid[] = { 0x55, 0x1d, 0x23 };
+    static const byte kuOid[]   = { 0x55, 0x1d, 0x0f };
+    static const byte crlDpOid[] = { 0x55, 0x1d, 0x1f };
+    static const byte aiaOid[]  = { 0x2b, 0x06, 0x01, 0x05, 0x05, 0x07,
+                                    0x01, 0x01 };
+    static const struct {
+        const char* file;
+        word32      check;      /* 0 when no check fires */
+        int         error;
+        int         condition;
+        int         field;
+        int         reason;
+        const byte* oid;
+        word32      oidSz;
+    } cases[] = {
+        { "strict-good", 0, 0, 0, 0, 0, NULL, 0 },
+    /* Tiny builds do not decode the extensions some checks look at. */
+    #if !defined(WOLFSSL_X509_TINY) || defined(WOLFSSL_X509_TINY_AKI)
+        { "strict-no-akid", WC_CEV_STRICT_AKID, ASN_STRICT_NO_AKID_E,
+          WC_CEV_COND_CERT_NO_AKID, WC_CEV_FIELD_EXTENSION,
+          WC_CEV_REASON_MISSING, akidOid, sizeof(akidOid) },
+    #endif
+        { "strict-ca-no-ku", WC_CEV_STRICT_KEY_USAGE,
+          ASN_STRICT_NO_KEY_USAGE_E, WC_CEV_COND_CERT_NO_KEY_USAGE,
+          WC_CEV_FIELD_EXTENSION, WC_CEV_REASON_MISSING, kuOid,
+          sizeof(kuOid) },
+    #if !defined(WOLFSSL_X509_TINY) || defined(WOLFSSL_X509_TINY_CRL_DP)
+        { "strict-no-crldp", WC_CEV_STRICT_CRL_DP, ASN_STRICT_NO_CRL_DP_E,
+          WC_CEV_COND_CERT_NO_CRL_DP, WC_CEV_FIELD_EXTENSION,
+          WC_CEV_REASON_MISSING, crlDpOid, sizeof(crlDpOid) },
+    #endif
+    #if !defined(WOLFSSL_X509_TINY) || defined(WOLFSSL_X509_TINY_AIA)
+        /* Has authorityInfoAccess, but only a caIssuers entry. */
+        { "strict-no-ocsp", WC_CEV_STRICT_OCSP, ASN_STRICT_NO_OCSP_E,
+          WC_CEV_COND_CERT_NO_OCSP, WC_CEV_FIELD_EXTENSION,
+          WC_CEV_REASON_MISSING, aiaOid, sizeof(aiaOid) },
+    #endif
+    #ifdef WOLFSSL_ASN_TEMPLATE
+        /* The original parser rejects unique IDs outright. */
+        { "issuer-uid", WC_CEV_STRICT_UNIQUE_ID, ASN_STRICT_UNIQUE_ID_E,
+          WC_CEV_COND_CERT_UNIQUE_ID, WC_CEV_FIELD_ISSUER_UID,
+          WC_CEV_REASON_POLICY, NULL, 0 },
+        { "subject-uid", WC_CEV_STRICT_UNIQUE_ID, ASN_STRICT_UNIQUE_ID_E,
+          WC_CEV_COND_CERT_UNIQUE_ID, WC_CEV_FIELD_SUBJECT_UID,
+          WC_CEV_REASON_POLICY, NULL, 0 },
+    #endif
+    };
+    WOLFSSL_CERT_MANAGER* cm = NULL;
+    CertEventLog log;
+    char file[64];
+    size_t i;
+
+    ExpectNotNull(cm = wolfSSL_CertManagerNew());
+    ExpectIntEQ(wolfSSL_CertManagerLoadCA(cm, "./certs/ca-cert.pem", NULL),
+        WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(NULL, 0),
+        WC_NO_ERR_TRACE(BAD_FUNC_ARG));
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm,
+        WC_CEV_STRICT_ALL + 1), WC_NO_ERR_TRACE(BAD_FUNC_ARG));
+#if defined(WOLFSSL_X509_TINY) && !defined(WOLFSSL_X509_TINY_CRL_DP)
+    /* A check this build cannot run is refused, but ALL is accepted. */
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm,
+        WC_CEV_STRICT_CRL_DP), WC_NO_ERR_TRACE(NOT_COMPILED_IN));
+#endif
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventCb(cm, certEventLogCb, &log),
+        WOLFSSL_SUCCESS);
+
+    for (i = 0; i < XELEM_CNT(cases); i++) {
+        (void)XSNPRINTF(file, sizeof(file), "./certs/test/cert-events/%s.der",
+            cases[i].file);
+
+        /* Reported only: the certificate passes. */
+        XMEMSET(&log, 0, sizeof(log));
+        ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm, 0),
+            WOLFSSL_SUCCESS);
+        ExpectIntEQ(wolfSSL_CertManagerVerify(cm, file, WOLFSSL_FILETYPE_ASN1),
+            WOLFSSL_SUCCESS);
+        ExpectIntEQ(log.defects, 0);
+        ExpectIntEQ(log.result.error, 0);
+        if (cases[i].check == 0) {
+            ExpectIntEQ(log.notices, 0);
+        }
+        else {
+            ExpectIntGE(log.notices, 1);
+            ExpectIntNE(log.noticeConds & CEV_NOTICE_BIT(cases[i].condition),
+                0);
+        }
+        /* The strict-*.der files have exactly one problem: check it all. */
+        if ((cases[i].check != 0) && (XSTRNCMP(cases[i].file, "strict-",
+                7) == 0)) {
+            ExpectIntEQ(log.notices, 1);
+            ExpectIntEQ(log.notice.category, WC_CEV_CAT_CERT);
+            ExpectIntEQ(log.notice.role, WC_CEV_ROLE_CANDIDATE);
+            ExpectIntEQ(log.notice.error, cases[i].error);
+            ExpectIntEQ(log.notice.condition, cases[i].condition);
+            ExpectIntEQ(log.notice.field, cases[i].field);
+            ExpectIntEQ(log.notice.reason, cases[i].reason);
+            ExpectIntEQ(log.notice.critical, 0);
+            ExpectNotNull(log.notice.der);
+            ExpectIntEQ(log.oidSz, cases[i].oidSz);
+            if ((cases[i].oid != NULL) && (log.oidSz == cases[i].oidSz)) {
+                ExpectIntEQ(XMEMCMP(log.oid, cases[i].oid, log.oidSz), 0);
+            }
+        }
+
+        /* Enforced: the certificate fails with the check's own error. */
+        XMEMSET(&log, 0, sizeof(log));
+        ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm,
+            (cases[i].check == 0) ? (word32)WC_CEV_STRICT_ALL :
+            cases[i].check), WOLFSSL_SUCCESS);
+        ExpectIntEQ(wolfSSL_CertManagerVerify(cm, file, WOLFSSL_FILETYPE_ASN1),
+            (cases[i].check == 0) ? WOLFSSL_SUCCESS : cases[i].error);
+        if (cases[i].check == 0) {
+            ExpectIntEQ(log.defects, 0);
+            ExpectIntEQ(log.result.error, 0);
+        }
+        else {
+            ExpectIntEQ(log.defects, 1);
+            ExpectIntEQ(log.defect.error, cases[i].error);
+            ExpectIntEQ(log.defect.condition, cases[i].condition);
+            ExpectIntEQ(log.defect.field, cases[i].field);
+            ExpectIntEQ(log.result.error, cases[i].error);
+            ExpectIntEQ(log.noticeConds & CEV_NOTICE_BIT(cases[i].condition),
+                0);
+        }
+
+        if (EXPECT_FAIL()) {
+            fprintf(stderr, "cert event test failed for %s\n", file);
+            break;
+        }
+    }
+
+#if !defined(WOLFSSL_X509_TINY) || defined(WOLFSSL_X509_TINY_AKI)
+    /* A verify callback may allow an enforced check: the DEFECT is still
+     * reported, and the RESULT says it passed. */
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm, WC_CEV_STRICT_AKID),
+        WOLFSSL_SUCCESS);
+    wolfSSL_CertManagerSetVerify(cm, certEventAllowCb);
+    ExpectIntEQ(wolfSSL_CertManagerVerify(cm,
+        "./certs/test/cert-events/strict-no-akid.der", WOLFSSL_FILETYPE_ASN1),
+        WOLFSSL_SUCCESS);
+    ExpectIntEQ(log.defects, 1);
+    ExpectIntEQ(log.defect.condition, WC_CEV_COND_CERT_NO_AKID);
+    ExpectIntEQ(log.result.error, 0);
+    wolfSSL_CertManagerSetVerify(cm, NULL);
+
+    /* Enforced with no callback: the check still runs. */
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventCb(cm, NULL, NULL),
+        WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm, WC_CEV_STRICT_AKID),
+        WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_CertManagerVerify(cm,
+        "./certs/test/cert-events/strict-no-akid.der", WOLFSSL_FILETYPE_ASN1),
+        WC_NO_ERR_TRACE(ASN_STRICT_NO_AKID_E));
+    /* Self-issued certificates need no AKID. */
+    ExpectIntEQ(wolfSSL_CertManagerVerify(cm, "./certs/ca-cert.pem",
+        WOLFSSL_FILETYPE_PEM), WOLFSSL_SUCCESS);
+#endif
+
+    /* Each error has its own string. */
+    ExpectStrEQ(wc_GetErrorString(ASN_STRICT_NO_AKID_E),
+        "Certificate has no authority key identifier, rejected by strict "
+        "checks");
+
+    wolfSSL_CertManagerFree(cm);
+#endif
+
+    return EXPECT_RESULT();
+}
+
+/* A trust anchor is checked when loaded: a CA without keyUsage. The
+ * self-issued certs/ca-cert.pem has none either. */
+int test_wolfSSL_CertEvents_strictTrustAnchor(void)
+{
+    EXPECT_DECLS;
+#ifdef TEST_CERT_EVENTS
+    WOLFSSL_CERT_MANAGER* cm = NULL;
+    CertEventLog log;
+    const char* file = "./certs/test/cert-events/strict-ca-no-ku.der";
+    byte* der = NULL;
+    size_t derSz = 0;
+
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(cm = wolfSSL_CertManagerNew());
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventCb(cm, certEventLogCb, &log),
+        WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_CertManagerLoadCA(cm, "./certs/ca-cert.pem", NULL),
+        WOLFSSL_SUCCESS);
+    ExpectIntEQ(log.notices, 1);
+    ExpectIntEQ(log.notice.condition, WC_CEV_COND_CERT_NO_KEY_USAGE);
+
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectIntEQ(load_file(file, &der, &derSz), 0);
+    ExpectIntEQ(wolfSSL_CertManagerLoadCABuffer(cm, der, (long)derSz,
+        WOLFSSL_FILETYPE_ASN1), WOLFSSL_SUCCESS);
+    ExpectIntEQ(log.notices, 1);
+    ExpectIntEQ(log.notice.condition, WC_CEV_COND_CERT_NO_KEY_USAGE);
+    ExpectIntEQ(log.notice.role, WC_CEV_ROLE_TRUST_ANCHOR);
+
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm,
+        WC_CEV_STRICT_KEY_USAGE), WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_CertManagerLoadCABuffer(cm, der, (long)derSz,
+        WOLFSSL_FILETYPE_ASN1), WC_NO_ERR_TRACE(ASN_STRICT_NO_KEY_USAGE_E));
+    ExpectIntEQ(log.defects, 1);
+    ExpectIntEQ(log.defect.error, WC_NO_ERR_TRACE(ASN_STRICT_NO_KEY_USAGE_E));
+    ExpectIntEQ(log.defect.role, WC_CEV_ROLE_TRUST_ANCHOR);
+
+    XFREE(der, NULL, DYNAMIC_TYPE_TMP_BUFFER);
+    wolfSSL_CertManagerFree(cm);
+#endif
+
+    return EXPECT_RESULT();
+}
+
+/* The strict checks without a certificate manager. */
+int test_wolfSSL_CertEvents_strictNoCertManager(void)
+{
+    EXPECT_DECLS;
+#ifdef TEST_CERT_EVENTS_CRL_DP
+    DecodedCert cert;
+    CertEventLog log;
+    byte* der = NULL;
+    size_t derSz = 0;
+
+    ExpectIntEQ(wc_SetCertEventStrict(NULL, 0),
+        WC_NO_ERR_TRACE(BAD_FUNC_ARG));
+    ExpectIntEQ(load_file("./certs/test/cert-events/strict-no-crldp.der",
+        &der, &derSz), 0);
+
+    /* Not turned on: nothing is checked. */
+    XMEMSET(&log, 0, sizeof(log));
+    wc_InitDecodedCert(&cert, der, (word32)derSz, NULL);
+    ExpectIntEQ(wc_SetCertEventCallback(&cert, certEventLogCb, &log), 0);
+    ExpectIntEQ(wc_ParseCert(&cert, CERT_TYPE, NO_VERIFY, NULL), 0);
+    wc_FreeDecodedCert(&cert);
+    ExpectIntEQ(log.notices, 0);
+
+    /* Reported only. */
+    wc_InitDecodedCert(&cert, der, (word32)derSz, NULL);
+    ExpectIntEQ(wc_SetCertEventCallback(&cert, certEventLogCb, &log), 0);
+    ExpectIntEQ(wc_SetCertEventStrict(&cert, 0), 0);
+    ExpectIntEQ(wc_ParseCert(&cert, CERT_TYPE, NO_VERIFY, NULL), 0);
+    wc_FreeDecodedCert(&cert);
+    ExpectIntEQ(log.notices, 1);
+    ExpectIntEQ(log.notice.condition, WC_CEV_COND_CERT_NO_CRL_DP);
+    ExpectIntEQ(log.notice.depth, -1);
+
+    /* Enforced. */
+    XMEMSET(&log, 0, sizeof(log));
+    wc_InitDecodedCert(&cert, der, (word32)derSz, NULL);
+    ExpectIntEQ(wc_SetCertEventCallback(&cert, certEventLogCb, &log), 0);
+    ExpectIntEQ(wc_SetCertEventStrict(&cert, WC_CEV_STRICT_CRL_DP), 0);
+    ExpectIntEQ(wc_ParseCert(&cert, CERT_TYPE, NO_VERIFY, NULL),
+        WC_NO_ERR_TRACE(ASN_STRICT_NO_CRL_DP_E));
+    wc_FreeDecodedCert(&cert);
+    ExpectIntEQ(log.defects, 1);
+    ExpectIntEQ(log.defect.condition, WC_CEV_COND_CERT_NO_CRL_DP);
+
+    XFREE(der, NULL, DYNAMIC_TYPE_TMP_BUFFER);
+#endif
+
+    return EXPECT_RESULT();
+}
+
+/* A CRL whose thisUpdate is in the future, checked when loaded. */
+int test_wolfSSL_CertEvents_strictCrl(void)
+{
+    EXPECT_DECLS;
+#if defined(TEST_CERT_EVENTS) && defined(HAVE_CRL) && \
+    !defined(WOLFSSL_NO_CRL_DATE_CHECK)
+    WOLFSSL_CERT_MANAGER* cm = NULL;
+    CertEventLog log;
+
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(cm = certEventCrlCm(&log));
+    ExpectIntEQ(certEventLoadCrl(cm, "crl-good"), WOLFSSL_SUCCESS);
+    ExpectIntEQ(log.notices, 0);
+    wolfSSL_CertManagerFree(cm);
+    cm = NULL;
+
+    /* Each manager gets one CRL: both have CRL number 1. */
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(cm = certEventCrlCm(&log));
+    ExpectIntEQ(certEventLoadCrl(cm, "crl-this-update-future"),
+        WOLFSSL_SUCCESS);
+    ExpectIntEQ(log.notices, 1);
+    ExpectIntEQ(log.defects, 0);
+    ExpectIntEQ(log.notice.category, WC_CEV_CAT_CRL);
+    ExpectIntEQ(log.notice.role, WC_CEV_ROLE_CRL);
+    ExpectIntEQ(log.notice.field, WC_CEV_FIELD_CRL_THIS_UPDATE);
+    ExpectIntEQ(log.notice.reason, WC_CEV_REASON_POLICY);
+    ExpectIntEQ(log.notice.condition, WC_CEV_COND_CRL_THIS_UPDATE_FUTURE);
+    ExpectIntEQ(log.notice.error,
+        WC_NO_ERR_TRACE(ASN_STRICT_CRL_THIS_UPDATE_E));
+    wolfSSL_CertManagerFree(cm);
+    cm = NULL;
+
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(cm = certEventCrlCm(&log));
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm,
+        WC_CEV_STRICT_CRL_THIS_UPDATE), WOLFSSL_SUCCESS);
+    ExpectIntEQ(certEventLoadCrl(cm, "crl-this-update-future"),
+        WC_NO_ERR_TRACE(ASN_STRICT_CRL_THIS_UPDATE_E));
+    ExpectIntEQ(log.notices, 0);
+    ExpectIntEQ(log.defects, 1);
+    ExpectIntEQ(log.defect.category, WC_CEV_CAT_CRL);
+    ExpectIntEQ(log.defect.condition, WC_CEV_COND_CRL_THIS_UPDATE_FUTURE);
+    /* The rejected CRL was not kept: no CRL from this issuer. */
+    ExpectIntEQ(wolfSSL_CertManagerVerify(cm,
+        "./certs/test/cert-events/good.der", WOLFSSL_FILETYPE_ASN1),
+        WC_NO_ERR_TRACE(CRL_MISSING));
+    wolfSSL_CertManagerFree(cm);
+#elif defined(TEST_CERT_EVENTS)
+    WOLFSSL_CERT_MANAGER* cm = NULL;
+
+    /* Without CRL dates there is nothing to enforce. */
+    ExpectNotNull(cm = wolfSSL_CertManagerNew());
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm,
+        WC_CEV_STRICT_CRL_THIS_UPDATE), WC_NO_ERR_TRACE(NOT_COMPILED_IN));
+    wolfSSL_CertManagerFree(cm);
+#endif
+
+    return EXPECT_RESULT();
+}
+
+/* Revocation is checked before the strict checks, so allowing a strict
+ * failure does not skip it. good.der has no CRL distribution point. */
+#if defined(TEST_CERT_EVENTS_CRL_DP) && defined(HAVE_CRL)
+/* Allow a missing CRL only, as a soft-fail CRL policy would. */
+static int certEventAllowCrlMissingCb(int preverify,
+    WOLFSSL_X509_STORE_CTX* store)
+{
+#ifdef OPENSSL_COMPATIBLE_DEFAULTS
+    /* The callback sees the OpenSSL error code. */
+    return preverify ||
+        (store->error == WOLFSSL_X509_V_ERR_UNABLE_TO_GET_CRL);
+#else
+    return preverify || (store->error == WC_NO_ERR_TRACE(CRL_MISSING));
+#endif
+}
+#endif
+
+int test_wolfSSL_CertEvents_strictRevocation(void)
+{
+    EXPECT_DECLS;
+#if defined(TEST_CERT_EVENTS_CRL_DP) && defined(HAVE_CRL)
+    WOLFSSL_CERT_MANAGER* cm = NULL;
+    CertEventLog log;
+    const char* file = "./certs/test/cert-events/good.der";
+
+    /* Not revoked: the strict check fails it. */
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(cm = certEventCrlCm(&log));
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm,
+        WC_CEV_STRICT_CRL_DP), WOLFSSL_SUCCESS);
+    ExpectIntEQ(certEventLoadCrl(cm, "crl-good"), WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_CertManagerVerify(cm, file, WOLFSSL_FILETYPE_ASN1),
+        WC_NO_ERR_TRACE(ASN_STRICT_NO_CRL_DP_E));
+    ExpectIntEQ(log.defects, 1);
+    ExpectIntEQ(log.defect.condition, WC_CEV_COND_CERT_NO_CRL_DP);
+    wolfSSL_CertManagerFree(cm);
+    cm = NULL;
+
+    /* Revoked: revocation is reported, and the strict checks do not run. */
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(cm = certEventCrlCm(&log));
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm,
+        WC_CEV_STRICT_CRL_DP), WOLFSSL_SUCCESS);
+    ExpectIntEQ(certEventLoadCrl(cm, "crl-revokes-good"), WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_CertManagerVerify(cm, file, WOLFSSL_FILETYPE_ASN1),
+        WC_NO_ERR_TRACE(CRL_CERT_REVOKED));
+    ExpectIntEQ(log.defects, 1);
+    ExpectIntEQ(log.defect.condition, WC_CEV_COND_CERT_REVOKED);
+    ExpectIntEQ(log.notices, 0);
+    ExpectIntEQ(log.result.error, WC_NO_ERR_TRACE(CRL_CERT_REVOKED));
+    wolfSSL_CertManagerFree(cm);
+    cm = NULL;
+
+    /* No CRL, and the verify callback allows that: the strict check still
+     * runs and fails it. */
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(cm = certEventCrlCm(&log));
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventStrict(cm,
+        WC_CEV_STRICT_CRL_DP), WOLFSSL_SUCCESS);
+    wolfSSL_CertManagerSetVerify(cm, certEventAllowCrlMissingCb);
+    ExpectIntEQ(wolfSSL_CertManagerVerify(cm, file, WOLFSSL_FILETYPE_ASN1),
+        WC_NO_ERR_TRACE(ASN_STRICT_NO_CRL_DP_E));
+    ExpectIntEQ(log.defects, 2);
+    ExpectIntEQ(log.all[0].condition, WC_CEV_COND_CRL_MISSING);
+    ExpectIntEQ(log.all[1].condition, WC_CEV_COND_CERT_NO_CRL_DP);
+    ExpectIntEQ(log.result.error, WC_NO_ERR_TRACE(ASN_STRICT_NO_CRL_DP_E));
+    wolfSSL_CertManagerFree(cm);
+#endif
+
+    return EXPECT_RESULT();
+}
+
+/* In TLS, each certificate the peer sends is checked, with its position. The
+ * chain-good.pem certificates have no CRL distribution point and no OCSP
+ * responder. */
+int test_wolfSSL_CertEvents_strictTls(void)
+{
+    EXPECT_DECLS;
+#if defined(TEST_CERT_EVENTS_CRL_DP) && \
+    defined(HAVE_SSL_MEMIO_TESTS_DEPENDENCIES)
+    test_ssl_memio_ctx test_ctx;
+    CertEventLog log;
+    int i;
+    int ret;
+
+    ExpectIntEQ(wolfSSL_CTX_SetCertEventStrict(NULL, 0),
+        WC_NO_ERR_TRACE(BAD_FUNC_ARG));
+
+    /* Case 0: reported only. Case 1: enforced. Case 2: enforced, and the
+     * verify callback allows it. */
+    for (i = 0; i < 3; i++) {
+        XMEMSET(&test_ctx, 0, sizeof(test_ctx));
+        XMEMSET(&log, 0, sizeof(log));
+        test_ctx.s_cb.certPemFile = "./certs/test/cert-events/chain-good.pem";
+        test_ctx.s_cb.keyPemFile = "./certs/server-key.pem";
+        ExpectIntEQ(test_ssl_memio_setup(&test_ctx), TEST_SUCCESS);
+        ExpectIntEQ(wolfSSL_CTX_SetCertEventCb(test_ctx.c_ctx,
+            certEventLogCb, &log), WOLFSSL_SUCCESS);
+        ExpectIntEQ(wolfSSL_CTX_SetCertEventStrict(test_ctx.c_ctx,
+            (i == 0) ? 0 : (word32)WC_CEV_STRICT_CRL_DP), WOLFSSL_SUCCESS);
+        wolfSSL_set_verify(test_ctx.c_ssl, WOLFSSL_VERIFY_PEER,
+            (i == 2) ? certEventAllowCb : NULL);
+        wolfSSL_set_verify(test_ctx.s_ssl, WOLFSSL_VERIFY_NONE, NULL);
+        ret = TEST_FAIL;
+        if (EXPECT_SUCCESS()) {
+            ret = test_ssl_memio_do_handshake(&test_ctx, 10, NULL);
+        }
+
+        if (i == 0) {
+            /* Both certificates, the CA first. */
+            ExpectIntEQ(ret, TEST_SUCCESS);
+            ExpectIntEQ(log.defects, 0);
+            ExpectIntEQ(log.notices, 4);
+            ExpectIntEQ(log.noticeConds,
+                CEV_NOTICE_BIT(WC_CEV_COND_CERT_NO_CRL_DP) |
+                CEV_NOTICE_BIT(WC_CEV_COND_CERT_NO_OCSP));
+            ExpectIntEQ(log.notice.depth, 0);
+            ExpectIntEQ(log.notice.role, WC_CEV_ROLE_CANDIDATE);
+            ExpectIntEQ(log.result.error, 0);
+        }
+        else {
+            /* The CA the server sent fails first. */
+            ExpectIntGE(log.defects, 1);
+            ExpectIntEQ(log.all[0].error,
+                WC_NO_ERR_TRACE(ASN_STRICT_NO_CRL_DP_E));
+            ExpectIntEQ(log.all[0].condition, WC_CEV_COND_CERT_NO_CRL_DP);
+            ExpectIntEQ(log.all[0].depth, 1);
+            ExpectIntEQ(log.all[0].role, WC_CEV_ROLE_SIGNER);
+            if (i == 1) {
+                ExpectIntNE(ret, TEST_SUCCESS);
+                ExpectIntEQ(wolfSSL_get_error(test_ctx.c_ssl, 0),
+                    WC_NO_ERR_TRACE(ASN_STRICT_NO_CRL_DP_E));
+                ExpectIntEQ(log.result.error,
+                    WC_NO_ERR_TRACE(ASN_STRICT_NO_CRL_DP_E));
+            }
+            else {
+                ExpectIntEQ(ret, TEST_SUCCESS);
+                ExpectIntEQ(log.result.error, 0);
+            }
+        }
+        if (EXPECT_FAIL()) {
+            fprintf(stderr, "cert event test failed for case %d\n", i);
+        }
+
+        test_ssl_memio_cleanup(&test_ctx);
+        if (EXPECT_FAIL()) {
+            break;
+        }
+    }
+
+#ifdef OPENSSL_EXTRA
+    /* Allowing a strict failure must not skip the checks after it: here the
+     * expected host name, which does not match. */
+    XMEMSET(&test_ctx, 0, sizeof(test_ctx));
+    XMEMSET(&log, 0, sizeof(log));
+    test_ctx.s_cb.certPemFile = "./certs/test/cert-events/chain-good.pem";
+    test_ctx.s_cb.keyPemFile = "./certs/server-key.pem";
+    ExpectIntEQ(test_ssl_memio_setup(&test_ctx), TEST_SUCCESS);
+    ExpectIntEQ(wolfSSL_CTX_SetCertEventCb(test_ctx.c_ctx, certEventLogCb,
+        &log), WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_CTX_SetCertEventStrict(test_ctx.c_ctx,
+        WC_CEV_STRICT_CRL_DP), WOLFSSL_SUCCESS);
+    wolfSSL_set_verify(test_ctx.c_ssl, WOLFSSL_VERIFY_PEER,
+        certEventAllowStrictCb);
+    wolfSSL_set_verify(test_ctx.s_ssl, WOLFSSL_VERIFY_NONE, NULL);
+    ExpectIntEQ(wolfSSL_X509_VERIFY_PARAM_set1_host(
+        wolfSSL_get0_param(test_ctx.c_ssl), "not-the-server.example", 0),
+        WOLFSSL_SUCCESS);
+    ret = TEST_FAIL;
+    if (EXPECT_SUCCESS()) {
+        ret = test_ssl_memio_do_handshake(&test_ctx, 10, NULL);
+    }
+    ExpectIntNE(ret, TEST_SUCCESS);
+    ExpectIntEQ(wolfSSL_get_error(test_ctx.c_ssl, 0),
+        WC_NO_ERR_TRACE(DOMAIN_NAME_MISMATCH));
+    ExpectIntEQ(log.result.error, WC_NO_ERR_TRACE(DOMAIN_NAME_MISMATCH));
+    test_ssl_memio_cleanup(&test_ctx);
+#endif
+#endif
+
+    return EXPECT_RESULT();
+}
+
 /* X509_verify_cert() reports events through the store's certificate
  * manager, as used by nginx and other OpenSSL-compatible applications. */
 int test_wolfSSL_X509_STORE_CertEvents(void)
@@ -2078,6 +2613,22 @@ int test_wolfSSL_X509_STORE_CertEvents(void)
     sctx = NULL;
     wolfSSL_X509_free(leaf);
     leaf = NULL;
+
+    /* An enforced strict check fails X509_verify_cert(). */
+    ExpectIntEQ(wolfSSL_X509_STORE_SetCertEventStrict(NULL, 0),
+        WC_NO_ERR_TRACE(BAD_FUNC_ARG));
+    ExpectIntEQ(wolfSSL_X509_STORE_SetCertEventStrict(store,
+        WC_CEV_STRICT_AKID), WOLFSSL_SUCCESS);
+    ExpectNotNull(leaf = wolfSSL_X509_load_certificate_file(
+        "./certs/test/cert-events/strict-no-akid.der", WOLFSSL_FILETYPE_ASN1));
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(sctx = wolfSSL_X509_STORE_CTX_new());
+    ExpectIntEQ(wolfSSL_X509_STORE_CTX_init(sctx, store, leaf, NULL),
+        WOLFSSL_SUCCESS);
+    ExpectIntNE(wolfSSL_X509_verify_cert(sctx), WOLFSSL_SUCCESS);
+    ExpectIntEQ(log.defects, 1);
+    ExpectIntEQ(log.defect.condition, WC_CEV_COND_CERT_NO_AKID);
+    ExpectIntEQ(log.result.error, WC_NO_ERR_TRACE(ASN_STRICT_NO_AKID_E));
 
     wolfSSL_X509_STORE_CTX_free(sctx);
     wolfSSL_X509_free(leaf);

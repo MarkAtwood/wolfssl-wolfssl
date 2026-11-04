@@ -1313,6 +1313,21 @@ enum wc_CertEventCondition {
     WC_CEV_COND_CRL_THIS_UPDATE_FUTURE   = 37  /* When the CRL is loaded. */
 };
 
+/* Strict checks to enforce, ORed together. A check that is not enforced is
+ * still reported as a NOTICE when an event callback is set. An enforced check
+ * fails the certificate with its ASN_STRICT_*_E error, which the verify
+ * callback may override, or rejects the CRL being loaded. Self-signed
+ * certificates are exempt from the AKID, CRL_DP and OCSP checks. */
+enum wc_CertEventStrict {
+    WC_CEV_STRICT_UNIQUE_ID        = 0x01, /* ASN_STRICT_UNIQUE_ID_E */
+    WC_CEV_STRICT_AKID             = 0x02, /* ASN_STRICT_NO_AKID_E */
+    WC_CEV_STRICT_KEY_USAGE        = 0x04, /* ASN_STRICT_NO_KEY_USAGE_E */
+    WC_CEV_STRICT_CRL_DP           = 0x08, /* ASN_STRICT_NO_CRL_DP_E */
+    WC_CEV_STRICT_OCSP             = 0x10, /* ASN_STRICT_NO_OCSP_E */
+    WC_CEV_STRICT_CRL_THIS_UPDATE  = 0x20, /* ASN_STRICT_CRL_THIS_UPDATE_E */
+    WC_CEV_STRICT_ALL              = 0x3F
+};
+
 /* One validation event. Pointers are only valid during the callback and
  * point at untrusted input: escape before logging. */
 typedef struct WOLFSSL_CERT_EVENT {

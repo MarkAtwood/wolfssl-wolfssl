@@ -140,6 +140,7 @@ EXTRA_DIST += \
          certs/test/cert-events/crl-malformed.der \
          certs/test/cert-events/crl-revokes-good.der \
          certs/test/cert-events/crl-signer-no-crlsign.der \
+         certs/test/cert-events/crl-this-update-future.der \
          certs/test/cert-events/crl-unknown-critical.der \
          certs/test/cert-events/crl-unknown-issuer.der \
          certs/test/cert-events/crldp-malformed.der \
@@ -159,6 +160,11 @@ EXTRA_DIST += \
          certs/test/cert-events/skid-malformed.der \
          certs/test/cert-events/spki-bad-bitstring.der \
          certs/test/cert-events/spki-unknown-alg.der \
+         certs/test/cert-events/strict-ca-no-ku.der \
+         certs/test/cert-events/strict-good.der \
+         certs/test/cert-events/strict-no-akid.der \
+         certs/test/cert-events/strict-no-crldp.der \
+         certs/test/cert-events/strict-no-ocsp.der \
          certs/test/cert-events/subject-malformed.der \
          certs/test/cert-events/subject-uid.der \
          certs/test/cert-events/tbs-sigalg-unknown.der \

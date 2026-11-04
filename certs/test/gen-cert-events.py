@@ -20,6 +20,11 @@
     crl-revokes-good.der revokes good.der. crl-signer-no-crlsign.der is signed
     by ca-no-crlsign.der, a CA whose keyUsage lacks cRLSign.
 
+    The strict-*.der files test the strict profile checks. strict-good.der
+    passes all of them: it has an AKID, a CRL distribution point and an OCSP
+    responder. Each other one lacks one of those, or is a CA without a
+    keyUsage. crl-this-update-future.der has a thisUpdate in 2049.
+
     The chain-*.pem files are certificate chains for a TLS server using
     certs/server-key.pem: the server's certificate first, then the CAs it
     sends. Their CAs use the keys in certs/intermediate/ and lead up to
@@ -63,6 +68,8 @@ OID_SHA384_RSA = '1.2.840.113549.1.1.12'
 OID_COMMON_NAME = '2.5.4.3'
 OID_CLIENT_AUTH = '1.3.6.1.5.5.7.3.2'
 OID_CRL_NUMBER = '2.5.29.20'
+OID_AD_OCSP = '1.3.6.1.5.5.7.48.1'
+OID_AD_CA_ISSUERS = '1.3.6.1.5.5.7.48.2'
 
 # Inside an extension value: a SEQUENCE whose first element claims more bytes
 # than there are. The outer certificate stays valid DER.
@@ -487,6 +494,51 @@ def build_crls(parts, serial: int):
     return out
 
 
+def crl_dp(uri: str) -> bytes:
+    """cRLDistributionPoints with one fullName URI."""
+    return extension(OID_CRL_DIST, der_sequence(der_sequence(
+        tlv(0xa0, tlv(0xa0, tlv(0x86, uri.encode()))))))
+
+
+def aia(*access: tuple) -> bytes:
+    """authorityInfoAccess with (method OID, URI) pairs."""
+    return extension(OID_AUTH_INFO, der_sequence(
+        *[der_sequence(der_oid(m), tlv(0x86, u.encode()))
+          for m, u in access]))
+
+
+def build_strict(parts, serial: int):
+    """Certificates and a CRL for the strict profile checks."""
+    _, _, root, root_skid = parts
+    full = base_extensions(root_skid)
+    full['crldp'] = crl_dp('http://crl.example.com/ca.crl')
+    full['aia'] = aia((OID_AD_OCSP, 'http://ocsp.example.com'))
+    no_ocsp = dict(full)
+    no_ocsp['aia'] = aia((OID_AD_CA_ISSUERS, 'http://ca.example.com/ca.der'))
+    ca_no_ku = dict(full)
+    del ca_no_ku['ku']
+    ca_no_ku['bc'] = extension(OID_BASIC_CA,
+                               der_sequence(tlv(0x01, b'\xff')),
+                               critical=True)
+    cases = [
+        ('strict-good', 'passes every strict check', full),
+        ('strict-no-akid', 'no authorityKeyIdentifier',
+         {k: v for k, v in full.items() if k != 'akid'}),
+        ('strict-no-crldp', 'no cRLDistributionPoints',
+         {k: v for k, v in full.items() if k != 'crldp'}),
+        ('strict-no-ocsp', 'authorityInfoAccess without an OCSP responder',
+         no_ocsp),
+        ('strict-ca-no-ku', 'a CA without keyUsage', ca_no_ku),
+    ]
+    out = {}
+    for i, (name_, desc, exts) in enumerate(cases):
+        out[name_] = (desc, build(serial + i, exts, b'', parts))
+    out['crl-this-update-future'] = (
+        'thisUpdate is in 2049',
+        build_crl(root, root_skid, CA_KEY, [], this_update='490101000000Z'))
+    return out
+
+
 def main():
     parts = load_parts()
     if parts[3] is None:
@@ -519,6 +571,13 @@ def main():
 
     for name_, (desc, der) in build_crls(parts,
                                           FIRST_SERIAL + 0x200).items():
+        path = os.path.join(OUT_DIR, name_ + '.der')
+        with open(path, 'wb') as f:
+            f.write(der)
+        print('Created: %s (%s)' % (path, desc))
+
+    for name_, (desc, der) in build_strict(parts,
+                                            FIRST_SERIAL + 0x300).items():
         path = os.path.join(OUT_DIR, name_ + '.der')
         with open(path, 'wb') as f:
             f.write(der)

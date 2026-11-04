@@ -2982,6 +2982,7 @@ struct WOLFSSL_CERT_MANAGER {
 #ifdef WOLFSSL_CERT_EVENTS
     WOLFSSL_CERT_EVENT_CB certEventCb;   /* validation event callback */
     void*                 certEventCtx;  /* passed to certEventCb */
+    word32                certEventStrict; /* strict checks to enforce */
 #endif
 };
 

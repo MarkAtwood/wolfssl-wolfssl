@@ -662,6 +662,11 @@ static int X509StoreVerifyCert(WOLFSSL_X509_STORE_CTX* ctx, int* cbRejected,
         ret = X509StoreVerifyCertDate(ctx, ret);
     #endif
     #ifdef WOLFSSL_CERT_EVENTS
+        /* The other failures were overridden: the strict checks apply. */
+        if ((ret == WOLFSSL_SUCCESS) && (strictErr != 0)) {
+            ret = strictErr;
+            strictErr = 0;
+        }
         if (ret != WOLFSSL_SUCCESS) {
             evErr = ret;
         }
@@ -678,6 +683,18 @@ static int X509StoreVerifyCert(WOLFSSL_X509_STORE_CTX* ctx, int* cbRejected,
 
             if (verifyCb(ret >= 0 ? 1 : 0, ctx) == 1) {
                 ret = WOLFSSL_SUCCESS;
+            #ifdef WOLFSSL_CERT_EVENTS
+                /* Another failure was allowed: the strict checks still
+                 * apply. */
+                if (strictErr != 0) {
+                    ret = strictErr;
+                    evErr = ret;
+                    SetupStoreCtxError(ctx, ret);
+                    if (verifyCb(0, ctx) == 1) {
+                        ret = WOLFSSL_SUCCESS;
+                    }
+                }
+            #endif
             }
             else if (ret >= 0 && ctx->verify_cb != NULL) {
                 /* Returning 0 must reject a chain the cert manager accepted. */
@@ -2418,6 +2435,26 @@ int wolfSSL_X509_STORE_SetCertEventCb(WOLFSSL_X509_STORE* store,
     return wolfSSL_CertManagerSetCertEventCb(store->cm, cb, ctx);
 }
 
+/* Set the strict checks to enforce into the store's certificate manager.
+ *
+ * @param [in] store    X509 certificate store.
+ * @param [in] enforce  Checks to enforce. enum wc_CertEventStrict bits, 0 to
+ *                      only report.
+ * @return  WOLFSSL_SUCCESS on success.
+ * @return  BAD_FUNC_ARG when store is NULL, has no certificate manager, or
+ *          enforce has an unknown bit.
+ * @return  NOT_COMPILED_IN when a check named is not in this build.
+ */
+int wolfSSL_X509_STORE_SetCertEventStrict(WOLFSSL_X509_STORE* store,
+    word32 enforce)
+{
+    WOLFSSL_ENTER("wolfSSL_X509_STORE_SetCertEventStrict");
+    if (store == NULL) {
+        return BAD_FUNC_ARG;
+    }
+
+    return wolfSSL_CertManagerSetCertEventStrict(store->cm, enforce);
+}
 #endif /* WOLFSSL_CERT_EVENTS */
 
 int wolfSSL_X509_STORE_set_flags(WOLFSSL_X509_STORE* store, unsigned long flag)

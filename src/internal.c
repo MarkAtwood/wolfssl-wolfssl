@@ -17808,6 +17808,8 @@ PRAGMA_GCC_DIAG_POP
     if ((verify != NO_VERIFY) && (SSL_CM(ssl) != NULL)) {
         wc_SetCertEventCallback(args->dCert, SSL_CM(ssl)->certEventCb,
             SSL_CM(ssl)->certEventCtx);
+        /* Run by ProcessPeerCerts() after its other checks. */
+        wc_CertEventStrictDefer(args->dCert, SSL_CM(ssl)->certEventStrict);
         wc_CertEventSetPosition(args->dCert, (args->certIdx == 0) ?
             WC_CEV_ROLE_CANDIDATE : WC_CEV_ROLE_SIGNER, args->certIdx);
         wc_CertEventSetConnection(args->dCert, ssl,
@@ -19983,6 +19985,14 @@ int ProcessPeerCerts(WOLFSSL* ssl, byte* input, word32* inOutIdx,
                         }
                     }
                 #endif /* IGNORE_KEY_EXTENSIONS */
+                #ifdef WOLFSSL_CERT_EVENTS
+                    /* Last of the chain CA checks, so that a verify callback
+                     * allowing a strict failure does not also skip a check
+                     * that has not run yet. A CA that fails is not added. */
+                    if (ret == 0) {
+                        ret = wc_CertEventStrictChecks(args->dCert);
+                    }
+                #endif
                 #ifdef WOLFSSL_ALT_CERT_CHAINS
                     /* For alternate cert chain, its okay for a CA cert to fail
                         with ASN_NO_SIGNER_E here. The "alternate" certificate
@@ -20049,6 +20059,17 @@ int ProcessPeerCerts(WOLFSSL* ssl, byte* input, word32* inOutIdx,
                     SetRevocationVerifyRet(ssl, ret);
                     /* Do verify callback */
                     ret = DoVerifyCallbackHeldCrl(ssl, args, ret, &heldCrlRet);
+                #ifdef WOLFSSL_CERT_EVENTS
+                    /* Another failure was allowed: the strict checks still
+                     * apply. Not to a CA left out of the chain. */
+                    if ((ret == 0) && !skipAddCA) {
+                        ret = wc_CertEventStrictChecks(args->dCert);
+                        if (ret != 0) {
+                            ret = DoVerifyCallback(SSL_CM(ssl), ssl, ret,
+                                args);
+                        }
+                    }
+                #endif
                     if (CrlErrWaived(ssl, ret))
                         ret = ssl->error = 0;
                 #if defined(HAVE_OCSP) && defined(HAVE_CRL) && \
@@ -20809,6 +20830,15 @@ int ProcessPeerCerts(WOLFSSL* ssl, byte* input, word32* inOutIdx,
             }
         #endif
 
+        #ifdef WOLFSSL_CERT_EVENTS
+            /* Last of the peer certificate checks, so that a verify callback
+             * allowing a strict failure does not also skip a check that has
+             * not run yet. */
+            if ((ret == 0) && (args->count > 0) && args->dCertInit) {
+                ret = wc_CertEventStrictChecks(args->dCert);
+            }
+        #endif
+
             /* Do leaf verify callback when it wasn't called yet. Skipped when
              * the chain verify callback owns the verdict. */
             if (!UsingChainVerifyCb(ssl) &&
@@ -20822,6 +20852,16 @@ int ProcessPeerCerts(WOLFSSL* ssl, byte* input, word32* inOutIdx,
                 ret = DoVerifyCallback(SSL_CM(ssl), ssl, ret, args);
             #endif
             }
+        #ifdef WOLFSSL_CERT_EVENTS
+            /* Another failure was allowed: the strict checks still apply. */
+            if ((ret == 0) && (args->count > 0) && args->dCertInit &&
+                    !UsingChainVerifyCb(ssl)) {
+                ret = wc_CertEventStrictChecks(args->dCert);
+                if (ret != 0) {
+                    ret = DoVerifyCallback(SSL_CM(ssl), ssl, ret, args);
+                }
+            }
+        #endif
 
             if (CrlErrWaived(ssl, ret))
                 ret = ssl->error = 0;

@@ -2607,6 +2607,8 @@ WOLFSSL_API int wolfSSL_X509_STORE_set_flags(WOLFSSL_X509_STORE* store,
 /* Register a validation event callback on the store, for X509_verify_cert(). */
 WOLFSSL_API int wolfSSL_X509_STORE_SetCertEventCb(WOLFSSL_X509_STORE* store,
                                    WOLFSSL_CERT_EVENT_CB cb, void* ctx);
+WOLFSSL_API int wolfSSL_X509_STORE_SetCertEventStrict(
+                                   WOLFSSL_X509_STORE* store, word32 enforce);
 #endif
 WOLFSSL_API int wolfSSL_X509_STORE_get_by_subject(WOLFSSL_X509_STORE_CTX* ctx,
                     int idx, WOLFSSL_X509_NAME* name, WOLFSSL_X509_OBJECT* obj);
@@ -4687,6 +4689,12 @@ WOLFSSL_API void wolfSSL_CTX_SetPerformTlsRecordProcessingCb(WOLFSSL_CTX* ctx,
         WOLFSSL_CERT_EVENT_CB cb, void* ctx);
     WOLFSSL_API int wolfSSL_CTX_SetCertEventCb(WOLFSSL_CTX* ctx,
         WOLFSSL_CERT_EVENT_CB cb, void* cbCtx);
+    /* Enforce strict checks: each wc_CertEventStrict bit set turns that
+     * check's NOTICE into a failure. */
+    WOLFSSL_API int wolfSSL_CertManagerSetCertEventStrict(
+        WOLFSSL_CERT_MANAGER* cm, word32 enforce);
+    WOLFSSL_API int wolfSSL_CTX_SetCertEventStrict(WOLFSSL_CTX* ctx,
+        word32 enforce);
 #endif
 
 #ifdef WC_ASN_UNKNOWN_EXT_CB

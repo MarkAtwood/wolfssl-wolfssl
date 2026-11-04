@@ -42,6 +42,12 @@ int test_wolfSSL_CertEvents_trustAnchor(void);
 int test_wolfSSL_CertEvents_infoEcc(void);
 int test_wolfSSL_CertEvents_crlCheck(void);
 int test_wolfSSL_CertEvents_crlLoad(void);
+int test_wolfSSL_CertEvents_strict(void);
+int test_wolfSSL_CertEvents_strictTrustAnchor(void);
+int test_wolfSSL_CertEvents_strictNoCertManager(void);
+int test_wolfSSL_CertEvents_strictCrl(void);
+int test_wolfSSL_CertEvents_strictRevocation(void);
+int test_wolfSSL_CertEvents_strictTls(void);
 int test_wolfSSL_CertEvents_extensions(void);
 int test_wolfSSL_CertEvents_fields(void);
 int test_wolfSSL_CertManagerNameConstraint(void);
@@ -103,6 +109,12 @@ int test_wolfSSL_trust_peer_cert_dates(void);
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_infoEcc),            \
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_crlCheck),           \
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_crlLoad),            \
+    TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_strict),             \
+    TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_strictTrustAnchor),  \
+    TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_strictNoCertManager), \
+    TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_strictCrl),          \
+    TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_strictRevocation),   \
+    TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_strictTls),          \
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_extensions),         \
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_fields),             \
     TEST_DECL_GROUP("certman", test_wolfSSL_CertManagerNameConstraint),     \

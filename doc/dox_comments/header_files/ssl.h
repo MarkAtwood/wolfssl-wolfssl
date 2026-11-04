@@ -11743,6 +11743,125 @@ int wolfSSL_X509_STORE_SetCertEventCb(WOLFSSL_X509_STORE* store,
         WOLFSSL_CERT_EVENT_CB cb, void* ctx);
 
 /*!
+    \ingroup CertManager
+    \brief Sets which strict profile checks the Certificate Manager enforces.
+    Requires WOLFSSL_CERT_EVENTS (--enable-cert-events).
+
+    The strict checks run on the certificates the Certificate Manager
+    verifies, the CAs loaded as trusted, and the CRLs loaded, when an event
+    callback or an enforced check is set. They check what RFC 5280 asks a
+    certificate or CRL to include:
+
+    - WC_CEV_STRICT_UNIQUE_ID: no issuerUniqueID or subjectUniqueID.
+    - WC_CEV_STRICT_AKID: an authority key identifier with a
+      keyIdentifier, unless self-signed.
+    - WC_CEV_STRICT_KEY_USAGE: a key usage on a CA.
+    - WC_CEV_STRICT_CRL_DP: a CRL distribution point, unless self-signed.
+    - WC_CEV_STRICT_OCSP: an OCSP responder in the authority information
+      access, unless self-signed.
+    - WC_CEV_STRICT_CRL_THIS_UPDATE: a CRL thisUpdate that is not in the
+      future.
+
+    A check that fires and is not enforced raises a WC_CEV_KIND_NOTICE event
+    and leaves the result unchanged. An enforced check raises a
+    WC_CEV_KIND_DEFECT event and fails the certificate or CRL with its own
+    error, such as ASN_STRICT_NO_AKID_E. For a certificate, the verify
+    callback may override it; a CRL that fails is not loaded. The checks run
+    last: when every other check passed, or once the verify callback allowed
+    what failed, in which case the strict failure is then passed to the
+    verify callback too. So allowing one failure never skips another check.
+
+    Trust anchors are checked when they are loaded with verification: an
+    enforced check that fires fails the load, and the verify callback is not
+    asked. Set the checks after loading trust anchors to only report them.
+
+    WC_CEV_STRICT_ALL enforces every check this build can run. Naming a check
+    on its own that this build cannot run returns NOT_COMPILED_IN: for
+    example WC_CEV_STRICT_CRL_THIS_UPDATE without CRL date checks, or
+    WC_CEV_STRICT_AKID, WC_CEV_STRICT_CRL_DP or WC_CEV_STRICT_OCSP in a
+    WOLFSSL_X509_TINY build that does not decode that extension.
+
+    \return WOLFSSL_SUCCESS on success.
+    \return BAD_FUNC_ARG when cm is NULL or enforce has an unknown bit.
+    \return NOT_COMPILED_IN when a check named is not in this build.
+
+    \param cm a pointer to a WOLFSSL_CERT_MANAGER structure, created using
+    wolfSSL_CertManagerNew().
+    \param enforce the checks to enforce, wc_CertEventStrict values ORed
+    together. 0 only reports them.
+
+    _Example_
+    \code
+    WOLFSSL_CERT_MANAGER* cm = wolfSSL_CertManagerNew();
+    ...
+    wolfSSL_CertManagerSetCertEventCb(cm, myCertEvent, myLogger);
+    // Report every strict check, and fail certificates with unique IDs.
+    wolfSSL_CertManagerSetCertEventStrict(cm, WC_CEV_STRICT_UNIQUE_ID);
+    \endcode
+
+    \sa wolfSSL_CertManagerSetCertEventCb
+    \sa wolfSSL_CTX_SetCertEventStrict
+    \sa wolfSSL_X509_STORE_SetCertEventStrict
+    \sa wc_SetCertEventStrict
+*/
+int wolfSSL_CertManagerSetCertEventStrict(WOLFSSL_CERT_MANAGER* cm,
+        word32 enforce);
+
+/*!
+    \ingroup CertManager
+    \brief Sets which strict profile checks the Certificate Manager of a
+    WOLFSSL_CTX enforces. Requires WOLFSSL_CERT_EVENTS. See
+    wolfSSL_CertManagerSetCertEventStrict() for the checks.
+
+    \return WOLFSSL_SUCCESS on success.
+    \return BAD_FUNC_ARG when ctx is NULL, has no Certificate Manager, or
+    enforce has an unknown bit.
+    \return NOT_COMPILED_IN when a check named is not in this build.
+
+    \param ctx a pointer to a WOLFSSL_CTX structure.
+    \param enforce the checks to enforce, wc_CertEventStrict values ORed
+    together. 0 only reports them.
+
+    _Example_
+    \code
+    WOLFSSL_CTX* ctx = wolfSSL_CTX_new(wolfTLS_client_method());
+    ...
+    wolfSSL_CTX_SetCertEventStrict(ctx, WC_CEV_STRICT_ALL);
+    \endcode
+
+    \sa wolfSSL_CertManagerSetCertEventStrict
+*/
+int wolfSSL_CTX_SetCertEventStrict(WOLFSSL_CTX* ctx, word32 enforce);
+
+/*!
+    \ingroup CertManager
+    \brief Sets which strict profile checks the Certificate Manager of an
+    X509 store enforces in X509_verify_cert(). Requires WOLFSSL_CERT_EVENTS
+    and OPENSSL_EXTRA. See wolfSSL_CertManagerSetCertEventStrict() for the
+    checks.
+
+    \return WOLFSSL_SUCCESS on success.
+    \return BAD_FUNC_ARG when store is NULL, has no Certificate Manager, or
+    enforce has an unknown bit.
+    \return NOT_COMPILED_IN when a check named is not in this build.
+
+    \param store a pointer to a WOLFSSL_X509_STORE structure.
+    \param enforce the checks to enforce, wc_CertEventStrict values ORed
+    together. 0 only reports them.
+
+    _Example_
+    \code
+    WOLFSSL_X509_STORE* store = wolfSSL_X509_STORE_new();
+    ...
+    wolfSSL_X509_STORE_SetCertEventStrict(store, WC_CEV_STRICT_AKID);
+    \endcode
+
+    \sa wolfSSL_CertManagerSetCertEventStrict
+*/
+int wolfSSL_X509_STORE_SetCertEventStrict(WOLFSSL_X509_STORE* store,
+        word32 enforce);
+
+/*!
     \brief Check CRL if the option is enabled and compares the cert to the
     CRL list.
 

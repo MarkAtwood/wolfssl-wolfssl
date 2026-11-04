@@ -1763,6 +1763,25 @@ int wolfSSL_CTX_SetCertEventCb(WOLFSSL_CTX* ctx, WOLFSSL_CERT_EVENT_CB cb,
     return wolfSSL_CertManagerSetCertEventCb(ctx->cm, cb, cbCtx);
 }
 
+/* Set the strict checks to enforce into the context's certificate manager.
+ *
+ * @param [in] ctx      SSL/TLS context.
+ * @param [in] enforce  Checks to enforce. enum wc_CertEventStrict bits, 0 to
+ *                      only report.
+ * @return  WOLFSSL_SUCCESS on success.
+ * @return  BAD_FUNC_ARG when ctx is NULL, has no certificate manager, or
+ *          enforce has an unknown bit.
+ * @return  NOT_COMPILED_IN when a check named is not in this build.
+ */
+int wolfSSL_CTX_SetCertEventStrict(WOLFSSL_CTX* ctx, word32 enforce)
+{
+    WOLFSSL_ENTER("wolfSSL_CTX_SetCertEventStrict");
+    if (ctx == NULL) {
+        return BAD_FUNC_ARG;
+    }
+
+    return wolfSSL_CertManagerSetCertEventStrict(ctx->cm, enforce);
+}
 #endif /* WOLFSSL_CERT_EVENTS */
 
 #if defined(OPENSSL_EXTRA) || defined(WOLFSSL_WPAS_SMALL)

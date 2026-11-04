@@ -832,6 +832,63 @@ static void CrlEventLoad(WOLFSSL_CERT_MANAGER* cm, DecodedCRL* dcrl, int ret,
     wc_CertEventSend(cm->certEventCb, cm->certEventCtx, &ev);
 }
 
+/* Run the strict checks on a CRL that was loaded.
+ *
+ * A thisUpdate in the future is reported as a NOTICE, or as a DEFECT when
+ * the check is enforced.
+ *
+ * @param [in] cm     Certificate manager.
+ * @param [in] dcrl   Decoded CRL.
+ * @param [in] buff   Encoded CRL.
+ * @param [in] sz     Size of encoded CRL in bytes.
+ * @return  0 when no enforced check fired.
+ * @return  ASN_STRICT_CRL_THIS_UPDATE_E when thisUpdate is in the future and
+ *          the check is enforced.
+ */
+static int CrlEventStrict(WOLFSSL_CERT_MANAGER* cm, DecodedCRL* dcrl,
+    const byte* buff, word32 sz)
+{
+    int ret = 0;
+#if !defined(NO_ASN_TIME) && !defined(WOLFSSL_NO_CRL_DATE_CHECK)
+    WOLFSSL_CERT_EVENT ev;
+    int enforced;
+
+    if ((cm == NULL) || ((cm->certEventCb == NULL) &&
+            (cm->certEventStrict == 0))) {
+        return 0;
+    }
+    if (XVALIDATE_DATE(dcrl->lastDate, dcrl->lastDateFormat, ASN_BEFORE,
+            MAX_DATE_SIZE)) {
+        return 0;
+    }
+
+    enforced = ((cm->certEventStrict & WC_CEV_STRICT_CRL_THIS_UPDATE) != 0);
+    if (enforced) {
+        ret = ASN_STRICT_CRL_THIS_UPDATE_E;
+        WOLFSSL_ERROR_VERBOSE(ret);
+    }
+
+    XMEMSET(&ev, 0, sizeof(ev));
+    ev.kind      = enforced ? WC_CEV_KIND_DEFECT : WC_CEV_KIND_NOTICE;
+    ev.category  = WC_CEV_CAT_CRL;
+    ev.error     = WC_NO_ERR_TRACE(ASN_STRICT_CRL_THIS_UPDATE_E);
+    ev.role      = WC_CEV_ROLE_CRL;
+    ev.depth     = -1;
+    ev.field     = WC_CEV_FIELD_CRL_THIS_UPDATE;
+    ev.reason    = WC_CEV_REASON_POLICY;
+    ev.condition = WC_CEV_COND_CRL_THIS_UPDATE_FUTURE;
+    ev.sigOID    = dcrl->signatureOID;
+    ev.der       = buff;
+    ev.derSz     = sz;
+    wc_CertEventSend(cm->certEventCb, cm->certEventCtx, &ev);
+#else
+    (void)cm;
+    (void)dcrl;
+    (void)buff;
+    (void)sz;
+#endif
+    return ret;
+}
 #endif /* WOLFSSL_CERT_EVENTS */
 
 static int CheckDecodedCertCRL(WOLFSSL_CRL* crl, DecodedCert* cert,
@@ -1125,6 +1182,14 @@ int BufferLoadCRL(WOLFSSL_CRL* crl, const byte* buff, long sz, int type,
     if (!((ret == WC_NO_ERR_TRACE(ASN_CRL_NO_SIGNER_E)) &&
             (verify == NO_VERIFY))) {
         CrlEventLoad(crl->cm, dcrl, ret, myBuffer, (word32)sz);
+    }
+    /* Also for a CRL loaded before its issuer: the date needs no signer. */
+    if ((ret == 0) || ((ret == WC_NO_ERR_TRACE(ASN_CRL_NO_SIGNER_E)) &&
+            (verify == NO_VERIFY))) {
+        int strictRet = CrlEventStrict(crl->cm, dcrl, myBuffer, (word32)sz);
+        if (strictRet != 0) {
+            ret = strictRet;
+        }
     }
 #endif
 
