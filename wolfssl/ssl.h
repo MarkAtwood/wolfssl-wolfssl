@@ -4680,6 +4680,8 @@ WOLFSSL_API void wolfSSL_CTX_SetPerformTlsRecordProcessingCb(WOLFSSL_CTX* ctx,
      * enforced strict check does. */
     WOLFSSL_API int wolfSSL_CertManagerSetCertEventCb(WOLFSSL_CERT_MANAGER* cm,
         WOLFSSL_CERT_EVENT_CB cb, void* ctx);
+    WOLFSSL_API int wolfSSL_CTX_SetCertEventCb(WOLFSSL_CTX* ctx,
+        WOLFSSL_CERT_EVENT_CB cb, void* cbCtx);
 #endif
 
 #ifdef WC_ASN_UNKNOWN_EXT_CB

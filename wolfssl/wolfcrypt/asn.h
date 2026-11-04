@@ -2318,6 +2318,11 @@ struct DecodedCert {
     int                       certEventDepth;  /* Chain depth, -1 unknown */
     int                       certEventReported; /* Error of the last
                                                   * DEFECT sent, 0 if none */
+    byte                      certEventNotCaSet; /* certEventNotCa is set */
+    byte                      certEventNotCa[KEYID_SIZE]; /* Subject hash
+                                                  * of a certificate the peer
+                                                  * sent that is not a CA */
+    void*                     certEventSsl;      /* TLS connection, or NULL */
 #endif
 #ifdef WOLFSSL_DUAL_ALG_CERTS
     /* Subject Alternative Public Key Info */
@@ -2600,6 +2605,8 @@ WOLFSSL_API int wc_SetUnknownExtCallback32Ex(DecodedCert* cert,
 #ifdef WOLFSSL_CERT_EVENTS
 WOLFSSL_API int wc_SetCertEventCallback(DecodedCert* cert,
                                         WOLFSSL_CERT_EVENT_CB cb, void* ctx);
+WOLFSSL_LOCAL void wc_CertEventSetConnection(DecodedCert* cert, void* ssl,
+                                             const byte* notCaHash);
 WOLFSSL_LOCAL void wc_CertEventIdentity(const DecodedCert* cert,
                                         WOLFSSL_CERT_EVENT* ev);
 WOLFSSL_LOCAL void wc_CertEventSetPosition(DecodedCert* cert, int role,

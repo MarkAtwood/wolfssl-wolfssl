@@ -23752,6 +23752,26 @@ int wc_SetCertEventCallback(DecodedCert* cert, WOLFSSL_CERT_EVENT_CB cb,
     return 0;
 }
 
+/* Record the TLS connection whose handshake verifies the certificate.
+ *
+ * @param [in, out] cert       Decoded certificate.
+ * @param [in]      ssl        TLS connection (WOLFSSL*).
+ * @param [in]      notCaHash  Subject hash of a certificate the peer sent
+ *                             that is not a CA, or NULL. A certificate whose
+ *                             issuer it is fails as signed by a non-CA.
+ */
+void wc_CertEventSetConnection(DecodedCert* cert, void* ssl,
+    const byte* notCaHash)
+{
+    if (cert != NULL) {
+        cert->certEventSsl = ssl;
+        cert->certEventNotCaSet = (notCaHash != NULL);
+        if (notCaHash != NULL) {
+            XMEMCPY(cert->certEventNotCa, notCaHash, KEYID_SIZE);
+        }
+    }
+}
+
 /* Fill in which certificate an event is about, as far as it was decoded.
  *
  * @param [in]  cert  Decoded certificate.
@@ -23769,6 +23789,7 @@ void wc_CertEventIdentity(const DecodedCert* cert, WOLFSSL_CERT_EVENT* ev)
         ev->serial   = cert->serial;
         ev->serialSz = (word32)cert->serialSz;
     }
+    ev->ssl = cert->certEventSsl;
 }
 
 /* Record where the certificate sits in the chain being verified.
@@ -23821,6 +23842,11 @@ static int CertEventCondition(const DecodedCert* cert, int error, int field,
         case WC_CEV_REASON_SIGNATURE:
             return WC_CEV_COND_CERT_SIG_INVALID;
         case WC_CEV_REASON_NO_SIGNER:
+            /* The peer sent the issuer, but it is not a CA. */
+            if (cert->certEventNotCaSet && (XMEMCMP(cert->issuerHash,
+                    cert->certEventNotCa, KEYID_SIZE) == 0)) {
+                return WC_CEV_COND_CERT_NOT_CA;
+            }
             return cert->selfIssued ? WC_CEV_COND_CERT_UNTRUSTED_ROOT :
                                       WC_CEV_COND_CERT_NO_ISSUER;
         case WC_CEV_REASON_POLICY:

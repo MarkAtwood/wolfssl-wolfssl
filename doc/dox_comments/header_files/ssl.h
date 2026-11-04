@@ -11685,6 +11685,32 @@ int wolfSSL_CertManagerSetCertEventCb(WOLFSSL_CERT_MANAGER* cm,
         WOLFSSL_CERT_EVENT_CB cb, void* ctx);
 
 /*!
+    \ingroup CertManager
+    \brief Sets the certificate validation event callback in the
+    Certificate Manager of an SSL/TLS context. Requires WOLFSSL_CERT_EVENTS.
+    See wolfSSL_CertManagerSetCertEventCb() for what the callback receives.
+
+    \return WOLFSSL_SUCCESS on success.
+    \return BAD_FUNC_ARG when ctx is NULL or has no Certificate Manager.
+
+    \param ctx a pointer to a WOLFSSL_CTX structure, created using
+    wolfSSL_CTX_new().
+    \param cb the event callback. NULL turns events off.
+    \param cbCtx a pointer passed to the callback with each event.
+
+    _Example_
+    \code
+    WOLFSSL_CTX* ctx = wolfSSL_CTX_new(wolfTLS_client_method());
+    ...
+    wolfSSL_CTX_SetCertEventCb(ctx, myCertEvent, myLogger);
+    \endcode
+
+    \sa wolfSSL_CertManagerSetCertEventCb
+*/
+int wolfSSL_CTX_SetCertEventCb(WOLFSSL_CTX* ctx, WOLFSSL_CERT_EVENT_CB cb,
+        void* cbCtx);
+
+/*!
     \brief Check CRL if the option is enabled and compares the cert to the
     CRL list.
 

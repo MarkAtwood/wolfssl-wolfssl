@@ -3042,6 +3042,11 @@ typedef struct ProcPeerCertArgs {
 #ifdef HAVE_CERTIFICATE_STATUS_REQUEST
     word16 csrAcked:1; /* survives the staple checks clearing status_request */
 #endif
+#ifdef WOLFSSL_CERT_EVENTS
+    word16 notCaSet:1;      /* notCaHash is set */
+    byte   notCaHash[KEYID_SIZE]; /* Subject hash of a certificate the peer
+                                   * sent that is not a CA */
+#endif
 } ProcPeerCertArgs;
 WOLFSSL_LOCAL int DoVerifyCallback(WOLFSSL_CERT_MANAGER* cm, WOLFSSL* ssl,
         int cert_err, ProcPeerCertArgs* args);
@@ -7297,6 +7302,12 @@ struct WOLFSSL {
     #endif
     #ifdef HAVE_CERTIFICATE_STATUS_REQUEST_V2
         byte status_request_v2;
+    #endif
+    #if defined(WOLFSSL_CERT_EVENTS) && \
+        (defined(HAVE_CERTIFICATE_STATUS_REQUEST) || \
+         defined(HAVE_CERTIFICATE_STATUS_REQUEST_V2))
+        /* The peer certificate's RESULT event waits for its status. */
+        byte certEventResultHeld;
     #endif
     #if defined(HAVE_CRL) && (defined(HAVE_CERTIFICATE_STATUS_REQUEST) || \
                               defined(HAVE_CERTIFICATE_STATUS_REQUEST_V2))
