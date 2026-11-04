@@ -39,6 +39,7 @@ int test_wolfSSL_CertEvents_chain(void);
 int test_wolfSSL_CertEvents_noPeerCert(void);
 int test_wolfSSL_CertEvents_heldStatus(void);
 int test_wolfSSL_CertEvents_trustAnchor(void);
+int test_wolfSSL_CertEvents_infoEcc(void);
 int test_wolfSSL_CertEvents_crlCheck(void);
 int test_wolfSSL_CertEvents_crlLoad(void);
 int test_wolfSSL_CertEvents_extensions(void);
@@ -99,6 +100,7 @@ int test_wolfSSL_trust_peer_cert_dates(void);
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_noPeerCert),         \
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_heldStatus),         \
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_trustAnchor),        \
+    TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_infoEcc),            \
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_crlCheck),           \
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_crlLoad),            \
     TEST_DECL_GROUP("certman", test_wolfSSL_CertEvents_extensions),         \

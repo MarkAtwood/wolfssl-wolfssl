@@ -23823,6 +23823,94 @@ void wc_CertEventSend(WOLFSSL_CERT_EVENT_CB cb, void* ctx,
     }
 }
 
+/* Size of the certificate's public key in bits.
+ *
+ * @param [in] cert  Decoded certificate.
+ * @return  Key size in bits, or 0 when not known.
+ */
+static int CertEventKeyBits(const DecodedCert* cert)
+{
+    int bits = 0;
+
+#ifndef NO_RSA
+    if (((cert->keyOID == RSAk)
+    #ifdef WC_RSA_PSS
+            || (cert->keyOID == RSAPSSk)
+    #endif
+            ) && (cert->publicKey != NULL)) {
+        const byte* n = NULL;
+        const byte* e = NULL;
+        word32 nSz = 0;
+        word32 eSz = 0;
+        word32 idx = 0;
+
+        if (wc_RsaPublicKeyDecode_ex(cert->publicKey, &idx, cert->pubKeySize,
+                &n, &nSz, &e, &eSz) == 0) {
+            /* Count the modulus bits, skipping leading zeros. */
+            while ((nSz > 0) && (*n == 0)) {
+                n++;
+                nSz--;
+            }
+            if (nSz > 0) {
+                byte top = n[0];
+                bits = (int)nSz * 8;
+                while ((top & 0x80) == 0) {
+                    bits--;
+                    top = (byte)(top << 1);
+                }
+            }
+        }
+    }
+#endif
+#ifdef HAVE_ECC
+    if (cert->keyOID == ECDSAk) {
+        int curveId = CheckCurve(cert->pkCurveOID);
+        if (curveId >= 0) {
+            int sz = wc_ecc_get_curve_size_from_id(curveId);
+            if (sz > 0) {
+                bits = sz * 8;
+            }
+        }
+    }
+#endif
+#ifdef HAVE_ED25519
+    if (cert->keyOID == ED25519k) {
+        bits = 256;
+    }
+#endif
+#ifdef HAVE_ED448
+    if (cert->keyOID == ED448k) {
+        bits = 456;
+    }
+#endif
+
+    return bits;
+}
+
+/* Fill in the certificate's algorithms. Values not decoded yet stay 0.
+ *
+ * @param [in]      cert  Decoded certificate.
+ * @param [in, out] ev    Event to fill in.
+ */
+static void CertEventAlgorithms(const DecodedCert* cert,
+    WOLFSSL_CERT_EVENT* ev)
+{
+    ev->sigOID = cert->signatureOID;
+    ev->keyOID = cert->keyOID;
+#if defined(HAVE_ECC) || defined(HAVE_ED25519) || defined(HAVE_ED448) || \
+    defined(WOLFSSL_HAVE_MLDSA) || defined(HAVE_FALCON) || \
+    defined(WOLFSSL_HAVE_SLHDSA) || defined(WOLFSSL_HAVE_LMS) || \
+    defined(WOLFSSL_HAVE_XMSS) || defined(WOLFSSL_HAVE_FRODOKEM) || \
+    defined(WOLFSSL_HAVE_MLKEM)
+    if (cert->keyOID == ECDSAk) {
+        ev->curveOID = cert->pkCurveOID;
+    }
+#endif
+    if (cert->publicKey != NULL) {
+        ev->keySz = CertEventKeyBits(cert);
+    }
+}
+
 /* Choose the condition that describes a failure.
  *
  * @param [in] cert    Decoded certificate.
@@ -23924,6 +24012,7 @@ static void CertEventSendKind(DecodedCert* cert, int kind, int error,
     XMEMSET(&ev, 0, sizeof(ev));
     ev.condition = (condition != WC_CEV_COND_NONE) ? condition :
         CertEventCondition(cert, error, field, reason);
+    CertEventAlgorithms(cert, &ev);
     wc_CertEventIdentity(cert, &ev);
     ev.kind     = kind;
     ev.category = WC_CEV_CAT_CERT;
@@ -24057,6 +24146,37 @@ void wc_CertEventFailureCond(DecodedCert* cert, int error, int field,
             break;
     }
     CertEventDefectOid(cert, error, field, reason, 0, NULL, 0, 0, condition);
+}
+
+/* Send the INFO event with the certificate's algorithms and key size.
+ *
+ * Sent once for each certificate whose public key was decoded, whatever the
+ * outcome, so the application can apply its own list of approved algorithms
+ * and key sizes.
+ *
+ * @param [in] cert  Decoded certificate.
+ */
+static void CertEventInfo(DecodedCert* cert)
+{
+    WOLFSSL_CERT_EVENT ev;
+
+    if ((cert == NULL) || (cert->certEventCb == NULL) ||
+            cert->certEventInfoSent || (cert->keyOID == 0) ||
+            (cert->publicKey == NULL)) {
+        return;
+    }
+    cert->certEventInfoSent = 1;
+
+    XMEMSET(&ev, 0, sizeof(ev));
+    CertEventAlgorithms(cert, &ev);
+    wc_CertEventIdentity(cert, &ev);
+    ev.kind     = WC_CEV_KIND_INFO;
+    ev.category = WC_CEV_CAT_CERT;
+    ev.role     = cert->certEventRole;
+    ev.depth    = cert->certEventDepth;
+    ev.der      = cert->source;
+    ev.derSz    = cert->maxIdx;
+    wc_CertEventSend(cert->certEventCb, cert->certEventCtx, &ev);
 }
 
 /* Report why verifying a certificate against its signer failed.
@@ -26384,6 +26504,7 @@ int ParseCertRelative(DecodedCert* cert, int type, int verify,
     int ret = ParseCertRelativeInternal(cert, type, verify, cm, extraCAList);
 #ifdef WOLFSSL_CERT_EVENTS
     CertEventChain(cert, ret);
+    CertEventInfo(cert);
 #endif
     return ret;
 }

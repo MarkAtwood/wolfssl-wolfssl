@@ -921,6 +921,14 @@ int test_wolfSSL_CertManagerCertEvents(void)
     ExpectNotNull(XSTRSTR(log.subject, "CN=www.wolfssl.com"));
     ExpectIntGT(log.serialSz, 0);
     ExpectNull(log.result.ssl);
+    /* One INFO with the algorithms, for the application's own policy. */
+    ExpectIntEQ(log.infos, 1);
+    ExpectIntEQ(log.info.role, WC_CEV_ROLE_CANDIDATE);
+    ExpectIntEQ(log.info.sigOID, CTC_SHA256wRSA);
+    ExpectIntEQ(log.info.keyOID, RSAk);
+    ExpectIntEQ(log.info.keySz, 2048);
+    ExpectIntEQ(log.info.curveOID, 0);
+    ExpectIntEQ(log.info.error, 0);
 
     /* Move the clock past the certificate's notAfter. The defect says where
      * and why; the return code is unchanged. */
@@ -936,6 +944,9 @@ int test_wolfSSL_CertManagerCertEvents(void)
     ExpectIntEQ(log.defect.field, WC_CEV_FIELD_VALIDITY);
     ExpectIntEQ(log.defect.reason, WC_CEV_REASON_EXPIRED);
     ExpectIntEQ(log.defect.condition, WC_CEV_COND_CERT_EXPIRED);
+    /* The algorithms are known by the time the dates are checked. */
+    ExpectIntEQ(log.defect.keyOID, RSAk);
+    ExpectIntEQ(log.defect.keySz, 2048);
     ExpectIntEQ(log.results, 1);
     ExpectIntEQ(log.result.error, WC_NO_ERR_TRACE(ASN_AFTER_DATE_E));
 
@@ -1554,6 +1565,10 @@ int test_wolfSSL_CertEvents_chain(void)
             ExpectIntEQ(log.defects, 0);
             ExpectIntEQ(log.result.error, 0);
             ExpectIntEQ(log.result.condition, WC_CEV_COND_NONE);
+            /* One INFO for each certificate: the CA, then the server's. */
+            ExpectIntEQ(log.infos, 2);
+            ExpectIntEQ(log.info.depth, 0);
+            ExpectIntEQ(log.info.keySz, 2048);
         }
         else {
             ExpectIntNE(ret, TEST_SUCCESS);
@@ -1739,6 +1754,10 @@ int test_wolfSSL_CertEvents_trustAnchor(void)
     XFREE(der, NULL, DYNAMIC_TYPE_TMP_BUFFER);
     der = NULL;
     ExpectIntEQ(log.defects, 0);
+    ExpectIntEQ(log.infos, 1);
+    ExpectIntEQ(log.info.role, WC_CEV_ROLE_TRUST_ANCHOR);
+    ExpectIntEQ(log.info.depth, -1);
+    ExpectIntEQ(log.info.keySz, 2048);
 
     /* An expired CA, loaded without permission to ignore its dates. */
     XMEMSET(&log, 0, sizeof(log));
@@ -1752,6 +1771,40 @@ int test_wolfSSL_CertEvents_trustAnchor(void)
     ExpectIntEQ(log.defect.role, WC_CEV_ROLE_TRUST_ANCHOR);
     ExpectIntEQ(log.defect.depth, -1);
     ExpectIntEQ(log.defect.condition, WC_CEV_COND_CERT_EXPIRED);
+
+    wolfSSL_CertManagerFree(cm);
+#endif
+
+    return EXPECT_RESULT();
+}
+
+/* The INFO event gives the key type, size and curve of an ECC key. */
+int test_wolfSSL_CertEvents_infoEcc(void)
+{
+    EXPECT_DECLS;
+#if defined(TEST_CERT_EVENTS) && defined(HAVE_ECC) && !defined(NO_ECC256) && \
+    !defined(NO_ECC_SECP)
+    WOLFSSL_CERT_MANAGER* cm = NULL;
+    CertEventLog log;
+#ifdef WOLFSSL_PEM_TO_DER
+    const char* ca_cert = "./certs/ca-ecc-cert.pem";
+#else
+    const char* ca_cert = "./certs/ca-ecc-cert.der";
+#endif
+
+    XMEMSET(&log, 0, sizeof(log));
+    ExpectNotNull(cm = wolfSSL_CertManagerNew());
+    ExpectIntEQ(wolfSSL_CertManagerLoadCA(cm, ca_cert, NULL),
+        WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_CertManagerSetCertEventCb(cm, certEventLogCb, &log),
+        WOLFSSL_SUCCESS);
+    ExpectIntEQ(wolfSSL_CertManagerVerify(cm, "./certs/server-ecc.der",
+        WOLFSSL_FILETYPE_ASN1), WOLFSSL_SUCCESS);
+    ExpectIntEQ(log.infos, 1);
+    ExpectIntEQ(log.info.keyOID, ECDSAk);
+    ExpectIntEQ(log.info.curveOID, ECC_SECP256R1_OID);
+    ExpectIntEQ(log.info.keySz, 256);
+    ExpectIntEQ(log.info.sigOID, CTC_SHA256wECDSA);
 
     wolfSSL_CertManagerFree(cm);
 #endif

@@ -2318,6 +2318,7 @@ struct DecodedCert {
     int                       certEventDepth;  /* Chain depth, -1 unknown */
     int                       certEventReported; /* Error of the last
                                                   * DEFECT sent, 0 if none */
+    byte                      certEventInfoSent; /* The INFO was sent */
     byte                      certEventNotCaSet; /* certEventNotCa is set */
     byte                      certEventNotCa[KEYID_SIZE]; /* Subject hash
                                                   * of a certificate the peer
