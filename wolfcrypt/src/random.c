@@ -716,11 +716,20 @@ static WC_MAYBE_UNUSED int rng_entropy_event_propagate(WC_RNG* rng);
 
 #ifdef WC_RNG_SEED_CB
 
-#ifndef HAVE_FIPS
-static wc_RngSeed_Cb seedCb = wc_GenerateSeed;
-#else
-static wc_RngSeed_Cb seedCb = NULL;
-#endif
+/* Default to this build's own entropy function in every configuration.  A
+ * NULL default under HAVE_FIPS left the module unable to seed until a caller
+ * installed a callback, so wc_InitRng() returned RNG_FAILURE_E on an
+ * otherwise healthy module.
+ *
+ * WC_GENERATE_SEED_DEFAULT, not wc_GenerateSeed: each port overrides the
+ * macro with its own in-boundary source (linuxkm to the glue layer, Zephyr to
+ * wolfssl_zephyr_seed), and wc_port.h falls back to wc_GenerateSeed where no
+ * port has.  Naming the function directly would make a kernel build seed from
+ * get_random_bytes() during POST -- the fallback the glue layer exists to
+ * refuse -- and would have to be undone once per operational environment.
+ *
+ * An integrator nominating a different source still calls wc_SetSeed_Cb(). */
+static wc_RngSeed_Cb seedCb = WC_GENERATE_SEED_DEFAULT;
 
 int wc_SetSeed_Cb(wc_RngSeed_Cb cb)
 {
