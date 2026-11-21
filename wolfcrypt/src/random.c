@@ -716,11 +716,15 @@ static WC_MAYBE_UNUSED int rng_entropy_event_propagate(WC_RNG* rng);
 
 #ifdef WC_RNG_SEED_CB
 
-#ifndef HAVE_FIPS
+/* Default to the module's own entropy function in every build.  A NULL
+ * default under HAVE_FIPS left the module unable to seed until a caller
+ * installed a callback, so wc_InitRng() returned RNG_FAILURE_E on an
+ * otherwise healthy module.  IG 9.3.A objects to a module that relies on an
+ * operator to reach the entropy source's GetEntropy() interface; defaulting
+ * to the in-module wc_GenerateSeed() removes that reliance.  An integrator
+ * who must nominate a different (for example ESV-validated) source still
+ * calls wc_SetSeed_Cb() explicitly. */
 static wc_RngSeed_Cb seedCb = wc_GenerateSeed;
-#else
-static wc_RngSeed_Cb seedCb = NULL;
-#endif
 
 int wc_SetSeed_Cb(wc_RngSeed_Cb cb)
 {
